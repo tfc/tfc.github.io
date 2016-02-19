@@ -1,6 +1,6 @@
 ---
 layout: post
-title: What is a type trait?
+title: What is a Type Trait?
 ---
 
 ## Short Intro
@@ -11,24 +11,25 @@ Type traits have been there for quite a long time now. They are a meta programmi
 Looking at complex C++ meta programs, which appear seemlessly embedded into normal program code, is confusing at first.
 It is like looking at brain fuck code.
 That is, because the meta programming syntax is ugly and clumsy.
-One might ask "Why is it so ugly?" now.
+*Why is it so ugly?*
 The answer is simply, that C++ was not designed from the very beginning to contain a meta programming language.
-The language evolved, controlled by a consortium which always tried to be backwards compatible.
-And one day, people realized, that this growing little template engine is actually Turing complete. 
-Soon, people started to write really crazy meta programs with it, which were able to elevate the usability and versatility of C++ libraries to a level of unprecedented usability and elegance. 
-Data structures and functions can be implemented in a way, where they do magic of all kinds on any user provided type - with no overhead at runtime.
+The language evolved, controlled by a consortium which always tried to keep newer language standards backwards compatible to older ones.
+One day, people realized, that this growing little template engine is actually *Turing complete*. 
+Soon, people started to write really crazy meta programs with it, which were able to elevate implementations of C++ libraries to a level of unprecedented usability, versatility and elegance (from the perspective of a user which has not seen the implementation). 
+Data structures and functions can be implemented in a way, where they do magic of all kinds on any user provided type - with no overhead at runtime, because all the magic happens at compile time, resulting in completely fixed and optimized run time code.
+
 However, back to the ugly syntax: one can really get used to it.
 
 ## Simplest example
 
-Let's start with some simple example.
-We implement `not` meta programming function, which takes a simple `bool` parameter and returns its negation.
+Let's start with a simple example.
+We implement a `not` meta programming function, which takes a simple `bool` parameter and returns its negation.
 
 C++ template variables can contain types or values.
 For template variables containing values, simple builtin integral types are supported. `bool` is one of them.
-So let's write some code which does at compile time what we want to do:
+So let's write some code which does at compile time what we want to achieve:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 template <bool X>
 struct not
 {
@@ -37,22 +38,25 @@ struct not
 {% endhighlight %}
 
 This class just takes the parameter `X` which is provided using template syntax, and initializes its only member.
-This member is `static`, so it can be accessed from the type directly without getting an instance of it first.
+This member is `static`, so it can be accessed from the type directly without us having to allocate an instance of it first.
 Furthermore, it is `constexpr`, which means that we can assume it is already accessible at compile time.
 
 Actually using it looks like this:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 static_assert(not<true >::value == false, "");
 static_assert(not<false>::value == true,  "");
 {% endhighlight %}
 
-We simply feed the structure with a `true`/`false` input value and scope to the its static member, to get at the return value. 
+We simply feed the structure with a `true`/`false` input value and scope down to its static member, to get at the return value. 
 That's it, we just implemented a complicated way to express `bool y = not(x)`.
+
+The cool thing is, that this code will be completely fixed at runtime, so the compiler can reduce it to a constant value which will reside in the binary.
+*No* part of this will have to be evaluated at run time.
 
 Of course, since the release of C++11, we also could have written:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 static constexpr not(bool x) 
 {
     return !x;
@@ -60,12 +64,12 @@ static constexpr not(bool x)
 {% endhighlight %}
 
 ...and both use this function at compile time and at run time.
-This is amazingly useful, but not today's topic.
+This is amazingly useful, but it's not today's topic.
 
 Getting back to clumsy template syntax, we could have implemented it a different way.
 Many type traits need to be implemented this other way, because it's not always simple `true`/`false` situations:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 // (A)
 template <bool X>
 struct not
@@ -82,8 +86,8 @@ struct not<false>
 {% endhighlight %}
 
 So we have two structs now.
-Or, to be specific, one general definition of `struct not` and a specialized one.
-The specialized one will be selected by the compiler, if the template parameters match.
+Or, to be specific, one general definition `(A)` of `struct not` and a specialized one `(B)`.
+The specialized one will be selected by the compiler when the user references this type, if the template parameters match.
 
 Hence, if the user instanciates `not<false>`, the compiler will select `(B)` as the right implementation, because its described specialization is a perfect match.
 And that implementation always contains the fixed value `true`.
@@ -92,11 +96,11 @@ Any other instantiation (This is easy, because if the input is not `false`, it's
 ## Next Example: Comparing types
 
 Using that second, clumsiest possible implementation of `not`, we have a technique at hand to do more useful stuff.
-We can, for example, ask at compile time if some user provided type which we got from some template parameter, is some specific type.
+We can, for example, ask at compile time if some user provided type which we got from some template parameter, is a specific type.
 Maybe we have an if-else construct somewhere, and need this information to decide which branch to take.
 This is easily possible:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 // (A)
 template <typename T, typename U>
 struct is_same_type
@@ -113,10 +117,10 @@ struct is_same_type<T, T>
 {% endhighlight %}
 
 Again, we have a general implementation `(A)`, and a specialized one `(B)`.
-Both take two input types, in order to compare them, and they also both have the same variable, but they initialize it to different values.
+Both take two input types, in order to compare them, and they also both have the same static member variable, but they initialize it to different values.
 Usage:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 static_assert(is_same_type<int, char>::value == false, "");
 static_assert(is_same_type<int, int >::value == true,  "");
 {% endhighlight %}
@@ -126,7 +130,7 @@ If both input types are equal, the specialized implementation `(B)` is a perfect
 
 It is now perfectly fine to write code like:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 template <typename T>
 T myfunc(T x)
 {
@@ -140,7 +144,7 @@ T myfunc(T x)
 
 Of course, this is just an alternative to:
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 template <typename T>
 T myfunc(T x)
 { /* do the general thing */ }
@@ -160,7 +164,7 @@ One can constraint the parameter specializations to `const`, append `*` and `[N]
 This example determines, if type `T` is a pointer.
 This is useful in some situations.
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 template <typename T>
 struct is_pointer
 {
@@ -174,7 +178,7 @@ struct is_pointer<T*>
 };
 {% endhighlight %}
 
-{% highlight c++ linenos %}
+{% highlight c++ %}
 static_assert(is_pointer<int >::value == false, "");
 static_assert(is_pointer<int*>::value == true,  "");
 {% endhighlight %}
