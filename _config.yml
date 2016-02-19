@@ -7,8 +7,8 @@ permalink:        pretty
 #relative_permalinks: true
 
 # Setup
-title:            Jaceks C++ Blog
-tagline:          'A Jekyll theme'
+title:            'Jacek''s C++ Blog'
+tagline:          'An Engineer''s Coder Blog'
 description:      'Writing about daily experiences and thoughts with C++ as my main work language.'
 url:              http://blog.galowicz.de
 baseurl:          /
