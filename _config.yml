@@ -1,0 +1,28 @@
+# Dependencies
+markdown:         redcarpet
+highlighter:      pygments
+
+# Permalinks
+permalink:        pretty
+#relative_permalinks: true
+
+# Setup
+title:            Jaceks C++ Blog
+tagline:          'A Jekyll theme'
+description:      'Writing about daily experiences and thoughts with C++ as my main work language.'
+url:              http://blog.galowicz.de
+baseurl:          /
+
+author:
+  name:           'Jacek Galowicz'
+  url:            https://twitter.com/jgalowicz
+
+paginate:         1
+
+# Custom vars
+version:          2.1.0
+
+github:
+  repo:           https://github.com/poole/hyde
+
+gems: [jekyll-paginate, jekyll-gist]
