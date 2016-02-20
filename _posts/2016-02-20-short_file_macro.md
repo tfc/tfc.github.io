@@ -3,7 +3,8 @@ layout: post
 title: A __FILE__ Macro Which Does Not Contain the Whole Source File Path
 ---
 
-The `__FILE__` macro, which expands to the current source file name at compile time, is not really useful if the source file paths which the build system uses, are very long.
+The `__FILE__` macro expands to the current source file name at compile time.
+It is not really useful if the source file paths which the build system uses, are very long, as this would bloat log output with long path names.
 It would be useful to have a shortened version, which only contains the file name without the whole path.
 This article describes how to implement a `__SHORT_FILE__` macro, that does not add any run time overhead.
 
