@@ -17,7 +17,7 @@ author:
   name:           'Jacek Galowicz'
   url:            http://galowicz.de
 
-paginate:         1
+paginate:         10
 
 # Custom vars
 version:          2.1.0
