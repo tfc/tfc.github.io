@@ -1,7 +1,10 @@
 ---
 layout: post
-title: How does the typical SFINAE type trait work?
+title: How Does the Typical SFINAE Type Trait Work?
 ---
+
+C++ type traits can be implemented using an interesting technique which uses the *SFINAE* principle.
+This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.
 
 > If you are not familiar with *type traits*, have a look at [this blog post]({% post_url 2016-02-18-what_is_a_type_trait %}).
 
@@ -58,7 +61,7 @@ No SFINAE magic here, yet.
 
 But what happens, if `NUM` is an uneven number, like for example 3?
 In that case, `3 % 2 == 0` evaluates to `1 == 0`, hence to `false`, and after being cast to int, it is `0`.
-Arrays with size of `0` are not valid in C++, hence the compiler might throw an error now.
+Arrays with size of `0` are not valid in C++ (There is a GNU C++ extension which allows them), hence the compiler might throw an error now.
 But following the SFINAE principle, it will just disregard this function implementation, as it cannot deduce a valid signature for it, and look at the next candidate.
 The next candidate's parameter array type size will evaluate to `1`, which is fine, and the compiler will select it.
 
