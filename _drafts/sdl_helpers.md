@@ -1,3 +1,9 @@
+---
+layout: post
+title: SDL Helpers
+---
+
+Lorem ipsum.
 
 {% highlight c++ %}
 #include <memory>

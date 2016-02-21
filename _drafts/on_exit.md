@@ -3,6 +3,8 @@ layout: post
 title: ON_EXIT - Combining Automatic Destruction and Lambdas
 ---
 
+Dies Das.
+
 {% highlight c++ %}
 template <class F>
 class OnExit
