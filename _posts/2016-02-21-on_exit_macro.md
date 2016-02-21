@@ -50,7 +50,7 @@ void f()
 {% endhighlight %}
 
 This example looks ugly and repetitive.
-The programmer needs to write code which behaves correctly in all cases.
+The programmer needs to write code manually which behaves correctly in all cases.
 Half of the function looks very repetitive, and deals with boring details.
 It is even quite error prone, if the programmer forgets one release somewhere, or messes up the correct order.
 
