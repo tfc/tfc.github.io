@@ -3,7 +3,12 @@ layout: post
 title: Useful type traits with if_compiles semantics
 ---
 
-Dies das.
+SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way.
+Unfortunately, they are extremely clumsy to implement.
+The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive.
+This article shows a nice one-liner way to define new SFINAE type traits.
+
+> If you are not familiar with *SFINAE*, have a look at [this blog post]({% post_url 2016-02-19-how_do_sfinae_traits_work %}).
 
 {% highlight c++ %}
 #define DEFINE_IF_COMPILES(NAME, EXPR) \
@@ -25,7 +30,7 @@ Dies das.
 
 DEFINE_IF_COMPILES(is_dereferenceable, *x1);
 
-static_assert(is_dereferenceable<int*                 >::value == true, "foo");
+static_assert(is_dereferenceable<int*                 >::value == true,  "foo");
 static_assert(is_dereferenceable<int                  >::value == false, "bar");
-static_assert(is_dereferenceable<vector<int>::iterator>::value == true, "foo");
+static_assert(is_dereferenceable<vector<int>::iterator>::value == true,  "foo");
 {% endhighlight %}
