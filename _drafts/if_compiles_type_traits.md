@@ -29,4 +29,3 @@ static_assert(is_dereferenceable<int*                 >::value == true, "foo");
 static_assert(is_dereferenceable<int                  >::value == false, "bar");
 static_assert(is_dereferenceable<vector<int>::iterator>::value == true, "foo");
 {% endhighlight %}
-
