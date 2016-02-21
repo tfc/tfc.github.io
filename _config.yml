@@ -17,6 +17,10 @@ author:
   name:           'Jacek Galowicz'
   url:            http://galowicz.de
 
+twitter_username:  jgalowicz
+github_username:   tfc
+linkedin_username: jacekgalowicz
+
 paginate:         10
 
 # Custom vars
@@ -25,4 +29,4 @@ version:          2.1.0
 github:
   repo:           https://github.com/poole/hyde
 
-gems: [jekyll-paginate, jekyll-gist]
+gems:             [jekyll-paginate, jekyll-gist]
