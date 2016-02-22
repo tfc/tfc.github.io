@@ -4,7 +4,7 @@ title: Useful type traits with if_compiles semantics
 ---
 
 SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way.
-Unfortunately, they are extremely clumsy to implement.
+Unfortunately, they are extremely bloaty to implement.
 The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive.
 This article shows a nice one-liner approach to define new SFINAE type traits.
 

@@ -10,7 +10,7 @@ Type traits have been there for quite a long time now. They are a meta programmi
 
 Looking at complex C++ meta programs, which appear seemlessly embedded into normal program code, is confusing at first.
 It is like looking at brain fuck code.
-That is, because the meta programming syntax is ugly and clumsy.
+That is, because the meta programming syntax is ugly and bloated.
 *Why is it so ugly?*
 The answer is simply, that C++ was not designed from the very beginning to contain a meta programming language.
 The language evolved, controlled by a consortium which always tried to keep newer language standards backwards compatible to older ones.
@@ -66,7 +66,7 @@ static constexpr not(bool x)
 ...and both use this function at compile time and at run time.
 This is amazingly useful, but it's not today's topic.
 
-Getting back to clumsy template syntax, we could have implemented it a different way.
+Getting back to bloated template syntax, we could have implemented it a different way.
 Many type traits need to be implemented this other way, because it's not always simple `true`/`false` situations:
 
 {% highlight c++ %}
