@@ -85,6 +85,10 @@ rel_a:
 }
 {% endhighlight %}
 
+There are actually a lot of possible ways to implement, some safer and less error prone than the other.
+Have a look at [this blog post, which shows more variants](http://codedgers.com/blog/2009/apr/8/3/).
+The point is, that they are all ugly, and C++ provides syntax which can help fix that.
+
 ## The Nicely Looking Version
 
 It would be much nicer to express "As soon as the program flow reached this line, the resource which was just created must be destroyed when returning from this procedure", without further defining when that needs to be done.
