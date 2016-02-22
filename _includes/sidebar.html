@@ -29,6 +29,34 @@
       <a class="sidebar-nav-item" href="http://galowicz.de">CV Info</a>
     </nav>
 
+    <p>
+    {% if site.linkedin_username %}
+    <a href="https://linkedin.com/in/{{ site.linkedin_username }}">
+        <i class="fa fa-linkedin-square"></i>
+    </a>
+    {% endif %}
+    {% if site.xing_username %}
+    <a href="https://www.xing.com/profile/{{ site.xing_username }}">
+        <i class="fa fa-xing-square"></i>
+    </a>
+    {% endif %}
+    {% if site.github_username %}
+    <a href="https://github.com/{{ site.github_username }}">
+        <i class="fa fa-github-square"></i>
+    </a>
+    {% endif %}
+    {% if site.google_plus_username %}
+    <a href="https://plus.google.com/{{ site.google_plus_username }}">
+        <i class="fa fa-google-plus-square"></i>
+    </a>
+    {% endif %}
+    {% if site.twitter_username %}
+    <a href="https://twitter.com/{{ site.twitter_username }}">
+      <i class="fa fa-twitter-square"></i>
+    </a>
+    {% endif %}
+    </p>
+
     <!--
     <p>&copy; {{ site.time | date: '%Y' }}. All rights reserved.</p>
     -->
