@@ -127,7 +127,7 @@ int main() {
 }
 {% endhighlight %}
 
-*The `ON_EXIT` macro is described in [this article]({% post_url 2016-02-21-on_exit_macro %})*.
+*Also have a look at the other article, which [describes the `ON_EXIT` macro]({% post_url 2016-02-21-on_exit_macro %})*.
 
 All resources are automatically released, and the programmer does not need to define which resource is to be released in which case and what order.
 

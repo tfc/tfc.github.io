@@ -6,7 +6,7 @@ title: How Does the Typical SFINAE Type Trait Work?
 C++ type traits can be implemented using an interesting technique which uses the *SFINAE* principle.
 This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.
 
-> If you are not familiar with *type traits*, have a look at [this blog post]({% post_url 2016-02-18-what_is_a_type_trait %}).
+> If you are not familiar with *type traits*, have a look at the article which [describes how type traits work]({% post_url 2016-02-18-what_is_a_type_trait %}).
 
 ## What Does SFINAE Stand for?
 

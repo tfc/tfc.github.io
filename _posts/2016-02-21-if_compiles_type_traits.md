@@ -8,7 +8,7 @@ Unfortunately, they are extremely bloaty to implement.
 The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive.
 This article shows a nice one-liner approach to define new SFINAE type traits.
 
-> If you are not familiar with *SFINAE*, have a look at [this blog post]({% post_url 2016-02-19-how_do_sfinae_traits_work %}).
+> If you are not familiar with *SFINAE*, have a look at the article which [describes how SFINAE works]({% post_url 2016-02-19-how_do_sfinae_traits_work %}).
 
 ## Encapsulating the Boiler Plate into a Macro
 
