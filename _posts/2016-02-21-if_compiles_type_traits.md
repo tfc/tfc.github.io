@@ -72,6 +72,7 @@ Some more examples, which are hopefully self-explanatory enough:
 DEFINE_IF_COMPILES(has_begin_function,             x1.begin());
 DEFINE_IF_COMPILES(supports_addition_with_ints,    x1 + 123);
 DEFINE_IF_COMPILES(supports_addition_with_strings, x1 + "abc");
+DEFINE_IF_COMPILES(is_serializable,                x1.serialize());
 {% endhighlight %}
 
 It is possible to complicate this further by providing a macro which enables for expressions like `two_type_trait<T, U>::value`, which provides instances `x1` and `x2` (Example: `supports_addition<T, U>::value`, which tries to add: `x1 + x2`).
