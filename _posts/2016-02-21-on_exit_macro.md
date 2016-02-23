@@ -3,7 +3,7 @@ layout: post
 title: ON_EXIT - Combining Automatic Destruction and Lambdas
 ---
 
-When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive.
+When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can't easily stick with the *RAII* principle.
 Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again.
 When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.
 
@@ -91,27 +91,28 @@ The point is, that they are all ugly, and C++ provides syntax which can help fix
 
 ## The Nicely Looking Version
 
-It would be much nicer to express "As soon as the program flow reached this line, the resource which was just created must be destroyed when returning from this procedure", without further defining when that needs to be done.
+It would be much nicer to express "As soon as a resource is instantiated, it is also initialized.", and "As soon as a resource instance goes out of scope, it is released.", without doing anything else than instantiating it explicit.
+This principle is indeed very usual within the C++ community, and it is called **RAII**, as in ***R**esource **A**llocation **I**s **I**nitialization*.
 
 {% highlight c++ %}
 void f()
 {
     int ret;
-    ResourceA *a;
-    ResourceB *b;
-    ResourceC *c;
+    ResourceA a;
+    ResourceB b;
+    ResourceC c;
 
     ret = acquire_a(&a);
     if (ret != 0) return;
-    ON_EXIT { release_a(a); };
+    ON_EXIT { release_a(&a); };
 
-    ret = acquire_b(a, &b);
+    ret = acquire_b(&a, &b);
     if (ret != 0) return;
-    ON_EXIT { release_b(b); };
+    ON_EXIT { release_b(&b); };
 
     ret = acquire_c(&c);
     if (ret != 0) return;
-    ON_EXIT { release_c(c); };
+    ON_EXIT { release_c(&c); };
 
     do_whatever_those_resources_were_acquired_for(c);
 }
@@ -120,6 +121,8 @@ void f()
 This version does exactly that.
 The macro `ON_EXIT` saves some code, and executes it, as soon as the current scope is left by returning from the procedure.
 This version does also respect that the resources must be released in the opposite order of their allocation.
+
+> Please note that this is ideally mixed with `shared_ptr`/`unique_ptr` with custom deleters. Please also have a look at this article, which describes [how to use smart pointers with custom delete procedures to automatically manage resources]({% post_url 2016-02-21-automatic_resource_release_with_sdl %}).
 
 The implementation is pretty simple:
 `ON_EXIT` represents an anonymous class instance which contains a lambda expression, which is provided by the user.
