@@ -1,6 +1,6 @@
 ---
 layout: post
-title: CRTP
+title: How to Use the CRTP to Reduce Duplication
 ---
 
 Some objects have different interfaces for doing the same thing in a different way.
@@ -85,7 +85,7 @@ public:
     }
 }; 
 
-class Foo : public bla_base_functionality<foo>
+class Foo : public bla_base_functionality<Foo>
 {
     // Befriend it, it can call our private implementation
     friend class bla_base_functionality<foo>;
@@ -93,7 +93,7 @@ class Foo : public bla_base_functionality<foo>
     void specialized_bla_part() {
         // some foo-specific code
     }
-}
+};
 {% endhighlight %}
 
 This is an example for *static polymorphy*!
@@ -110,12 +110,12 @@ The whole lot of operator definitions can be defined *once* in a CRTP base class
 template <typename T>
 class comparison_impl
 {
-    const T& thisT() { return *static_cast<const T*>(this); }
+    const T& thisT() const { return *static_cast<const T*>(this); }
 public:
     // operator== is implemented by T
 
     template <typename U>
-    bool operator==(const U& o) const { return !(thisT() == o); }
+    bool operator!=(const U& o) const { return !(thisT() == o); }
 
     // operator< is implemented by T
 
@@ -142,8 +142,8 @@ class Foo : public comparison_impl<Foo>
 public:
     // Ctors, Dtors, etc...
 
-    bool operator==(const Foo &o) { return x == o.x; }
-    bool operator==(int        o) { return x == o; }
+    bool operator==(const Foo &o) const { return x == o.x; }
+    bool operator==(int        o) const { return x == o; }
 };
 {% endhighlight %}
 
@@ -186,7 +186,20 @@ But we are not done, yet.
 This implementation has a major flaw:
 What if we compare an instance `Foo` with another instance `Foo`?
 The compiler will see `Foo::operator==(const Foo&)`, and also the freestanding `operator==(const U &lhs, const comparison_impl<T> &rhs)`, and both match.
-It will error-out, telling us that these are two *ambiguous* implementations, which is true.
+It will error-out, telling us that these are two *ambiguous* implementations, which is true:
+
+{% highlight shell %}
+tfc@graviton comparison_impl $ clang++ -o main main.cpp -std=c++11 && ./main
+main.cpp:80:8: error: use of overloaded operator '!=' is ambiguous (with operand types 'Foo' and 'Foo')
+    (f != Foo(1));
+     ~ ^  ~~~~~~
+main.cpp:36:10: note: candidate function [with U = Foo]
+    bool operator!=(const U& o) const { return !(thisT() == o); }
+         ^
+main.cpp:56:6: note: candidate function [with U = Foo, T = Foo]
+bool operator!=(const U &lhs, const comparison_impl<T> &rhs)
+     ^
+{% endhighlight %}
 
 ## SFINAE to the Rescue
 
@@ -197,11 +210,40 @@ This can be done using *SFINAE* magic, using `enable_if`:
 
 {% highlight c++ %}
 template <typename U, typename T>
-std::enable_if<std::is_same<U, comparison_impl<T>>::value, bool>::type
+typename std::enable_if<!std::is_same<U, T>::value, bool>::type
 operator==(const U &lhs, const comparison_impl<T> &rhs) 
 {
     return static_cast<T&>(rhs) == lhs;
 }
+
+template <typename U, typename T>
+typename std::enable_if<!std::is_same<U, T>::value, bool>::type
+operator!=(const U &lhs, const comparison_impl<T> &rhs)
+{
+    return !(static_cast<const T&>(rhs) == lhs);
+}
 {% endhighlight %}
 
 Maybe we just arrived at level "That's *exactly* why i don't get all this template bloat."
+
+What happened, is that the return type `bool` of both functions was substituted by an SFINAE type trait.
+`typename std::enable_if<condition, bool>::type` is a template type, which contains a type definition `type` in case `condition` is `true`.
+If `condition` is `false`, then this type trait contains nothing, hence the return type of the whole function cannot be deduced.
+Following SFINAE principles, the compiler drops this operator implementation from the candidate list in the `false` case, and this is exactly the desired behaviour in the *ambiguous overload* problem.
+
+The condition is "`U` is not the same type as `some T>`", and can be expressed in template type trait language like this: `!std::is_same<U, T>::value`.
+
+## What We Got
+
+`comparison_impl` is now a useful helper, which can be used for any class which represents something which can be compared to itself or to other types.
+The only operators which need to be implemented to exhaust the full support of `comparison_impl` are the following:
+
+- `operator==` 
+- `operator<`
+- `operator>`
+
+These 3 operators need to be implemented once per type, and each of them can be dropped in case it is not used.
+
+Regarding testing: Assuming there is enough confidence in `comparison_impl` to not contain any typos, only these three operators need to be unit tested individually - the other operators which are derived from those, are then automatically also correct.
+
+I put [the compiling example implementation of `comparison_impl` into a GitHub Gist](https://gist.github.com/tfc/d1d576eb75a1526331e9).
