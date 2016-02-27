@@ -97,6 +97,9 @@ class Foo : public bla_base_functionality<Foo>
 {% endhighlight %}
 
 This is an example for *static polymorphy*!
+
+> There is also an article [which explains static polymorphy using CRTP]({% post_url 2016-02-27-static_polymorphy %})
+
 Class `Foo` just implements a specific part of some more generic function.
 The rest is implemented in class `bla_base_functionality`.
 This of course looks over-engineered, unless there are some more classes which derive from it and specialize its behaviour.
