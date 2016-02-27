@@ -1,6 +1,7 @@
 ---
 layout: page
 title: About
+permalink: about.html
 ---
 
 My name is Jacek Galowicz, and i am a software engineer.
