@@ -70,6 +70,8 @@ Bjarne Stroustrup on this in the C++11 edition of his book "The C++ Programming 
 
 > A temporary created to hold a reference initializer persists until the end of its reference's scope.
 
+(Please note that this does *not* apply to const reference class members, only to local const references!)
+
 If we were not dealing with trivial ints here, but with complex objects which have constructors and destructors, the question arises which destructor is called.
 Interestingly, exactly the destructor which would be called for destroying the temporary without this feature, is called.
 
