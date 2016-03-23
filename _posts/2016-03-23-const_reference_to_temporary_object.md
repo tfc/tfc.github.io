@@ -119,3 +119,5 @@ Wow, it's actually calling the correct `Foo` destructor (which in turn calls the
 This means that we just got polymorphy for free, without using `virtual` destructors!
 
 Andrei Alexandrescu put this feature to use in his interesting [Article about ScopeGuards](http://www.drdobbs.com/cpp/generic-change-the-way-you-write-excepti/184403758) for nicer exception-safe programming.
+
+More than a decade later, this does also work with rvalue references like `Base &&ref {return_foo()};`, which gives us nice new use cases.
