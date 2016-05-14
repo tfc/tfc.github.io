@@ -8,6 +8,8 @@ These types can be real structure or class types representing encapsulated algor
 In order to apply certain compile time processing to data, this data needs to be transformed from and to representations which are useful for the programmer.
 This article shows how to transform hence and forth between strings and character type lists.
 
+## Wrapping characters into Type Lists
+
 At first, a type is needed which contains one actual character.
 Using that type, it is possible to compose type lists, which carry whole strings.
 
@@ -35,6 +37,10 @@ int f()
     std::cout << my_char::value << std::endl;
 }
 {% endhighlight %}
+
+This type is now fundamental to character type lists.
+
+## Converting from Strings to Type Lists
 
 Using type lists, these can now easily be chained together, using the `make_t` helper from the previous article:
 
@@ -139,3 +145,99 @@ using my_abc_string = string_list_t<abc_string_provider>;
 
 This is as easy as it gets.
 Having to define a string provider around every simple string is still a lot of scaffolding, but this is still the only reasonable way to convert long C-strings into type lists.
+
+## Converting from Type Lists to C-Strings
+
+Imagine a type list with character payload as the result after the execution of some meta programming algorithm.
+
+In some cases the wanted output form is a C-string.
+This is the exact reverse operation from what we just implemented before.
+
+The generic idea is to convert a type list to a variadic character template parameter list.
+That variadic list can be used to initialize a character array, which can then be provided to the user:
+
+{% highlight c++ linenos %}
+template <typename typelist, char ... chars>
+struct tl_to_vl;
+
+template <char c, typename restlist, char ... chars>
+struct tl_to_vl<tl::tl<char_t<c>, restlist>, chars...>
+    : public tl_to_vl<restlist, chars..., c>
+{ };
+
+template <char ... chars>
+struct tl_to_vl<tl::null_t, chars...> {
+    static const char * const str() {
+        static constexpr char ret[] {chars..., '\0'};
+        return ret;
+    }
+}
+{% endhighlight %}
+
+ - **line 2** defines the general function signature: It takes a character type list as first parameter, and then a variadic list of characters. 
+ - **line 5** defines the recursion: The idea is to let the type list shrink stepwise, while the character which is taken from it is appended to the variadic character list.
+ - **line 10** is the recursion abort step. At this point, the type list is empty and the variadic character list contains the whole string. Having the whole string in the `chars...` template variable, we can define the static function `str()` which defines a static character array and returns it.
+
+This code example is different than the others before, because it relies on inheritance.
+It would have been possible to implement the others with inheritance, too, or implement this one defining local `type` type variables etc., but i found this form to be the shortest and most useful one, while still being nicely readable.
+
+By instanciating `tl_to_vl<some_type_list>`, a chain of inheriting classes is unrolled, and the last base class, which is the recursion abort type from line 10, defines the static `str()` function.
+Because every member of a `struct` is public by default, the actually instantiated *outer* type `tl_to_vl<some_type_list>` also provides this function, which is directly callable.
+
+Example of how to print a type list on the terminal, after converting it into a C-String:
+
+{% highlight c++ %}
+struct abc_string_provider {
+   static constexpr const char * str() {
+       return "abc";
+   }
+};
+
+using my_abc_string = string_list_t<abc_string_provider>;
+
+using string_provider = tl_to_vl<my_abc_string>;
+
+int f() {
+    puts(string_provider::str());
+}
+{% endhighlight %}
+
+When compiling code like this, the assembly code will still result in a function call of `str()`, which returns a pointer to the C-string, and then a call of `puts`.
+
+Compiling the code *without* any optimization (clang++):
+
+{% highlight bash %}
+_main:
+pushq   %rbp
+movq    %rsp, %rbp
+subq    $0x10, %rsp
+movl    $0x0, -0x4(%rbp)
+callq   __ZN13tl_to_varlistIN2tl6null_tEJLc72ELc101ELc108ELc108ELc111ELc32ELc87ELc111ELc114ELc108ELc100ELc33ELc10ELc13EEE3strEv ## tl_to_varlist<tl::null_t, (char)72, (char)101, (char)108, (char)108, (char)111, (char)32, (char)87, (char)111, (char)114, (char)108, (char)100, (char)33, (char)10, (char)13>::str()
+movq    %rax, %rdi
+callq   0x100000f7e     ## symbol stub for: _puts
+xorl    %ecx, %ecx
+movl    %eax, -0x8(%rbp)
+movl    %ecx, %eax
+addq    $0x10, %rsp
+popq    %rbp
+retq
+{% endhighlight %}
+
+Compiling the code *with* `-O1` or `-O2` optimization (clang++):
+
+{% highlight bash %}
+_main:
+pushq %rbp
+movq  %rsp, %rbp
+movq  0x85(%rip), %rdi   ## literal pool symbol address: __ZZN13tl_to_varlistIN2tl6null_tEJLc72ELc101ELc108ELc108ELc111ELc32ELc87ELc111ELc114ELc108ELc100ELc33ELc10ELc13EEE3strEvE6string
+callq 0x100000f84        ## symbol stub for: _puts
+xorl  %eax, %eax
+popq  %rbp
+retq
+{% endhighlight %}
+
+The disassembly shows that the string is just read out of the binary, where it is available without any processing.
+It is pretty nice to see that there is *no trace* of any meta programming code in the binary.
+Apart from those strange and long symbol names, everything looks like the string in its resulting form was hard coded into the binary by hand.
+
+The next article will deal with template meta programs which transform character type lists in order to do useful things with them.
