@@ -4,14 +4,15 @@ title: Transformations between User Input/Output and Type Lists
 ---
 
 Type lists are an important way to represent ordered and unordered sets of types at compile time.
-These types can be real structure or class types representing encapsulated algorithms etc., but they can also convoy actual data.
-In order to apply certain compile time processing to data, this data needs to be transformed from and to representations which are useful for the programmer.
+These types can be real structure- or class types bundling runtime algorithms etc., but they can also convoy actual data at compile time.
+In order to apply certain compile time processing to data, this data needs to be transformed from and to representations which can be provided by the programmer, and consumed by run time programs.
 This article shows how to transform hence and forth between strings and character type lists.
 
 ## Wrapping characters into Type Lists
 
-At first, a type is needed which contains one actual character.
-Using that type, it is possible to compose type lists, which carry whole strings.
+At first, a type is needed which can carry one actual character, without having to instantiate it.
+This is the requirement for all value-carrying types in order to be able to use them at compile time.
+Using that type, it is possible to compose character type lists, which carry whole strings.
 
 {% highlight c++ %}
 template <char val> 
@@ -40,6 +41,9 @@ int f()
 
 This type is now fundamental to character type lists.
 
+*(It would of course also be possible to rewrite all type list code in a specialized way, so that it can carry characters directly.
+This would unfortunately lead to code duplication due to lack of compatibility with other library code i wrote, so i didn't do that.)*
+
 ## Converting from Strings to Type Lists
 
 Using type lists, these can now easily be chained together, using the `make_t` helper from the previous article:
@@ -56,8 +60,10 @@ struct char_tl;
 
 template <char c, char ... chars>
 struct char_tl {
-    using type = tl::tl<char_t<c>, 
-                        typename char_tl<chars...>::type>;
+    using type = tl::tl<
+                    char_t<c>, 
+                    typename char_tl<chars...>::type
+                 >;
 };
 
 template <char c>
@@ -69,9 +75,9 @@ template <char ... chars>
 using char_tl_t = typename char_tl<chars...>::type;
 {% endhighlight %}
 
-- **line 2** defines the general type signature of a variadic type list template type
-- **line 5** describes the recursion which is applied in order to *unroll* the variadic type list into a type list. It *wraps* each individual character into a `char_t` type. This new `char_t` type is then again wrapped as the head element in a new type list, and its tail is the next recursion step.
-- **line 11** Defines the recursion aborting step by just wrapping the last character into a type list which is terminated just right afterwards.
+- **line 2** defines the general type signature of the conversion functiona `char_tl` which accepts a variadic character list
+- **line 5** describes the recursion which is applied in order to *unroll* the variadic type list into a type list. It *wraps* each individual character into a `char_t` type. This new `char_t` type is then again wrapped as the head element into a new type list, and its tail is the next recursion step.
+- **line 11** defines the recursion abort step by just wrapping the last character into a type list which is terminated just right afterwards.
 - **line 16** is a convenient helper type alias.
 
 Character type lists can now be instantiated like this:
@@ -116,7 +122,7 @@ using string_list_t = typename string_list<
 
 Before continuing with the following lines of code: **What** is a *string provider?*
 
-A string, or a string pointer cannot just be used as template parameters directly.
+A string, or a string pointer, cannot just be used as template parameters directly.
 Therefore a type is needed which carries a string as payload and provides static access to it:
 
 {% highlight c++ %}
@@ -127,9 +133,10 @@ struct my_string_provider {
 };
 {% endhighlight %}
 
-Unfortunately, strings must be wrapped into a structure like this, in order to process them in a template meta program.
+This type can now be put into template classes as a template parameter, and the template code can access its static string member.
+Because of this additional, but necessary, indirection it is called a *string provider*.
 
- - **line 5** defines the recursion which advances through the string step by step, while appending earch character to the result type list. This is basically the same like in the example where we used variadic character type lists, but some more mechanics are needed to process the string provider.
+ - **line 5** defines the recursion which advances through the string step by step, while appending earch character to the result type list. This is basically the same as in the example where we used variadic character type lists, but some more mechanics are needed to iterate the string provider.
  - **line 15** defines the recursion abort step. As soon as we trip on the zero character which terminates the string, we also terminate the list.
  - **line 20** is the easy-to-use wrapper which is meant to be used by the user. It takes a single string provider parameter and extracts any other needed parameter from it.
 
