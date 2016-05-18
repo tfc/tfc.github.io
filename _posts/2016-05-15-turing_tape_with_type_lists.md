@@ -21,7 +21,7 @@ template <class LList, class Cursor, class RList>
 struct tape;
 {% endhighlight %}
 
-Just as described previously, it contains a list representing the left part of the tape, a list representing the right part of the tape, and the cursor is located jsut between them.
+Just as described previously, it contains a list representing the left part of the tape, a list representing the right part of the tape, and the cursor is located just between them.
 In theory, the turing tape is infinitely long.
 Representing it with lists, it is very easy to make it virtually infinitely long, because it is possible to attach new cells to it on demand, as soon as it seems to end.
 
