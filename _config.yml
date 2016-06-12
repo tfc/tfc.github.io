@@ -10,12 +10,12 @@ permalink:        pretty
 title:            'Jacek''s C++ Blog'
 tagline:          'An Engineer''s Coder Blog'
 description:      'Writing about daily experiences and thoughts with C++ as my main work language.'
-url:              http://blog.galowicz.de
+url:              https://blog.galowicz.de
 baseurl:          /
 
 author:
   name:           'Jacek Galowicz'
-  url:            http://galowicz.de
+  url:            https://galowicz.de
 
 twitter_username:     jgalowicz
 github_username:      tfc
