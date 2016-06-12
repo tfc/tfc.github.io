@@ -4,9 +4,9 @@ title: Transformations between User Input/Output and Type Lists
 ---
 
 Type lists are an important way to represent ordered and unordered sets of types at compile time.
-These types can be real structure- or class types bundling runtime algorithms etc., but they can also convoy actual data at compile time.
+These types can be real structure- or class types bundling runtime algorithms etc., but they can also convey actual data at compile time.
 In order to apply certain compile time processing to data, this data needs to be transformed from and to representations which can be provided by the programmer, and consumed by run time programs.
-This article shows how to transform hence and forth between strings and character type lists.
+This article shows how to transform back and forth between strings and character type lists.
 
 ## Wrapping characters into Type Lists
 
@@ -41,12 +41,10 @@ int f()
 
 This type is now fundamental to character type lists.
 
-*(It would of course also be possible to rewrite all type list code in a specialized way, so that it can carry characters directly.
-This would unfortunately lead to code duplication due to lack of compatibility with other library code i wrote, so i didn't do that.)*
-
 ## Converting from Strings to Type Lists
 
-Using type lists, these can now easily be chained together, using the `make_t` helper from the previous article:
+Using type lists, these can now easily be chained together, using the `make_t` helper from the previous article.
+(Link to [the article which explains how to create type lists]({% post_url 2016-05-08-compile_time_type_lists %}))
 
 {% highlight c++ %}
 using my_abc_string = make_t<char_t<'a'>, char_t<'b'>, char_t<'c'>>;
@@ -123,7 +121,7 @@ using string_list_t = typename string_list<
 Before continuing with the following lines of code: **What** is a *string provider?*
 
 A string, or a string pointer, cannot just be used as template parameters directly.
-Therefore a type is needed which carries a string as payload and provides static access to it:
+Therefore a type carrying a string as payload and provides static access to it is needed:
 
 {% highlight c++ %}
 struct my_string_provider {
@@ -133,7 +131,7 @@ struct my_string_provider {
 };
 {% endhighlight %}
 
-This type can now be put into template classes as a template parameter, and the template code can access its static string member.
+This type can now be used as a template parameter by template classes, and the template code can access its static string member.
 Because of this additional, but necessary, indirection it is called a *string provider*.
 
  - **line 5** defines the recursion which advances through the string step by step, while appending earch character to the result type list. This is basically the same as in the example where we used variadic character type lists, but some more mechanics are needed to iterate the string provider.
@@ -211,7 +209,7 @@ int f() {
 
 When compiling code like this, the assembly code will still result in a function call of `str()`, which returns a pointer to the C-string, and then a call of `puts`.
 
-Compiling the code *without* any optimization (clang++):
+Compiling the code *without* any optimization (clang++ [clang-703.0.29]):
 
 {% highlight bash %}
 _main:
@@ -219,8 +217,12 @@ pushq   %rbp
 movq    %rsp, %rbp
 subq    $0x10, %rsp
 movl    $0x0, -0x4(%rbp)
+
+# The following line contains the function call string_provider::str()
 callq   __ZN13tl_to_varlistIN2tl6null_tEJLc72ELc101ELc108ELc108ELc111ELc32ELc87ELc111ELc114ELc108ELc100ELc33ELc10ELc13EEE3strEv ## tl_to_varlist<tl::null_t, (char)72, (char)101, (char)108, (char)108, (char)111, (char)32, (char)87, (char)111, (char)114, (char)108, (char)100, (char)33, (char)10, (char)13>::str()
 movq    %rax, %rdi
+
+# This is the call of the puts() procedure
 callq   0x100000f7e     ## symbol stub for: _puts
 xorl    %ecx, %ecx
 movl    %eax, -0x8(%rbp)
