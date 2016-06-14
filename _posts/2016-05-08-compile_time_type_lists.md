@@ -69,7 +69,13 @@ Using [metashell](http://metashell.org/)'s `evaluate -profile` command, i measur
 
 ![Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists]({{ site.url }}/assets/compile_time_type_list_creation_benchmark.png)
 
+| Graph | Fitted function |
+|:-----:|-----------------|
+| nested type list |  $$ 0.00247169 x^2 - 0.307925 x -20.0462 $$  |
+| variadic type list |  $$ 0.0096263 x^2 -3.15118  x + 330.614 $$  |
+
 Both variants seem to be within $$\mathcal{O}(n^2)$$, and variadic type lists prove to be significantly faster.
+
 
 ### Readability
 
