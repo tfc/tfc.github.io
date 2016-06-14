@@ -91,6 +91,10 @@ In fact, nested type lists are so much faster in this benchmarks, that it seems 
 The graphs of the nested type list runs in GCC/Clang appear really small and similar in the diagram, and it's hard to compare them from this picture.
 I do not provide a diagram only showing these, because the lines are extremely noisy, not significantly different, and therefore the comparison between clang and GCC does not seem to be very meaningful in this case. 
 
+> Versions:
+> g++: GCC 5.3.1 20160406 (Red Hat 5.3.1-6)
+> clang++: Clang version 3.7.0 (tags/RELEASE_370/final)
+
 ### Readability
 
 Creating a variadic template type list (way 1) is clearly **more intuitive** than the long and clumsy way to set up nested template type lists.
