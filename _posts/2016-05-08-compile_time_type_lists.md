@@ -17,7 +17,7 @@ From scratch.
 There are several possibilities to implement lists in template meta language.
 Different implemetations usually have different trade-offs, so i sketch two implementation variants and discuss their advantages and disadvantages.
 
-### Way 1: variadic template type lists
+### Way 1: Variadic template type lists
 
 {% highlight c++ %}
 template <typename ... Types> struct type_list {};
@@ -59,23 +59,37 @@ The clumsiness of creating such type lists can be overcome with nice helpers.
 
 ### Performance
 
-Variadic template type lists did in my experience also turned out to be generally **faster** than nested type lists.
+> This article at first propagated, that **nested** type lists are much faster. Then i did some measurements with metashell, trusting that tool too early, and had the impression that **variadic** type lists are faster. Then i measured again, using real compilers (GCC/Clang), and the impression turned around again. Have a look at the measurements yourself.
 
-In the following measurement, i wrote a small meta program which generates both recursive and variadic type lists.
+The following measurements will show, that **nested template type lists** are compiled **faster** than variadic type lists.
+
+I wrote a small meta program which generates both recursive and variadic type lists.
 These type lists just contain integer types sequences.
 
-Using [metashell](http://metashell.org/)'s `evaluate -profile` command, i measured the time the compiler needs to create lists of both variants, and plotted that.
-(Actually running `g++` or `clang++` will probably yield different results, but metashell allowed me to measure the actual template instantiation, without measuring the overhead of starting the compiler in the shell etc.)
+#### Metashell
 
-![Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists]({{ site.url }}/assets/compile_time_type_list_creation_benchmark.png)
+Metashell is an interactive meta programming shell, and it uses Clang to evaluate template code.
+Using [metashell](http://metashell.org/)'s `evaluate -profile` command, i measured the time to create lists of both variants, and plotted that.
+(Actually running `g++` or `clang++` yields different results, but metashell allowed me to measure the actual template instantiation, without measuring the overhead of starting the compiler in the shell etc.)
 
-| Graph | Fitted function |
-|:-----:|-----------------|
-| nested type list |  $$ 0.00247169 x^2 - 0.307925 x -20.0462 $$  |
-| variadic type list |  $$ 0.0096263 x^2 -3.15118  x + 330.614 $$  |
+![Metashell: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists]({{ site.url }}/assets/compile_time_type_list_creation_benchmark_metashell.png)
 
-Both variants seem to be within $$\mathcal{O}(n^2)$$, and variadic type lists prove to be significantly faster.
+Both variants seem to be within $$\mathcal{O}(n^2)$$, and variadic type lists prove to be significantly faster in metashell.
 
+#### GCC/Clang
+
+The compile times of real compilers are of course more interesting, when writing some serious meta programming code for productive use.
+Interestingly, the numbers here are **completely different** than the numbers from the measurements in metashell.
+
+![GCC/Clang: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists]({{ site.url }}/assets/compile_time_type_list_creation_benchmark_compilers.png)
+
+Again, both variants seem to be within $$\mathcal{O}(n^2)$$.
+But this time, nested type lists clearly win the race.
+
+In fact, nested type lists are so much faster in this benchmarks, that it seems that they are **the** list implementation of choice.
+
+The graphs of the nested type list runs in GCC/Clang appear really small and similar in the diagram, and it's hard to compare them from this picture.
+I do not provide a diagram only showing these, because the lines are extremely noisy, not significantly different, and therefore the comparison between clang and GCC does not seem to be very meaningful in this case. 
 
 ### Readability
 
