@@ -3,7 +3,7 @@ layout: post
 title: Executing Brainfuck at Compile Time with C++ Templates
 ---
 
-This article completes a series which aims to explain how to implement a **Brainfuck Interpreter**, which runs at **compile time**, because it is a template meta program.
+This article completes a series which aims to explain how to implement a Brainfuck Interpreter, which runs at compile time, because it is a template meta program.
 
 > The code in this article depends largely on the code in [the article about type lists]({% post_url 2016-05-08-compile_time_type_lists %}), [the article about character type list transformations]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}), and [the article about implementing a turing tape]({% post_url 2016-05-15-turing_tape_with_type_lists %}). 
 > There is also [the article about template meta programming 101 things]({% post_url 2016-05-05-template_meta_programming_basics %}).
