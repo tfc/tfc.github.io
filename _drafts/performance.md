@@ -19,5 +19,42 @@ Finally, i sat down to write some compile time benchmarks, and this blog posts p
 
 # Filtering Lists
 
+{% highlight c++ %}
+template <typename List>
+struct odds
+{
+    static constexpr const int  val    {head_t<List>::value};
+    static constexpr const bool is_odd {(val % 2) != 0};
+    using next = typename odds<tail_t<List>>::type;
+    using type = if_else_t<is_odd, prepend_t<next, head_t<List>>, next >;
+};
+
+template <>
+struct odds<rec_tl::null_t>
+{
+    using type = rec_tl::null_t;
+};
+
+template <>
+struct odds<var_tl::tl<>>
+{
+    using type = var_tl::tl<>;
+};
+
+template <typename List>
+using odds_t = typename odds<List>::type;
+{% endhighlight %}
+
+{% highlight c++ %}
+{% endhighlight %}
+{% highlight c++ %}
+{% endhighlight %}
+{% highlight c++ %}
+{% endhighlight %}
+{% highlight c++ %}
+{% endhighlight %}
+{% highlight c++ %}
+{% endhighlight %}
+
 ![bla](/assets/compile_time_type_list_filter_benchmark.png)
 ![bla](/assets/compile_time_type_list_filter_benchmark_recursive_only.png)
