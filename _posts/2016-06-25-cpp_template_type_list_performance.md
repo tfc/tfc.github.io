@@ -17,7 +17,7 @@ I present measurements of nested and variadic type lists.
 This article does not explain how to implement them, but there is an [article about C++ template type lists]({% post_url 2016-05-08-compile_time_type_lists %}) already.
 
 The first benchmark just creates lists of rising sizes, and measures how much time that takes.
-The lists are generated from integer sequences, just like those from [this article which explains how to generate integer sequences at compile time]({% post_url 2016-06-21-integer_sequences_at_compile_time %}).
+The lists are generated from integer sequences, just like those from [this article which explains how to generate integer sequences at compile time]({% post_url 2016-06-24-integer_sequences_at_compile_time %}).
 
 I present graphs for doing this inside [Metashell](http://metashell.org/), and also using real compilers.
 Metashell is a great tool for debugging meta programs, or playing around with expressions.
@@ -341,4 +341,5 @@ What i learned from my previous C++ TMP experience, and these benchmarks;
 - Metashell is fine for debugging C++ TMP code, but not for actual measuring
 
 I hope these insights are also useful for others!
+
 
