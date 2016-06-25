@@ -11,6 +11,7 @@ title:            'Jacek''s C++ Blog'
 tagline:          'An Engineer''s Coder Blog'
 description:      'Writing about daily experiences and thoughts with C++ as my main work language.'
 url:              https://blog.galowicz.de
+enforce_ssl:      blog.galowicz.de
 baseurl:          /
 
 author:
