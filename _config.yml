@@ -25,6 +25,8 @@ xing_username:        Jacek_Galowicz
 
 paginate:         10
 
+timezone: Europe/Berlin
+
 # Custom vars
 version:          2.1.0
 
