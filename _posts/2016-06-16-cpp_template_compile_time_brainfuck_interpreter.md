@@ -3,17 +3,17 @@ layout: post
 title: Executing Brainfuck at Compile Time with C++ Templates
 ---
 
-This article completes a series which aims to explain how to implement a Brainfuck Interpreter, which runs at compile time, because it is a template meta program.
+This article completes a series which aims at explaining how to implement a Brainfuck Interpreter, which runs at compile time, because it is a template meta program.
 
 > The code in this article depends largely on the code in [the article about type lists]({% post_url 2016-05-08-compile_time_type_lists %}), [the article about character type list transformations]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}), and [the article about implementing a turing tape]({% post_url 2016-05-15-turing_tape_with_type_lists %}). 
 > There is also [the article about template meta programming 101 things]({% post_url 2016-05-05-template_meta_programming_basics %}).
 
 ## First Things First: What is Brainfuck?
 
-Brainfuck is a fun programming language, and was created in 1993 by Urban Müller. [Wikipedia Link](https://en.wikipedia.org/wiki/Brainfuck)
+Brainfuck is a fun programming language and was created in 1993 by Urban Müller. [Wikipedia Link](https://en.wikipedia.org/wiki/Brainfuck)
 
-Brainfuck programs are composed of only 8 operators, and assume to operate on a *Brainfuck Machine*.
-A Brainfuck machine looks like a Turing machine: It has a cursor which sits on a tape, and the tape consists of infinitely many memory cells.
+Brainfuck programs are composed of only 8 operators and assume to operate on a *Brainfuck Machine*.
+A Brainfuck machine looks like a Turing machine: It has a cursor which sits on a tape consisting of infinitely many memory cells.
 
 |Operator|Meaning|
 |:------:|-------|
@@ -26,13 +26,13 @@ A Brainfuck machine looks like a Turing machine: It has a cursor which sits on a
 |`[`|Beginning of a loop. Execute it, if the tape cursor value is not 0. Skip the whole loop, if it is 0.|
 |`]`|End of a loop. Move program cursor to beginning of the loop.|
 
-Any other character in a brainfuck program is ignored (Spaces can be used for nicer to read indentation etc.)
+Any other character in a brainfuck program is ignored (spaces can be used for nicer to read indentation etc.)
 
 ### Examples:
 
 #### Simple Print Loop
 
-The following program reads a value from the user, then prints and decrements it in a loop:
+The following program reads a value from the user input, then prints and decrements it in a loop:
 
 `,[.-]`
 
@@ -90,7 +90,8 @@ Whenever the list is altered for moving, this function is applied to it, and the
 ## The Brainfuck Machine State
 
 A turing machine tape is enough to represent the state of the whole brainfuck machine.
-Instead of needing any knowledge about its implementation details, we define a type `machine`, which carries a tape state as template parameter, and provides functions to read and alter the state:
+We define a type `machine`, which carries a tape state as template parameter, and provides functions to read and alter the state.
+This way the user does not need to know about any implementation details:
 
 {% highlight c++ linenos %}
 template <typename Tape>
@@ -144,7 +145,7 @@ Note the additional helper `make_t`, which just returns a fresh initialized brai
 ## The Brainfuck Machine plus IO Bundle
 
 By now, we have a specialized turing tape, or let's say *Brainfuck Machine Tape*, which can in principle perform the operations `+`, `-`, `<`, `>`, `.`, and `,`.
-The functions, which provide these operations, return a new Brainfuck Machine Tape.
+The functions providing these operations, return a new Brainfuck Machine Tape.
 This is enough to represent a single naked Brainfuck Machine.
 
 However, we still have to feed it with commands by hand.
@@ -171,14 +172,14 @@ In order to implement that, we will couple a brainfuck machine together with inp
 
 The input is a type list, which contains all characters which the user *will* enter.
 Usually, brainfuck interpreters ask for input values, when they step on a `,` operator, but as soon as the C++ compiler is running, we cannot ask for input any longer.
-Therefore the user character input must be defined as an input list, *before* the compiler is started.
+Therefore the user character input must be defined as an input list *before* the compiler is started.
 
 The output is also a type list.
 Before executing the brainfuck program, it is empty.
-After executing the program, it is hopefully filled with meaningful output.
+After executing the program it is hopefully filled with meaningful output.
 
 Operators can change any sub state in the state tuple `(BFM state, input, output)`.
-We will push around this bundle throughout the whole brainfuck program, and alter it step by step.
+We will push around this bundle throughout the whole brainfuck program and alter it step by step.
 The output list will grow, while the program is executed (assuming it outputs something).
 The input list will shrink, as characters are consumed (assuming it reads from input), one-by-one.
 
@@ -190,7 +191,7 @@ struct io_bfm {
 };
 {% endhighlight %}
 
-Being a purely functional programming novice, i that the state is never a structure member, but a template parameter, most unusual.
+Being a purely functional programming novice, i found the fact that the state is never a structure member, but a template parameter, most unusual.
 Our I/O brainfuck machine bundle is represented by the tuple `(machine state, input program, output list)`, and these all are template parameters.
 The member type `using` clauses of struct `io_bfm` are just comfortable *getters* to the machine state and the output.
 
@@ -199,7 +200,7 @@ The following code, which does the bulk of program interpretation, will stepwise
 
 ## Interpreting Brainfuck Code, the Simple Part
 
-At first, we will implement a function, which accepts an `io_bfm` state as its first parameter, and one brainfuck command.
+At first, we will implement a function which accepts an `io_bfm` state as its first parameter, and one brainfuck command.
 Its result is the new state of the brainfuck machine, which results from applying that command.
 Mapping brainfuck command character mnemonics to brainfuck machine state manipulating commands is simple for most commands:
 
@@ -213,7 +214,7 @@ Mapping brainfuck command character mnemonics to brainfuck machine state manipul
 `>`| ...the tape moved to the right.
 
 This is the simple part.
-The `[` and `]` commands, which define loop structures, are missing.
+The `[` and `]` commands which define loop structures are missing.
 We will get at those just after the other command implementations:
 
 {% highlight c++ linenos %}
@@ -272,17 +273,17 @@ using interpret_step_t =
           typename interpret_step<IOBFM, InputChar>::type;
 {% endhighlight %}
 
-In this lengthy list of ugly definitions, you will find no if-else control structures.
+In this lengthy list of ugly definitions you will find no if-else control structures.
 The function call flow is completely controlled by *pattern matching*.
 It would have been possible to work with `if_else_t` functions, but pattern matching is great for cases like this one.
-Every operator has it's own function body, which nicely separates their semantics.
+Every operator has its own function body, which nicely separates its semantics.
 
 For each brainfuck command, there is one `struct interpret_step<io_bfm<BFM, InList, OutList>, XXX>` definition, where `XXX` is the command.
 Each command then returns, what the table before just described.
 
 ## Interpreting Brainfuck Code, the Complicated Part (Loops)
 
-Loops are unfortunately not as simple as the other commands, because they do not lead to simple state changes.
+Unfortunately, loops are not as simple as the other commands, because they do not lead to simple state changes.
 Whenever the BFM trips on a `[` command, it will...
 
  1. Check if the value at cursor position is equal to 0.
@@ -299,7 +300,7 @@ Whenever the BFM trips on a `[` command, it will...
 
 Well, seems as if we need to do some homework first: Implement that *matching bracket finder*.
 
-The general problem is, that a brainfuck loop can contain multiple nested loops.
+The general problem is that a brainfuck loop can contain multiple nested loops.
 
 Examples: 
 
@@ -388,7 +389,7 @@ struct find_brace<tl<char_t<C>, InList>,
 {};
 {% endhighlight %}
 
-When reading this function implementation, it becomes apparent, that each implementation does not *return* some type, apart from the final case.
+Reading this function implementation it becomes apparent, that each implementation does not *return* some type, apart from the final case.
 They do rather *inherit* from the next matching function structure.
 I chose to do it this way, because this is a comfortable way to forward the altered `(in list, out list, counter)` states.
 As the final case contains *two* return values (the inner-loop program part, and the rest of the program after the loop), these are reached back as public members of the initially called structure.
@@ -398,9 +399,7 @@ That is what is useful in this specific case, too.
 
 ### Back to the Loop Command Implementation
 
-Ok, after having done the homework, we can finally implement the loop control code.
-
-This is maybe the most complicated part of this whole compile time brainfuck story.
+Ok, after having done the homework, we can finally implement the loop control code, maybe the most complicated part of this whole compile time brainfuck story.
 
 The following code consists of two blocks:
 

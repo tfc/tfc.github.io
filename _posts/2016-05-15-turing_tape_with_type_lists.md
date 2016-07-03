@@ -10,8 +10,8 @@ As a preparation for the next article, i will show how to implement a turing tap
 
 > The code in this article depends largely on the code in [the article about type lists]({% post_url 2016-05-08-compile_time_type_lists %}), and [the article about character type list transformations]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}).
 
-The tape is implemented as a data structure, which contains two type lists, and a cursor type.
-This structure embodies the idea that when looking at a turing tape, there is a *current* cell, which is represented by the cursor type.
+The tape is implemented as a data structure containing two type lists and a cursor type.
+This structure embodies the idea that, when looking at a turing tape, there is a *current* cell, which is represented by the cursor type.
 Left and right of the current cell is the rest of the tape, which is represented by those two lists.
 
 Easy enough, this is the template type signature of the turing tape:
@@ -113,7 +113,8 @@ struct tape<
 };
 {% endhighlight %}
 
-When shifting the tape to the *left*, the cursor becomes the tip, and only element in the previously empty right list.
+When shifting the tape to the *left*, the cursor becomes the tip. 
+It is then the only element in the previously empty right list.
 There are no items coming from the left list, so it is still empty.
 The cursor is just set to `null_t`, representing an empty cell.
 
@@ -180,7 +181,7 @@ struct tape<
 
 ## Adding Convenient `using` Clause Helpers
 
-The `tape` class can already easily be accessed in order to perform all four defined actions on it.
+The `tape` class can already be easily accessed in order to perform all four defined actions on it.
 However, this would also be followed by the typical clumsy `typename` keywords.
 
 Therefore we define some `using` clause helpers:
@@ -199,7 +200,7 @@ template <class Tape>
 using move_right_t = typename Tape::move_right;
 {% endhighlight %}
 
-Another useful helper is `make_t`, which is creates a new, empty tape, which already contains a specific type at its cursor position:
+Another useful helper is `make_t`, which creates a new, empty tape, which already contains a specific type at its cursor position:
 
 {% highlight c++ %}
 template <class T>

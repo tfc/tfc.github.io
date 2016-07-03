@@ -5,7 +5,7 @@ title: Transformations between User Input/Output and Type Lists
 
 Type lists are an important way to represent ordered and unordered sets of types at compile time.
 These types can be real structure- or class types bundling runtime algorithms etc., but they can also convey actual data at compile time.
-In order to apply certain compile time processing to data, this data needs to be transformed from and to representations which can be provided by the programmer, and consumed by run time programs.
+In order to apply certain compile time processing to data, this data needs to be transformed from and to other representations, which can be provided by the programmer and consumed by run time programs.
 This article shows how to transform back and forth between strings and character type lists.
 
 ## Wrapping characters into Type Lists
@@ -73,7 +73,7 @@ template <char ... chars>
 using char_tl_t = typename char_tl<chars...>::type;
 {% endhighlight %}
 
-- **line 2** defines the general type signature of the conversion functiona `char_tl` which accepts a variadic character list
+- **line 2** defines the general type signature of the conversion function `char_tl` which accepts a variadic character list
 - **line 5** describes the recursion which is applied in order to *unroll* the variadic type list into a type list. It *wraps* each individual character into a `char_t` type. This new `char_t` type is then again wrapped as the head element into a new type list, and its tail is the next recursion step.
 - **line 11** defines the recursion abort step by just wrapping the last character into a type list which is terminated just right afterwards.
 - **line 16** is a convenient helper type alias.
@@ -116,7 +116,7 @@ using string_list_t = typename string_list<
                       >::type;
 {% endhighlight %}
 
- - **line 2** Declares our function which takes a string provider, a position index, and the character at the current position. The user will later only provide the string provider, and the position index as well as the character are internally used and provided parameters.
+ - **line 2** Declares our function which takes a string provider, a position index, and the character at the current position. The user will later only provide the string provider. The position index as well as the character are for internal use. `string_list_t` adds them automatically (line 20).
 
 Before continuing with the following lines of code: **What** is a *string provider?*
 
@@ -134,7 +134,7 @@ struct my_string_provider {
 This type can now be used as a template parameter by template classes, and the template code can access its static string member.
 Because of this additional, but necessary, indirection it is called a *string provider*.
 
- - **line 5** defines the recursion which advances through the string step by step, while appending earch character to the result type list. This is basically the same as in the example where we used variadic character type lists, but some more mechanics are needed to iterate the string provider.
+ - **line 5** defines the recursion which advances through the string step by step, while appending each character to the result type list. This is basically the same as in the example where we used variadic character type lists, but some more mechanics are needed to iterate the string provider.
  - **line 15** defines the recursion abort step. As soon as we trip on the zero character which terminates the string, we also terminate the list.
  - **line 20** is the easy-to-use wrapper which is meant to be used by the user. It takes a single string provider parameter and extracts any other needed parameter from it.
 
@@ -180,7 +180,7 @@ struct tl_to_vl<tl::null_t, chars...> {
 {% endhighlight %}
 
  - **line 2** defines the general function signature: It takes a character type list as first parameter, and then a variadic list of characters. 
- - **line 5** defines the recursion: The idea is to let the type list shrink stepwise, while the character which is taken from it is appended to the variadic character list.
+ - **line 5** defines the recursion: The idea is to let the type list shrink stepwise, while the character, which is taken from it, is appended to the variadic character list.
  - **line 10** is the recursion abort step. At this point, the type list is empty and the variadic character list contains the whole string. Having the whole string in the `chars...` template variable, we can define the static function `str()` which defines a static character array and returns it.
 
 This code example is different than the others before, because it relies on inheritance.
@@ -247,6 +247,6 @@ retq
 
 The disassembly shows that the string is just read out of the binary, where it is available without any processing.
 It is pretty nice to see that there is *no trace* of any meta programming code in the binary.
-Apart from those strange and long symbol names, everything looks like the string in its resulting form was hard coded into the binary by hand.
+Apart from those strange and long symbol names, everything looks as if the string was hard coded into the binary by hand to its resulting form.
 
 The next article will deal with template meta programs which transform character type lists in order to do useful things with them.
