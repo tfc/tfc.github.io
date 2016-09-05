@@ -192,7 +192,6 @@ constexpr fibit fibit_at(size_t n)
     for (size_t i {0}; i < n; ++i) {
         ++it;
     }
-    std::next(it, i);
     return it;
 }
 {% endhighlight %}
