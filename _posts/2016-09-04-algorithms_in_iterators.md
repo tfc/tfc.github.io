@@ -31,7 +31,7 @@ size_t fib(size_t n)
 
 This way it is easy to generate any fibonacci number.
 But if all fibonacci numbers up to a certain limit need to be generated for some purpose, this implementation is not too handy any longer.
-When counting fibonacci number `N`, and then `N+1`, the content of the variables `a` and `b` could be reused, because the next fibonacci number is just the sum of the last to fibonacci numbers.
+When counting fibonacci number `N`, and then `N+1`, the content of the variables `a` and `b` could be reused, because the next fibonacci number is just the sum of the last two fibonacci numbers.
 
 In this sense, it would be useful to have a class, which manages some *fibonacci state* in order to be able to quickly calculate just the next number.
 
