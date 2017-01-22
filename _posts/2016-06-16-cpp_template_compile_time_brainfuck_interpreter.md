@@ -38,7 +38,9 @@ The following program reads a value from the user input, then prints and decreme
 
 *Output*: (Assuming the user enters the character `z`)
 
-```zyxwvutsrqponmlkjihgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$#"!```
+```
+zyxwvutsrqponmlkjihgfedcba`_^]\[ZYXWVUTSRQPONMLKJIHGFEDCBA@?>=<;:9876543210/.-,+*)('&%$#"!
+```
 
 #### Hello World
 
