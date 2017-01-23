@@ -74,7 +74,7 @@ The inheritance chain wraps every inheriting member's variables past the structu
 
 (Every table row represents an integer in memory)
 
-This program stops to works so nicely when changing the inheritance chain a bit:
+This program stops to work so nicely when changing the inheritance chain a bit:
 
 {% highlight c++ %}
 struct A     { int a {0xa}; };
@@ -168,7 +168,7 @@ This program will now correctly print `a` in all these cases.
 What is different here (But same in all cases!), is that the address of the objects are first `static_cast`ed to `const A*`, and **then** `reinterpret_cast`ed to `uint64_t`.
 
 `static_cast` applies some magic to the pointer: As it knows from what to what we are casting (from type `C` to `A`), it can *modify* the actual pointer address.
-And it must do that, because if we want an `A`-typed pointer from the `C2` object (which first inherits from `Foo`, and then from `B`), then we must add 4 bytes to the address, in order to have an actual `A` pointer. (Becasue the `A` part lies 4 bytes behind the `Foo` part)
+And it must do that, because if we want an `A`-typed pointer from the `C2` object (which first inherits from `Foo`, and then from `B`), then we must add 4 bytes to the address, in order to have an actual `A` pointer. (Because the `A` part lies 4 bytes behind the `Foo` part)
 
 In the `C3` case (which adds a virtual function), the pointer must be fixed in the sense that the `A` part of the object lies behind (or in front of? That is compiler dependend, but `static_cast` will always get it right!) the vtable.
 So in this case, clang's `static_cast` will add 8 bytes offset to the pointer, to make it an actual `A` typed pointer. (It's 8 bytes, because a pointer is 8 bytes large on 64bit systems which we assume here)
