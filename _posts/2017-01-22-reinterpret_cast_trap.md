@@ -44,7 +44,7 @@ struct C : B {
     int c {0xc};
 };
 
-void print_a_from_address(uint64_t addr)
+void print_a_from_address(std::uintptr_t addr)
 {
     const A *a {reinterpret_cast<const A*>(addr)};
     std::cout << std::hex << a->a << std::endl;
@@ -54,7 +54,7 @@ int main()
 {
     C c;
  
-    print_a_from_address(reinterpret_cast<uint64_t>(&c));
+    print_a_from_address(reinterpret_cast<std::uintptr_t>(&c));
 
     return 0;
 }
@@ -89,7 +89,7 @@ struct C : Foo, B {
     int c {0xc};
 };
 
-void print_a_from_address(uint64_t addr)
+void print_a_from_address(std::uintptr_t addr)
 {
     const A *a {reinterpret_cast<const A*>(addr)};
     std::cout << std::hex << a->a << std::endl;
@@ -99,7 +99,7 @@ int main()
 {
     C c;
  
-    print_a_from_address(reinterpret_cast<uint64_t>(&c));
+    print_a_from_address(reinterpret_cast<std::uintptr_t>(&c));
 
     return 0;
 }
@@ -130,7 +130,7 @@ int main()
 {
     C c;
  
-    print_a_from_address(reinterpret_cast<uint64_t>(&c));
+    print_a_from_address(reinterpret_cast<std::uintptr_t>(&c));
 
     return 0;
 }
@@ -156,16 +156,16 @@ int main()
     C2 c2; // Foo C B A inheritance
     C3 c3; // virtual function added in class C
 
-    print_a_from_address(reinterpret_cast<uint64_t>(static_cast<const A*>(&c1)));
-    print_a_from_address(reinterpret_cast<uint64_t>(static_cast<const A*>(&c2)));
-    print_a_from_address(reinterpret_cast<uint64_t>(static_cast<const A*>(&c3)));
+    print_a_from_address(reinterpret_cast<std::uintptr_t>(static_cast<const A*>(&c1)));
+    print_a_from_address(reinterpret_cast<std::uintptr_t>(static_cast<const A*>(&c2)));
+    print_a_from_address(reinterpret_cast<std::uintptr_t>(static_cast<const A*>(&c3)));
 }
 {% endhighlight %}
 
 I renamed the 3 variants of struct `C` to `C1`, `C2`, and `C3`.
 This program will now correctly print `a` in all these cases.
 
-What is different here (But same in all cases!), is that the address of the objects are first `static_cast`ed to `const A*`, and **then** `reinterpret_cast`ed to `uint64_t`.
+What is different here (But same in all cases!), is that the address of the objects are first `static_cast`ed to `const A*`, and **then** `reinterpret_cast`ed to `std::uintptr_t`.
 
 `static_cast` applies some magic to the pointer: As it knows from what to what we are casting (from type `C` to `A`), it can *modify* the actual pointer address.
 And it must do that, because if we want an `A`-typed pointer from the `C2` object (which first inherits from `Foo`, and then from `B`), then we must add 4 bytes to the address, in order to have an actual `A` pointer. (Because the `A` part lies 4 bytes behind the `Foo` part)
@@ -176,8 +176,8 @@ So in this case, clang's `static_cast` will add 8 bytes offset to the pointer, t
 Another nice feature is, that `static_cast` will refuse to compile, if the object is by no means related to type `A`.
 `reinterpret_cast` just ignores this and gives us no safety.
 
-However, it was not possible to completely avoid `reinterpret_cast`, because of the *type erasing* cast from `A*` to `uint64_t`, which `static_cast` would refuse to do. 
-Although we could have used a union which overlays an `A` pointer with a `uint64_t`.
+However, it was not possible to completely avoid `reinterpret_cast`, because of the *type erasing* cast from `A*` to `std::uintptr_t`, which `static_cast` would refuse to do. 
+Although we could have used a union which overlays an `A` pointer with a `std::uintptr_t`.
 
 ## Summary
 
@@ -191,4 +191,4 @@ Do the `reinterpret_cast` only if it is really inevitable, and even then double 
 `reinterpret_cast`-`static_cast` *chains* will not make your code prettier.
 As Stroustrup states in his original C++ books, the C++ style casts are *intentionally ugly*, because they are also potentionally **dangerous**.
 
-
+*EDIT on 2017-01-27: Changed the type from `uint64_t` to `std::uintptr_t`, as a comment on [reddit.com/r/cpp](https://www.reddit.com/r/cpp/comments/5pju7q/a_reinterpret_cast_trap/) suggested. Thanks for the input!*
