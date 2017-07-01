@@ -3,10 +3,10 @@ layout: post
 title: Executing Brainfuck at Compile Time with C++ Templates
 ---
 
-This article completes a series which aims at explaining how to implement a Brainfuck Interpreter, which runs at compile time, because it is a template meta program.
+This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.
 
-> The code in this article depends largely on the code in [the article about type lists]({% post_url 2016-05-08-compile_time_type_lists %}), [the article about character type list transformations]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}), and [the article about implementing a turing tape]({% post_url 2016-05-15-turing_tape_with_type_lists %}). 
-> There is also [the article about template meta programming 101 things]({% post_url 2016-05-05-template_meta_programming_basics %}).
+> The code in this article depends largely on the code in [the article about type lists]({% post_url 2016-05-08-compile_time_type_lists %}), [the article about character type list transformations]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}), and [the article about implementing a Turing tape]({% post_url 2016-05-15-turing_tape_with_type_lists %}). 
+> There is also [the article about template meta-programming 101 things]({% post_url 2016-05-05-template_meta_programming_basics %}).
 
 ## First Things First: What is Brainfuck?
 
@@ -63,7 +63,7 @@ We will start with adapting the [Turing Tape]({% post_url 2016-05-15-turing_tape
 
 ## Adapting the Turing Tape
 
-The state of a turing machine is based on the turing tape it works on.
+The state of a Turing machine is based on the Turing tape it works on.
 We have implemented such a tape before, but need to add a little adaption:
 
 When the tape is switched left or right, and a new cell is created which we did not read/write before, a new empty one is created.
@@ -86,12 +86,12 @@ template <class Tape> using null_to_0_t =
                                typename null_to_0<Tape>::type;
 {% endhighlight %}
 
-Instead of subclassing the turing tape or similar, we will just use the function `null_to_0_t`, which transforms empty cell elements to `0` elements, and leaves others untouched.
+Instead of subclassing the Turing tape or similar, we will just use the function `null_to_0_t`, which transforms empty cell elements to `0` elements, and leaves others untouched.
 Whenever the list is altered for moving, this function is applied to it, and then this is set as the new list state.
 
 ## The Brainfuck Machine State
 
-A turing machine tape is enough to represent the state of the whole brainfuck machine.
+A Turing machine tape is enough to represent the state of the whole brainfuck machine.
 We define a type `machine`, which carries a tape state as template parameter, and provides functions to read and alter the state.
 This way the user does not need to know about any implementation details:
 
@@ -146,7 +146,7 @@ Note the additional helper `make_t`, which just returns a fresh initialized brai
 
 ## The Brainfuck Machine plus IO Bundle
 
-By now, we have a specialized turing tape, or let's say *Brainfuck Machine Tape*, which can in principle perform the operations `+`, `-`, `<`, `>`, `.`, and `,`.
+By now, we have a specialized Turing tape, or let's say *Brainfuck Machine Tape*, which can in principle perform the operations `+`, `-`, `<`, `>`, `.`, and `,`.
 The functions providing these operations, return a new Brainfuck Machine Tape.
 This is enough to represent a single naked Brainfuck Machine.
 
@@ -557,7 +557,7 @@ make: *** [default] Error 1
 ## Summary
 
 Implementing a Brainfuck Interpreter which works at compile time, is more a toy than actually a useful program.
-But it combines several template meta programming techniques, and therefore i regard it as a great *learning vehicle*.
-And this is a nice insight into the turing completeness of the C++ template language.
+But it combines several template meta-programming techniques, and therefore i regard it as a great *learning vehicle*.
+And this is a nice insight into the Turing completeness of the C++ template language.
 
 
