@@ -7,23 +7,23 @@ There are a lot of algorithms which can be implemented using *recursive* or *ite
 Actually, **everything** can be implemented in both styles.
 For a lot of algorithms, the recursive version is simpler to read, write, and understand.
 But nevertheless, programmers know, that recursive functions burden a lot of memory consumption, because there is usually a `call` instruction per recursive call, which puts another call frame on the stack.
-Interestingly, this is not true sor some special cases.
+Interestingly, this is not true for some special cases.
 
 
-The idea to write this article came into my mind when i thought about a discussion which i listened to many years ago.
-At that time i worked at a company as a free lancer, before i started studying at university.
-The whole discussion was very open, but i felt a bit disturbed when a colleague said, that C/C++ is very limited in their optimization potential.
+The idea to write this article came into my mind when I thought about a discussion which I listened to many years ago.
+At that time I worked at a company as a freelancer, before I started studying at university.
+The whole discussion was very open, but I felt a bit disturbed when a colleague said, that C/C++ is very limited in their optimization potential.
 One example for that point was, that languages like *Scala* can eliminate the stack growth in some recursion cases.
-I was very unexperienced, so i didn't know better.
-Not too much later, i learned at university, that this special kind of recursion is called [**tail recursion**](https://en.wikipedia.org/wiki/Tail_call).
-I was pretty happy when i realized that the optimization potential which that brings, is not a question of the language, but more a question of the compiler implementation.
+I was very unexperienced, so I didn't know better.
+Not too much later, I learned at university, that this special kind of recursion is called [**tail recursion**](https://en.wikipedia.org/wiki/Tail_call).
+I was pretty happy when I realized that the optimization potential which that brings, is not a question of the language, but more a question of the compiler implementation.
 
 As of today, this topic came to my attention multiple times.
 Since C++11, it is possible to let the compiler execute *normal* functions (instead of template meta code) at compile time, and get a guarantee that the result will be embedded in the binary, reducing execution time.
 Such functions are called `constexpr` functions.
 However, those functions had to be implemented recursively, as it is not possible to define variables and loops in `constexpr` functions in C++11.
 (This is fixed and allowed in C++14)
-At this occasion (and because of template meta programming and learning Haskell) i got some more practise in thinking recursion aware.
+At this occasion (and because of template meta-programming and learning Haskell) I got some more practice in thinking recursion aware.
 
 ## Tail Recursion
 
@@ -52,9 +52,9 @@ int f(int a, int b)
 
 In this case, only the parameters need to be refreshed with the values the next recursion call shall get.
 Then, instead of `call`ing the function (which jumps to the function beginning again, but also adds the return address on the stack), it can just be `jmp`ed at, which completely preserves the stack.
-(At this point i am talking about the *assembler* instructions `call` and `jmp`, which work similarly for most processor architectures, but may have slightly different names.)
+(At this point I am talking about the *assembler* instructions `call` and `jmp`, which work similarly for most processor architectures, but may have slightly different names.)
 
-Example case in which this would not work:
+An example case in which this would not work:
 
 {% highlight c++ %}
 int f(int a, int b)
@@ -80,15 +80,15 @@ int f(int a, int b, int sum = 0)
 }
 {% endhighlight %}
 
-This way, we pushed the information of that "post-adding 1" into the parameter variables, and transformed the non optimal recursion into a tail recursion.
+This way, we pushed the information of that "post-adding 1" into the parameter variables and transformed the nonoptimal recursion into a tail recursion.
 (At this point, this algorithm does not look nicer than an iterative implementation using a loop. However, other algorithms do.)
 
 That was just a cheap example.
-There are actually nice and very generic rules in literature, which describe how to transform between the different coding styles. (See also the wikipedia article about tail recursion)
+There are actually nice and very generic rules in literature, which describe how to transform between the different coding styles. (See also the Wikipedia article about tail recursion)
 
 ## GCD Example
 
-In order to proof the point of tail recursion, and to motivate people to use more recursion for tidy, but still fast code, i chose the [GCD (*Greatest Common Divisor*)](https://en.wikipedia.org/wiki/Greatest_common_divisor) algorithm, and the two typical different implementations of it:
+In order to proof the point of tail recursion, and to motivate people to use more recursion for tidy, but still fast code, I chose the [GCD (*Greatest Common Divisor*)](https://en.wikipedia.org/wiki/Greatest_common_divisor) algorithm, and the two typical different implementations of it:
 
 The recursive version, which looks very similar to a math formula (at least in terms of C syntax):
 {% highlight c++ %}
@@ -113,14 +113,14 @@ unsigned gcd_itr(unsigned a, unsigned b)
 {% endhighlight %}
 
 In my opinion, the recursive version looks much cleaner.
-What i particularly dislike when regarding the iterative version, is the fact that it is telling the compiler how exactly to temporarily save the value of `b`, in order to refresh `a` with it after the modulo operation.
-This is as primitive as "Well, do `a % b`, but i want `b` saved **here** and then written back **there**", which is something which has nothing to do with the *actual* problem (calculating a GCD).
+What I particularly dislike when regarding the iterative version, is the fact that it is telling the compiler how exactly to temporarily save the value of `b`, in order to refresh `a` with it after the modulo operation.
+This is as primitive as "Well, do `a % b`, but I want `b` saved **here** and then written back **there**", which is something which has nothing to do with the *actual* problem (calculating a GCD).
 
 ## Comparing compiler output
 
 Putting those two functions into a `.cpp` file and compiling it with `clang++ -c main.cpp -O2` reveals something interesting:
 
-First, having a look at the recursive version shows, that it does indeed not contain any `call` instructions, because it is implemented using solely jumps (conditional `je` and `jne` instructions).
+First, having a look at the recursive version shows, that it does indeed not contain any `call` instructions because it is implemented using solely jumps (conditional `je` and `jne` instructions).
 This shows, that this recursive version of the GCD algorithm can never lead to steep stack growth.
 
 {% highlight asm %}
