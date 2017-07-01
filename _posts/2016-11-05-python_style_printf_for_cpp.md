@@ -5,11 +5,11 @@ title: Python Style printf for C++ with pprintpp
 
 The C++ STL comes with *stream* style character output, which is an alternative to the classic `printf` like format function collection of the C library.
 For different reasons, some C++ programmers still stick to `printf` like formatting.
-This article demonstrates the `pprintpp` [(open source, and available on Github)](https://github.com/tfc/pprintpp) library, which tries to make `printf` use comfortable and safe, while avoiding any runtime overhead.
+This article demonstrates the `pprintpp` [(open source, and available on Github)](https://github.com/tfc/pprintpp) library, which tries to make `printf` use comfortable and safe while avoiding any runtime overhead.
 
 ## C++ Streams vs. `printf`
 
-So, i am presenting a `printf` frontend library which tries to enhance it.
+So, I am presenting a `printf` frontend library which tries to enhance it.
 But what is wrong with `printf`?
 Let's compare it with C++ stream style printing in different situations:
 
@@ -51,26 +51,26 @@ int main()
 
 All type safety aside, at this point most likely everyone will agree that this is, from a readability and comfort perspective, *no* improvement over to `printf`.
 
-> Although i must say that i do not format floating point numbers every day, and had to guess here and there while being too lazy to look at the documentation. 
-> In order to see if the `printf` format works as i hoped, i had to run the program.
-> At the same time, the C++ iostream format just did not compile when i did it wrong!
+> Although I must say that I do not format floating point numbers every day and had to guess here and there while being too lazy to look at the documentation. 
+> In order to see if the `printf` format works as I hoped, I had to run the program.
+> At the same time, the C++ iostream format just did not compile when I did it wrong!
 
 ### Round 2: Type Pitfalls
 
-When compiling the following program on a 64 bit machine, everything is fine:
+When compiling the following program on a 64-bit machine, everything is fine:
 
 {% highlight c++ %}
 printf("%ld\n", static_cast<uint64_t>(123)); 
 {% endhighlight %}
 
-Compiling it on a 32 bit machine, the compiler quickly comes up with errors like:
+Compiling it on a 32-bit machine, the compiler quickly comes up with errors like:
 
 {% highlight bash %}
 error: format '%ld' expects argument of type 'long int', but argument 2 has type 'uint64_t {aka long long unsigned int}' [-Werror=format=]
 {% endhighlight %}
 
 So on 32bit systems, one should better have used `%lld`.
-This feels needlessly complicated, because in both cases, the compiler knows the \*@!#\* type, but nevertheless the programmer has to deal with this now.
+This feels needlessly complicated because in both cases, the compiler knows the \*@!#\* type, but nevertheless the programmer has to deal with this now.
 
 There is a portable solution: `PRIu64`.
 The header file <cinttypes> brings a lot of PRI macros.
@@ -160,30 +160,30 @@ What are you going to do if you work in a team with `printf` dinosaurs, who **ju
 Right, nothing.
 
 I found myself in such a situation.
-And i made format string mistakes all the time, which led me to think about how to *fix* `printf` by removing a whole class of bug sources.
+And I made format string mistakes all the time, which led me to think about how to *fix* `printf` by removing a whole class of bug sources.
 Bjarne Stroustrupi's C++ book proposes a type safe `printf` (Section 28.6.1), which is implemented using variadic templates.
-My team did not find this solution acceptable, because it generates *custom code* for every `printf` invocation.
+My team did not find this solution acceptable because it generates *custom code* for every `printf` invocation.
 
 ## The Idea
 
-When using `printf`, the programmer asks himself "What is the type of the variable i am going to print?", and as soon as that question is answered, the next question is "What is the right `%` format string for this type?".
+When using `printf`, the programmer asks himself "What is the type of the variable I am going to print?", and as soon as that question is answered, the next question is "What is the right `%` format string for this type?".
 The compiler can easily answer these questions.
 The next thing is: How to make the compiler do that, without generating additional runtime code?
 
-In the past, i wrote about [type lists which can be used as compile-time data structures for metaprograms]({% post_url 2016-05-08-compile_time_type_lists %}).
-And building on top of that, i wrote about [transforming string literals to type lists, doing something with them and transforming back to string literals]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}).
+In the past, I wrote about [type lists which can be used as compile-time data structures for metaprograms]({% post_url 2016-05-08-compile_time_type_lists %}).
+And building on top of that, I wrote about [transforming string literals to type lists, doing something with them and transforming back to string literals]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}).
 Understanding the ideas from those articles is crucial for understanding the code of this library.
 
 After a lot of inspiring discussions with my colleagues, we iterated towards the idea of having a compile time function, which takes a simplified format string, and a list of the types of the parameters the user provided.
-The syntax of the simplified format string was inspired by python style printing.
-In python, you can do the following:
+The syntax of the simplified format string was inspired by Python style printing.
+In Python, you can do the following:
 
 {% highlight python %}
 python shell >>> "some {} with some var {}".format("string", 123)
 'some string with some var 123'
 {% endhighlight %}
 
-Being inspired from that, i hoped to be able to come up with something like...
+Being inspired from that, I hoped to be able to come up with something like...
 
 {% highlight c++ %}
 printf(metaprog_result("some {} with some var {}", 
@@ -197,12 +197,12 @@ printf(metaprog_result("some {} with some var {}",
 printf("some %s with some var %d", "string", 123);
 {% endhighlight %}
 
-With this design, it is also possible to use the meta program as a frontend for not only `printf`, but also `sprintf`, `fprintf`, etc.
+With this design, it is also possible to use the meta-program as a frontend for not only `printf`, but also `sprintf`, `fprintf`, etc.
 
 ### First Step: Defining an `autoformat` Macro
 
-The first problem is, that the parameters `"string", 123` need to be both present in the `printf` function call as parameters, and at the same time a type list `<const char*, int>` needs to be extracted out of them.
-The only way i was able to come up with was a preprocessor macro:
+The first problem is, that the parameters `"string", 123` need to be both present in the `printf` function call as parameters, and at the same time, a type list `<const char*, int>` needs to be extracted out of them.
+The only way I was able to come up with was a preprocessor macro:
 
 {% highlight c++ %}
 #define AUTOFORMAT(fmtstr, ...) \
@@ -233,8 +233,8 @@ template <typename ... Ts>
 make_t<Ts...> tie_types(Ts...);
 {% endhighlight %}
 
-This function does not even need to be defined, because it is only used in a `decltype` environment.
-No runtime code wil lever call it.
+This function does not even need to be defined because it is only used in a `decltype` environment.
+No runtime code will lever call it.
 Within the `pprintf` macro, it can now be used the following way:
 
 {% highlight c++ %}
@@ -287,7 +287,7 @@ pprintf("Some string: {s}", "Hello World");
 
 #### Formatting Integers as Hex Numbers
 
-When a programmer writes `pprintf("Some hex number: {}", 0x123);`, there must be some possibility to express "i want this integer printed as hex number instead of a decimal number".
+When a programmer writes `pprintf("Some hex number: {}", 0x123);`, there must be some possibility to express "I want this integer printed as hex number instead of a decimal number".
 
 I chose to let the user provide this information between the braces by writing `{x}`.
 This way any integer of any size will be printed correctly as `%x`, or `%lx`, or `%llx`.
@@ -298,7 +298,7 @@ This way any integer of any size will be printed correctly as `%x`, or `%lx`, or
 
 What if the user wants to print a `double` variable, but also needs to specify the precision?
 
-In that case, `autoformat_t` will just take anything which is not an `x` or `s` (as used as a special specifier for string or hex number formatting), and put it between the `%` and the `f` or `lf` for doubles.
+In that case, `autoformat_t` will just take anything which is not an `x` or `s` (as used as a special specifier for string or hex number formatting) and put it between the `%` and the `f` or `lf` for doubles.
 This works for any type.
 
 This strategy is applied to all types.
@@ -310,16 +310,16 @@ This way it is possible to tamper with the indentation, precision, etc. whatever
 
 If the user wants to print actual `{}` braces, it must be possible to mask them somehow.
 
-If `autoformat_t` runs over an opening brace, but finds it masked with `\`, it will ignore it.
-The closing brace is ignored already, because the closing brace search function is not called.
+If `autoformat_t` runs over an opening brace but finds it masked with `\`, it will ignore it.
+The closing brace is ignored already because the closing brace search function is not called.
 
-However, there are actually 2 backslashes needed, because `\` alone does not result in an actual "\" string part.
+However, there are actually 2 backslashes needed because `\` alone does not result in an actual "\" string part.
 The backslash must be masked itself, so only `\\{` will result in the `autoformat_t` function seeing a `\{`.
 
 **Example**: `pprintf("var in braces: \\{ {} }", 123);` results in `printf("var in braces: { %d }", 123);`
 #### Catching Brace Mismatches
 
-The meta program refuses to compile if...
+The meta-program refuses to compile if...
 
 - it does not find a closing brace for an opening one.
 - it finds nested braces `{ {} }`, in which case it looks probable that the user wanted to mask the outer pair.
@@ -418,31 +418,31 @@ But this function does *nothing* else than returning this string, which is alrea
 
 ## Limitations
 
-The `autoformat_t` meta program does only substitute generic place holders with the right `%` format strings, which are compatible with `printf`.
+The `autoformat_t` meta-program does only substitute generic placeholders with the right `%` format strings, which are compatible with `printf`.
 
 It does **not** extend `printf` with more formatting capabilities.
-This way it is also not possible to print custom types, because it is not possible to put some custom `%` format string into `printf`, which the original `printf` implementation does not know.
+This way it is also not possible to print custom types because it is not possible to put some custom `%` format string into `printf`, which the original `printf` implementation does not know.
 
-Of course it is possible to extend the type knowledge of the `type2fmt` meta function, in order to feed custom implementations of `printf` like functions with additional type format strings.
+Of course, it is possible to extend the type knowledge of the `type2fmt` meta function, in order to feed custom implementations of `printf` like functions with additional type format strings.
 
-Of course there are libraries like [libfmt](https://github.com/fmtlib/fmt) out there, which provide rich formatting capabilities.
+There are libraries like [libfmt](https://github.com/fmtlib/fmt) out there, which provide rich formatting capabilities.
 However, all such libraries add additional runtime overhead to the resulting program.
 
 ## Compilation Performance
 
-Heavy template meta programs tend to be slow.
+Heavy template meta-programs tend to be slow.
 I invested a lot of time in measuring different type list implementations, in order to make this `printf` frontend *fast*.
 
-In another blog article, i [measured the performance of type lists]({% post_url 2016-06-25-cpp_template_type_list_performance %}) using variadic template parameters, and recursive type lists.
+In another blog article, I [measured the performance of type lists]({% post_url 2016-06-25-cpp_template_type_list_performance %}) using variadic template parameters, and recursive type lists.
 This library builds on the faster list implementation.
 
 The resulting compile time overhead is *rarely* in measurable timing regions, which makes it useful for real life projects.
 
 ## Summary
 
-I wrapped the code into a repository called `pprintpp`, and published it on github under the MIT license.
+I wrapped the code into a repository called `pprintpp` and published it on GitHub under the MIT license.
 ([Link to the repository](https://github.com/tfc/pprintpp))
 
-This library is in production use for some time now, and helped getting rid of a lot of typos and variable-type accidents, while being very comfortable at the same time.
+This library is in production use for some time now and helped get rid of a lot of typos and variable-type accidents while being very comfortable at the same time.
 
 I'd be happy to hear that it is useful to others outside of my projects, too!
