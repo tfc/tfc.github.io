@@ -103,7 +103,7 @@ void map(word_t base1, word_t base2, word_t size, foo_t target_address_space)
         if (map_helper.full()) {
             map_helper.delegate(target_address_space);
             map_helper.reset();
-            map_helper.source_base = base2;
+            map_helper.source_base = base1;
         }
 
         const word_t step {1ull << order};
@@ -172,7 +172,7 @@ void map(word_t base1, word_t base2, word_t size, foo_t target_address_space)
             if (map_helper.full()) {
                 map_helper.delegate(target_address_space);
                 map_helper.reset();
-                map_helper.source_base = b2;
+                map_helper.source_base = b1;
             }
         });
 
