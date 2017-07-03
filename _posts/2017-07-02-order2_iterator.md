@@ -198,6 +198,7 @@ When such a range is iterated over, it emits the sub-ranges.
 
 
 So let's implement this in terms of an iterator.
+If you don't know yet how to implement iterators, you might want to have a look at [my other article where i explain how to implement your own iterator]({% post_url 2016-09-04-algorithms_in_iterators %}).
 
 {% highlight c++ linenos %}
 #include <cstdint>   // uintptr_t
