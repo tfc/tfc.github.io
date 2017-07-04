@@ -91,11 +91,11 @@ void map(word_t base1, word_t base2, word_t size, foo_t target_address_space)
     constexpr word_t max_bit {1ull << (8 * sizeof(max_bit) - 1)};
 
     while (size) {
-        // take smallest order of both bases, as both must be divisible by it.
+        // take smaller order of both bases, as both must be divisible by it.
         const word_t min_order {order_min(base1 | base2 | max_bit)};
         // take largest possible order from actual size of unmapped rest
         const word_t max_order {order_max(size)};
-        // choose smallest of both
+        // choose smaller of both
         const word_t order     {min(min_order, max_order)};
 
         map_helper.push_back(base2, order);
@@ -122,7 +122,7 @@ You will see it everywhere, because the same technique is used for sharing memor
 
 After you have seen repeatedly exactly the same calculation with different *payload* code between it, you might get sick of it.
 Everywhere in the code base where this pattern is repeated, you have to follow the calculations thoroughly in order to see if it is **really** the same formula.
-rf it is, you may wonder why no one writes some kind of library for it instead of duplicating the formula in code again and again.
+If it is, you may wonder why no one writes some kind of library for it instead of duplicating the formula in code again and again.
 And if it is *not* the same formula - is that because it is wrong or is there an actual idea behind that?
 It is plainly annoying to write and read this from the ground on all the time.
 
