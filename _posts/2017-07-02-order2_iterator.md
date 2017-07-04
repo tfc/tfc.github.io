@@ -14,7 +14,8 @@ After diving through the context i demonstrate how to implement a nice iterator 
 > If you dont care about the actual logic behind the code, just jump to the next section.
 
 As an intern at Intel Labs in 2012, I had my first contact with microkernel operating systems that were implemented in C++.
-This article concentrates on a recurring code pattern that I have seen very often in the following years also in other companies and where I over which I have the opinion that it should be solved *once* by a little library helper.
+This article concentrates on a recurring code pattern that I have seen very often in the following years also in other companies.
+I have the opinion that such code should be written *once* as a little library helper.
 
 Let's jump right into it:
 Most operating systems allow processes to share memory.
@@ -208,9 +209,9 @@ If you don't know yet how to implement iterators, you might want to have a look 
 using word_t = uintptr_t;
 
 static word_t current_order(word_t base, word_t rest) {
-    const word_t max_bit {1ull << (8 * sizeof(max_bit) - 1)};
-    const word_t min_order   {order_min(base | max_bit)};
-    const word_t max_order   {order_max(rest)};
+    const word_t max_bit   {1ull << (8 * sizeof(max_bit) - 1)};
+    const word_t min_order {order_min(base | max_bit)};
+    const word_t max_order {order_max(rest)};
     return std::min(min_order, max_order);
 }
 
@@ -360,7 +361,7 @@ Their code needs to be very small and fast because especially on hot paths, inte
 Unfortunately, one extreme kind of low-level hackers that keep their code tight and short just out of plain responsibility, are the ones that use the same reasons as an excuse for writing code that contains a lot of duplicates, is complex, hard to read (but surely makes you feel smart while being written), and difficult to test.
 
 Code should be separated into composable libraric parts that serve isolated concerns.
-C++ allows combining the goals of reusable software, testable libraries, and logical decoupling with performance and binary size.
+C++ allows combining the goals of reusable software, testable libraries, and logical decoupling with high performance and low binary size.
 
 It is usually worth a try to implement a nice abstraction that turns out to be free with regard to assembly size and performance.
 
