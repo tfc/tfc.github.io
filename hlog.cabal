@@ -5,7 +5,12 @@ cabal-version:      >= 1.10
 
 executable site
   main-is:          site.hs
+  other-modules:    Hamlet
   build-depends:    base == 4.*
+                  , blaze-html
+                  , containers
                   , hakyll == 4.9.*
+                  , shakespeare
+                  , text
   ghc-options:      -threaded
   default-language: Haskell2010
