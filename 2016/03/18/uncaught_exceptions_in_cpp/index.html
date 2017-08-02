@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../public/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../public/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's C++ Blog &middot; Uncaught Exceptions in C++</title>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+</h1>
+<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About</a>
+<a class="sidebar-nav-item" href="https://galowicz.de">CV Info</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+</a>
+<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Uncaught Exceptions in C++</h1>
+<div class="post"><span class="post-date">March 18, 2016</span>
+<p>What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it? The program gets terminated. That is fine in general, but what happens to all objects which need to be properly destructed?</p>
+<!--more-->
+<p>Let’s try it out:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;string&gt;</span>
+
+<span class="kw">class</span> Foo
+{
+    <span class="at">const</span> <span class="bu">std::</span>string str;
+<span class="kw">public</span>:
+    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}
+    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }
+};
+
+Foo gfoo {<span class="st">&quot;global&quot;</span>};
+<span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};
+
+<span class="dt">int</span> main(<span class="dt">int</span> argc, <span class="dt">char</span> **argv)
+{
+    Foo lfoo {<span class="st">&quot;local stack&quot;</span>};
+
+    <span class="cf">if</span> (argc &lt; <span class="dv">2</span>) {
+        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);
+    }
+
+    <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></div>
+<p>This program instanciates three <code>Foo</code> objects: A global one, a static global one, and a local stack instance. <code>Foo</code>’s destructor just emits a message which tells which one of the three instances was just destructed.</p>
+<p>(I wrapped the <code>throw</code> clause into a conditional which the compiler cannot optimize away, as it cannot predict with how many parameters the executable will be called.)</p>
+<p>In the ideal case, the compiler should emit code which unrolls the stack as soon as the exception is thrown, destructs all objects which are in flight and then terminates the program:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">clangg++</span> -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span> bla
+<span class="bu">local</span> <span class="va">stack</span> 1 <span class="va">Foo</span><span class="st">'s dtor called.</span>
+<span class="st">static global Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.
+<span class="ex">global</span> Foo<span class="st">'s dtor called.</span>
+
+<span class="st">$ ./main</span>
+<span class="st">terminate called after throwing an instance of '</span>int<span class="st">'</span>
+<span class="st">Aborted (core dumped)</span></code></pre></div>
+<p><em>Ooops</em>, unfortunately, this is not the case: If those <code>Foo</code> objects held any unflushed buffers, they’d be gone now!</p>
+<p>Wrapping the exception into a <code>try</code>-<code>catch</code> clause fixes this behaviour.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;string&gt;</span>
+
+<span class="kw">class</span> Foo
+{
+    <span class="at">const</span> <span class="bu">std::</span>string str;
+<span class="kw">public</span>:
+    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}
+    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }
+};
+
+Foo gfoo {<span class="st">&quot;global&quot;</span>};
+<span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};
+
+<span class="dt">int</span> main()
+{
+    Foo lfoo {<span class="st">&quot;local stack 1&quot;</span>};
+    <span class="cf">try</span> {
+        Foo lfoo2 {<span class="st">&quot;local stack 2&quot;</span>};
+        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);
+    } <span class="cf">catch</span> (<span class="dt">int</span>) {
+        <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Caught Exception.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl;
+    }
+    <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></div>
+<p>The output looks much better now. <em>All</em> objects are properly destructed:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">clang</span>++ -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span>
+<span class="bu">local</span> <span class="va">stack</span> 2 <span class="va">Foo</span><span class="st">'s dtor called.</span>
+<span class="st">Caught Exception.</span>
+<span class="st">local stack 1 Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.
+<span class="ex">static</span> global Foo<span class="st">'s dtor called.</span>
+<span class="st">global Foo'</span>s dtor called.</code></pre></div>
+<p>The C++11 standard says the following in section <code>15.3.9</code>:</p>
+<blockquote>
+<p>If no matching handler is found, the function std::terminate() is called; whether or not the stack is unwound before this call to std::terminate() is implementation-defined (15.5.1).</p>
+</blockquote>
+<p>“Whether or not the stack is unwound” is the crunch point here: It is not unwound in our case.</p>
+<p>This becomes especially important In C++14, where it is possible to throw exceptions from within <code>constexpr</code> functions. This can be used as an approach which provides <code>assert</code> behaviour at compile time <em>and</em> at run time (whereas <code>static_assert</code> does not help at run time).</p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/03/18/uncaught_exceptions_in_cpp';
+this.page.identifier = 'nicecpp/2016/03/18/uncaught_exceptions_in_cpp';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-28506344-2', 'auto');
+ga('send', 'pageview');</script>
+</body>
+</head>
+</html>

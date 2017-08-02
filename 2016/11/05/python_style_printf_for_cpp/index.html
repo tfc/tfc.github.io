@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../public/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../public/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's C++ Blog &middot; Python Style printf for C++ with pprintpp</title>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+</h1>
+<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About</a>
+<a class="sidebar-nav-item" href="https://galowicz.de">CV Info</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+</a>
+<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Python Style printf for C++ with pprintpp</h1>
+<div class="post"><span class="post-date">November  5, 2016</span>
+<p>The C++ STL comes with <em>stream</em> style character output, which is an alternative to the classic <code>printf</code> like format function collection of the C library. For different reasons, some C++ programmers still stick to <code>printf</code> like formatting. This article demonstrates the <code>pprintpp</code> <a href="https://github.com/tfc/pprintpp">(open source, and available on Github)</a> library, which tries to make <code>printf</code> use comfortable and safe while avoiding any runtime overhead.</p>
+<!--more-->
+<h2 id="c-streams-vs.-printf">C++ Streams vs. <code>printf</code></h2>
+<p>So, I am presenting a <code>printf</code> frontend library which tries to enhance it. But what is wrong with <code>printf</code>? Let’s compare it with C++ stream style printing in different situations:</p>
+<h3 id="round-1-inconvenience">Round 1: Inconvenience</h3>
+<p>Consider the following simple program:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;cstdio&gt;</span>
+
+<span class="dt">int</span> main()
+{
+    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, </span><span class="sc">%0.8f</span><span class="st">, </span><span class="sc">%0.8lf</span><span class="st">, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123u</span>, <span class="bn">0x123u</span>, <span class="fl">1.</span><span class="er">0f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>); 
+}</code></pre></div>
+<p>It’s simply no fun to tell <code>printf</code> of which type all variables are. The compiler <em>knows</em> the types already, so why must the programmer type the type names <em>again</em>?</p>
+<p>C++ streams fix this, as the <code>operator&lt;&lt;</code> is properly overloaded for any type, which selects the right formatting method automatically. Let’s have a look how to get exactly the same output with C++ streams:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;cstdio&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;iostream&gt;</span>
+
+<span class="dt">int</span> main()
+{
+    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, </span><span class="sc">%0.8f</span><span class="st">, </span><span class="sc">%0.8lf</span><span class="st">, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123u</span>, <span class="bn">0x123u</span>, <span class="fl">1.</span><span class="er">0f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>); 
+
+    <span class="bu">std::</span>cout &lt;&lt; <span class="dv">123u</span> &lt;&lt; <span class="st">&quot;, &quot;</span>
+              &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; <span class="bn">0x123u</span> &lt;&lt; <span class="st">&quot;, &quot;</span>
+              &lt;&lt; <span class="bu">std::</span>fixed &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">6</span>) &lt;&lt; <span class="fl">1.</span><span class="er">0f</span> &lt;&lt; <span class="st">&quot;, &quot;</span>
+              &lt;&lt; <span class="fl">2.0</span> &lt;&lt; <span class="st">&quot;, &quot;</span>
+              &lt;&lt; <span class="st">&quot;Hello World&quot;</span> &lt;&lt; <span class="bu">std::</span>endl
+
+}</code></pre></div>
+<p>All type safety aside, at this point most likely everyone will agree that this is, from a readability and comfort perspective, <em>no</em> improvement over to <code>printf</code>.</p>
+<blockquote>
+<p>Although I must say that I do not format floating point numbers every day and had to guess here and there while being too lazy to look at the documentation. In order to see if the <code>printf</code> format works as I hoped, I had to run the program. At the same time, the C++ iostream format just did not compile when I did it wrong!</p>
+</blockquote>
+<h3 id="round-2-type-pitfalls">Round 2: Type Pitfalls</h3>
+<p>When compiling the following program on a 64-bit machine, everything is fine:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">printf(<span class="st">&quot;</span><span class="sc">%ld\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>)); </code></pre></div>
+<p>Compiling it on a 32-bit machine, the compiler quickly comes up with errors like:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">error</span>: format <span class="st">'%ld'</span> expects argument of type <span class="st">'long int'</span>, but argument 2 has type <span class="st">'uint64_t {aka long long unsigned int}'</span> [-Werror=format=]</code></pre></div>
+<p>So on 32bit systems, one should better have used <code>%lld</code>. This feels needlessly complicated because in both cases, the compiler knows the *@!#* type, but nevertheless the programmer has to deal with this now.</p>
+<p>There is a portable solution: <code>PRIu64</code>. The header file <cinttypes> brings a lot of PRI macros. Using this here looks like the following:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">printf(<span class="st">&quot;%&quot;</span> PRIu64 <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>)); </code></pre></div>
+<p>All the <code>printf</code> fans who laughed at the ugliness of C++ streams, now again look a <em>little bit</em> like fools.</p>
+<h3 id="round-3-repetition">Round 3: Repetition</h3>
+<p>There are certain types which are a data composition of multiple values. A very typical example are <em>vectors</em> of data, e.g. geometric vectors:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> vec3d {
+    <span class="dt">double</span> x;
+    <span class="dt">double</span> y;
+    <span class="dt">double</span> z;
+};</code></pre></div>
+<p>When printing some game state or similar, one usually wants to see vectors formatted like <code>(1.000, 2.000, 0.000)</code>.</p>
+<p>Okay, easy:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">printf(<span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">)</span><span class="sc">\n</span><span class="st">&quot;</span>, v.x, v.y, v.z);</code></pre></div>
+<p>What if there are a lot of vectors?</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">printf(<span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">), &quot;</span>
+       <span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">), &quot;</span>
+       <span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">)</span><span class="sc">\n</span><span class="st">&quot;</span>, 
+       v1.x, v1.y, v1.z,
+       v2.x, v2.y, v2.z,
+       v2.x, v3.y, v3.z);</code></pre></div>
+<p>Okay, it starts to get very repetitive.</p>
+<blockquote>
+<p>And we have a bug: I mistyped the <code>x</code> value of the third vector. Would you have seen it in a code review?</p>
+</blockquote>
+<p>C++ iostream users would just overload <code>operator&lt;&lt;</code> for <code>std::ostream</code> <strong>once</strong> and be done with this forever:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="bu">std::</span>ostream&amp; <span class="kw">operator</span>&lt;&lt;(<span class="bu">std::</span>ostream &amp;os, <span class="at">const</span> vec3d &amp;v) {
+    <span class="cf">return</span> os &lt;&lt; <span class="st">&quot;(&quot;</span> 
+              &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">4</span>) 
+              &lt;&lt; v.x &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.z 
+              &lt;&lt; <span class="st">&quot;)&quot;</span>;
+}</code></pre></div>
+<p>Printing multiple vectors now looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="bu">std::</span>cout &lt;&lt; v1 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v2 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v3 &lt;&lt; <span class="bu">std::</span>endl;</code></pre></div>
+<p><code>printf</code> users may start defining helpful macros:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#define PRIvec3d       &quot;(%0.3lf, %0.3lf, %0.3lf)&quot;</span>
+<span class="pp">#define UNPACKvec3d(v) (v).x, (v).y, (v).z</span></code></pre></div>
+<p>…and print their vectors like this:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">printf(PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, 
+       UNPACKvec3d(v1), UNPACKvec3d(v2), UNPACKvec3d(v3));</code></pre></div>
+<p>In my opinion, C++ streams clearly win at this point.</p>
+<h2 id="being-stuck-with-printf.-for-reasons.">Being Stuck with <code>printf</code>. For Reasons.</h2>
+<p>Situations exist, where developers really can’t use stream printing. The reasons for those situations might be technical, but there are also social reasons: What are you going to do if you work in a team with <code>printf</code> dinosaurs, who <strong>just like it</strong>, and then it becomes a project convention to use <code>printf</code>? Right, nothing.</p>
+<p>I found myself in such a situation. And I made format string mistakes all the time, which led me to think about how to <em>fix</em> <code>printf</code> by removing a whole class of bug sources. Bjarne Stroustrupi’s C++ book proposes a type safe <code>printf</code> (Section 28.6.1), which is implemented using variadic templates. My team did not find this solution acceptable because it generates <em>custom code</em> for every <code>printf</code> invocation.</p>
+<h2 id="the-idea">The Idea</h2>
+<p>When using <code>printf</code>, the programmer asks himself “What is the type of the variable I am going to print?”, and as soon as that question is answered, the next question is “What is the right <code>%</code> format string for this type?”. The compiler can easily answer these questions. The next thing is: How to make the compiler do that, without generating additional runtime code?</p>
+<p>In the past, I wrote about <a href="../../../../2016/05/08/compile_time_type_lists">type lists which can be used as compile-time data structures for metaprograms</a>. And building on top of that, I wrote about <a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">transforming string literals to type lists, doing something with them and transforming back to string literals</a>. Understanding the ideas from those articles is crucial for understanding the code of this library.</p>
+<p>After a lot of inspiring discussions with my colleagues, we iterated towards the idea of having a compile time function, which takes a simplified format string, and a list of the types of the parameters the user provided. The syntax of the simplified format string was inspired by Python style printing. In Python, you can do the following:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">python shell <span class="op">&gt;&gt;&gt;</span> <span class="st">&quot;some </span><span class="sc">{}</span><span class="st"> with some var </span><span class="sc">{}</span><span class="st">&quot;</span>.<span class="bu">format</span>(<span class="st">&quot;string&quot;</span>, <span class="dv">123</span>)
+<span class="co">'some string with some var 123'</span></code></pre></div>
+<p>Being inspired from that, I hoped to be able to come up with something like…</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">printf(metaprog_result(<span class="st">&quot;some {} with some var {}&quot;</span>, 
+                       typelist&lt;<span class="at">const</span> <span class="dt">char</span> *, <span class="dt">int</span>&gt;), 
+       <span class="st">&quot;string&quot;</span>, <span class="dv">123</span>);</code></pre></div>
+<p>…which collapses to the following during compile time:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">printf(<span class="st">&quot;some </span><span class="sc">%s</span><span class="st"> with some var </span><span class="sc">%d</span><span class="st">&quot;</span>, <span class="st">&quot;string&quot;</span>, <span class="dv">123</span>);</code></pre></div>
+<p>With this design, it is also possible to use the meta-program as a frontend for not only <code>printf</code>, but also <code>sprintf</code>, <code>fprintf</code>, etc.</p>
+<h3 id="first-step-defining-an-autoformat-macro">First Step: Defining an <code>autoformat</code> Macro</h3>
+<p>The first problem is, that the parameters <code>&quot;string&quot;, 123</code> need to be both present in the <code>printf</code> function call as parameters, and at the same time, a type list <code>&lt;const char*, int&gt;</code> needs to be extracted out of them. The only way I was able to come up with was a preprocessor macro:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#define AUTOFORMAT(fmtstr, ...) </span>\
+<span class="pp">    ({ </span>\
+<span class="pp">        using paramtypes = create_typelist_from_params(</span><span class="ot">__VA_ARGS__</span><span class="pp">)); </span>\
+<span class="pp">        return_preprocessed_format_str(fmtstr, paramtypes); </span>\
+<span class="pp">    })</span>
+
+<span class="pp">#define pprintf(fmtstr, ...) </span>\
+<span class="pp">    printf(AUTOFORMAT(fmtstr, </span><span class="ot">__VA_ARGS__</span><span class="pp">), __VA_ARGS)</span></code></pre></div>
+<p>This way it is possible to extract a type list with all the parameter types, feed it into a metaprogram which preprocesses and transforms the simplified format string, and then puts a <code>printf</code> compatible result into <code>printf</code>. And that would then happen without adding any portion of additional runtime code.</p>
+<p>Unfortunately, in C++ (even including C++17) there is currently no other way to do this without C preprocessor macros.</p>
+<h3 id="second-step-obtaining-the-type-list">Second Step: Obtaining the Type List</h3>
+<p>What we have: <code>&quot;some string&quot;, 123</code>. What we want: <code>const char*, int</code>.</p>
+<p>In the <code>AUTOFORMAT</code> macro, the parameters, separated by commas, are available via <code>__VA_ARGS__</code>. These can be put into a template function call, which deduces the types:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> ... Ts&gt;
+<span class="dt">make_t</span>&lt;Ts...&gt; tie_types(Ts...);</code></pre></div>
+<p>This function does not even need to be defined because it is only used in a <code>decltype</code> environment. No runtime code will lever call it. Within the <code>pprintf</code> macro, it can now be used the following way:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">using</span> paramtypes = <span class="kw">decltype</span>(tie_types(<span class="ot">__VA_ARGS__</span>));</code></pre></div>
+<p><code>paramtypes</code> is now a type list. <code>make_t&lt;const char*, int&gt;</code> evaluates to <code>tl&lt;const char*, tl&lt;int, null_t&gt;&gt;</code> (Read more about how this in particular works in the <a href="../../../../2016/05/08/compile_time_type_lists">type list article</a>).</p>
+<h3 id="third-step-transforming-the-simplified-format-string">Third Step: Transforming the Simplified Format String</h3>
+<p>Having the simplified format string with <code>{}</code> braces, and the list of types the user provided as <code>printf</code> arguments, this can be fed to some algorithm which constructs a <code>printf</code> compatible format string.</p>
+<p>The following statement will run the metaprogram function <code>autoformat_t</code>, which results in a struct with a static member function <code>str()</code>, which returns the <code>printf</code> compatible result string:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">autoformat_t</span>&lt;strprov, paramtypes&gt;::str();</code></pre></div>
+<p>What <code>autoformat_t</code> does, is basically:</p>
+<ol style="list-style-type: decimal">
+<li>Iterate through the simplified format string.</li>
+<li>For every opening <code>{</code> brace, find the closing <code>}</code> brace.</li>
+<li>For every pair of braces, take the right argument type from the type list.</li>
+<li>Map from <code>type</code> to <code>%foo</code> format string (There is a lookup table of those), and substitute the braces by the format string piece.</li>
+</ol>
+<p>The brace match search algorithm looks really similar to the <a href="../../../../2016/06/16/cpp_template_compile_time_brainfuck_interpreter">function of the compile-time brainfuck interpreter, which searches for matching <code>[]</code> pairs</a>.</p>
+<h3 id="detail-features">Detail Features</h3>
+<p>Just looking for <code>{}</code> braces and substituting them by format string pieces is not enough. There are different cases and use cases which must be handled:</p>
+<h4 id="printing-strings">Printing Strings</h4>
+<p>When a programmer writes <code>pprintf(&quot;Buffer address: {}\n&quot;, some_char_buffer);</code>, it is <strong>not</strong> wise to substitute the <code>{}</code> with <code>%s</code>. As the example already suggests, the parameter is of type <code>char*</code>, but it is not a null terminated string.</p>
+<p>Different implementation strategies can be applied:</p>
+<ol style="list-style-type: decimal">
+<li>Let the user cast the parameter to <code>void*</code>, then <code>autoformat_t</code> will substitute the braces with <code>%p</code> to print the address of the buffer.</li>
+<li>Let the user additionally type <code>{s}</code> between the braces, so <code>autoformat_t</code> knows that the user <strong>really</strong> wants to print it as a string.</li>
+</ol>
+<p>I chose method <em>2</em>. Printing a string now looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">pprintf(<span class="st">&quot;Some string: {s}&quot;</span>, <span class="st">&quot;Hello World&quot;</span>);</code></pre></div>
+<h4 id="formatting-integers-as-hex-numbers">Formatting Integers as Hex Numbers</h4>
+<p>When a programmer writes <code>pprintf(&quot;Some hex number: {}&quot;, 0x123);</code>, there must be some possibility to express “I want this integer printed as hex number instead of a decimal number”.</p>
+<p>I chose to let the user provide this information between the braces by writing <code>{x}</code>. This way any integer of any size will be printed correctly as <code>%x</code>, or <code>%lx</code>, or <code>%llx</code>.</p>
+<p><strong>Example</strong>: <code>pprintf(&quot;{x}&quot;, 0x123);</code> results in <code>printf(&quot;%x&quot;, 0x123);</code></p>
+<h4 id="adding-additional-format-info">Adding Additional Format Info</h4>
+<p>What if the user wants to print a <code>double</code> variable, but also needs to specify the precision?</p>
+<p>In that case, <code>autoformat_t</code> will just take anything which is not an <code>x</code> or <code>s</code> (as used as a special specifier for string or hex number formatting) and put it between the <code>%</code> and the <code>f</code> or <code>lf</code> for doubles. This works for any type.</p>
+<p>This strategy is applied to all types. This way it is possible to tamper with the indentation, precision, etc. whatever <code>printf</code> supports for which type.</p>
+<p><strong>Example</strong>: <code>pprintf(&quot;{0.3}&quot;, 1.23);</code> results in <code>printf(&quot;%0.3lf&quot;, 1.23);</code></p>
+<h4 id="printing-actual-braces">Printing Actual <code>{}</code> Braces</h4>
+<p>If the user wants to print actual <code>{}</code> braces, it must be possible to mask them somehow.</p>
+<p>If <code>autoformat_t</code> runs over an opening brace but finds it masked with <code>\</code>, it will ignore it. The closing brace is ignored already because the closing brace search function is not called.</p>
+<p>However, there are actually 2 backslashes needed because <code>\</code> alone does not result in an actual “&quot; string part. The backslash must be masked itself, so only <code>\\{</code> will result in the <code>autoformat_t</code> function seeing a <code>\{</code>.</p>
+<p><strong>Example</strong>: <code>pprintf(&quot;var in braces: \\{ {} }&quot;, 123);</code> results in <code>printf(&quot;var in braces: { %d }&quot;, 123);</code> #### Catching Brace Mismatches</p>
+<p>The meta-program refuses to compile if…</p>
+<ul>
+<li>it does not find a closing brace for an opening one.</li>
+<li>it finds nested braces <code>{ {} }</code>, in which case it looks probable that the user wanted to mask the outer pair.</li>
+<li>it finds more <code>{}</code> placeholders than parameters provided by the user.</li>
+<li>it finds less <code>{}</code> placeholders than parameters provided by the user.</li>
+</ul>
+<h3 id="the-type-to-format-string-lookup-table">The Type-to-Format-String Lookup Table</h3>
+<p>All types are cleaned from any <code>const</code> etc. noise, and then fed into the <code>type2fmt</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; <span class="kw">struct</span> type2fmt;
+
+<span class="co">// Integral types</span>
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">char</span>&gt;                { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'c'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">short</span>&gt;               { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'d'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">int</span>&gt;                 { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'d'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">long</span> <span class="dt">int</span>&gt;            { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'l'</span>, <span class="st">'d'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">long</span> <span class="dt">long</span> <span class="dt">int</span>&gt;       { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'l'</span>, <span class="st">'l'</span>, <span class="st">'d'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">unsigned</span> <span class="dt">char</span>&gt;       { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'u'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">unsigned</span> <span class="dt">short</span>&gt;      { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'u'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">unsigned</span>&gt;            { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'u'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">unsigned</span> <span class="dt">long</span>&gt;       { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'l'</span>, <span class="st">'u'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">unsigned</span> <span class="dt">long</span> <span class="dt">long</span>&gt;  { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'l'</span>, <span class="st">'l'</span>, <span class="st">'u'</span>&gt;; };
+
+<span class="co">// Floating point</span>
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">float</span>&gt;  { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'f'</span>&gt;; };
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="dt">double</span>&gt; { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'l'</span>, <span class="st">'f'</span>&gt;; };
+
+<span class="co">// Pointers</span>
+<span class="kw">template</span> &lt;&gt; <span class="kw">struct</span> type2fmt&lt;<span class="bu">std::</span>nullptr_t&gt; { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'p'</span>&gt;; };
+<span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; <span class="kw">struct</span> type2fmt&lt;T*&gt;   { <span class="kw">using</span> type = <span class="dt">char_tl_t</span>&lt;<span class="st">'p'</span>&gt;; };</code></pre></div>
+<p><code>type2fmt</code> will then return a character type list, which can be used to compose the right format string for <code>printf</code>.</p>
+<p>Note that the 32bit/64bit safety comes from here. For 64bit systems, <code>uint64_t</code> is an <code>unsigned long</code>, while it is an <code>unsigned long long</code> on 32bit systems. When the user writes <code>pprintf(&quot;Some 64bit unsigned: {}&quot;, uint64_t(123));</code>, the compiler will go through all the typedef aliases, and boil the type down to <code>unsigned long</code>, or <code>unsigned long long</code>, depending on what platform the code is compiled for. Because of this, <code>type2fmt</code> will automatically translate the <code>uint64_t</code> to the right format string: <code>%lu</code> or <code>%llu</code>. No <code>PRIu64</code> necessary.</p>
+<h2 id="no-runtime-overhead">No Runtime Overhead</h2>
+<p>What’s with the “no runtime overhead” and “no additional runtime code” promise?</p>
+<p>Compiling the program…</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;cstdio&gt;</span>
+<span class="pp">#include </span><span class="im">&lt;pprintpp.hpp&gt;</span>
+
+<span class="dt">int</span> main()
+{
+    pprintf(<span class="st">&quot;{} hello {s}! {}</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="dv">1</span>, <span class="st">&quot;world&quot;</span>, <span class="dv">2</span>);
+}</code></pre></div>
+<p>…leads to the following <code>main</code> function in the binary:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">bash</span> $ objdump -d example
+<span class="ex">...</span>
+<span class="ex">0000000000400450</span> <span class="op">&lt;</span>main<span class="op">&gt;</span>:
+  <span class="ex">400450</span>:       48 83 ec 08             sub    <span class="va">$0</span>x8,%rsp
+  <span class="ex">400454</span>:       41 b8 02 00 00 00       mov    <span class="va">$0</span>x2,%r8d
+  <span class="ex">40045a</span>:       b9 04 06 40 00          mov    <span class="va">$0</span>x400604,%ecx <span class="co"># &lt;-- &quot;world&quot;</span>
+  <span class="ex">40045f</span>:       ba 01 00 00 00          mov    <span class="va">$0</span>x1,%edx
+  <span class="ex">400464</span>:       be 10 06 40 00          mov    <span class="va">$0</span>x400610,%esi <span class="co"># &lt;-- &quot;%d hello world %s!...&quot;</span>
+  <span class="ex">400469</span>:       bf 01 00 00 00          mov    <span class="va">$0</span>x1,%edi
+  <span class="ex">40046e</span>:       31 c0                   xor    %eax,%eax
+  <span class="ex">400470</span>:       e8 bb ff ff ff          callq  400430 <span class="op">&lt;</span>__printf_chk@plt<span class="op">&gt;</span>
+  <span class="ex">400475</span>:       31 c0                   xor    %eax,%eax
+  <span class="ex">400477</span>:       48 83 c4 08             add    <span class="va">$0</span>x8,%rsp
+  <span class="ex">40047b</span>:       c3                      retq
+<span class="ex">...</span></code></pre></div>
+<p>Excerpt of the data section where the strings which are loaded reside:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">bash</span> $ objdump -s -j .rodata example
+<span class="ex">...</span>
+<span class="ex">Contents</span> of section .rodata:
+ <span class="ex">400600</span> 01000200 776f726c 64000000 00000000  ....world.......
+ <span class="ex">400610</span> 25642068 656c6c6f 20257321 2025640a  %d hello %s! %d.
+ <span class="ex">400620</span> 00                                   .</code></pre></div>
+<p>The string looks exactly as if one had written <code>printf(&quot;%d hello %s! %d\n&quot;, /* ... */);</code>.</p>
+<p>Having exactly that string embedded in the binary does <strong>not</strong> rely on optimization. It <em>may</em> happen, that the <code>str()</code> function which statically returns this string, is still called in an unoptimized binary. But this function does <em>nothing</em> else than returning this string, which is already composed in the binary.</p>
+<h2 id="limitations">Limitations</h2>
+<p>The <code>autoformat_t</code> meta-program does only substitute generic placeholders with the right <code>%</code> format strings, which are compatible with <code>printf</code>.</p>
+<p>It does <strong>not</strong> extend <code>printf</code> with more formatting capabilities. This way it is also not possible to print custom types because it is not possible to put some custom <code>%</code> format string into <code>printf</code>, which the original <code>printf</code> implementation does not know.</p>
+<p>Of course, it is possible to extend the type knowledge of the <code>type2fmt</code> meta function, in order to feed custom implementations of <code>printf</code> like functions with additional type format strings.</p>
+<p>There are libraries like <a href="https://github.com/fmtlib/fmt">libfmt</a> out there, which provide rich formatting capabilities. However, all such libraries add additional runtime overhead to the resulting program.</p>
+<h2 id="compilation-performance">Compilation Performance</h2>
+<p>Heavy template meta-programs tend to be slow. I invested a lot of time in measuring different type list implementations, in order to make this <code>printf</code> frontend <em>fast</em>.</p>
+<p>In another blog article, I <a href="../../../../2016/06/25/cpp_template_type_list_performance">measured the performance of type lists</a> using variadic template parameters, and recursive type lists. This library builds on the faster list implementation.</p>
+<p>The resulting compile time overhead is <em>rarely</em> in measurable timing regions, which makes it useful for real life projects.</p>
+<h2 id="summary">Summary</h2>
+<p>I wrapped the code into a repository called <code>pprintpp</code> and published it on GitHub under the MIT license. (<a href="https://github.com/tfc/pprintpp">Link to the repository</a>)</p>
+<p>This library is in production use for some time now and helped get rid of a lot of typos and variable-type accidents while being very comfortable at the same time.</p>
+<p>I’d be happy to hear that it is useful to others outside of my projects, too!</p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/11/05/python_style_printf_for_cpp';
+this.page.identifier = 'nicecpp/2016/11/05/python_style_printf_for_cpp';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-28506344-2', 'auto');
+ga('send', 'pageview');</script>
+</body>
+</head>
+</html>

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../public/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../public/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's C++ Blog &middot; Type Lists</title>
+<script type="text/javascript" async src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+</h1>
+<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About</a>
+<a class="sidebar-nav-item" href="https://galowicz.de">CV Info</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+</a>
+<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Type Lists</h1>
+<div class="post"><span class="post-date">May  8, 2016</span>
+<p>Homogenuous data in purely functional programs is typically managed in <em>lists</em>. Items can be appended or prepended to lists, different lists can be concatenated. Lists can be filtered, transformed, mapped, reduced, etc. Having all this nice stuff as a template meta library is quite an enabler for complex compile time meta programs.</p>
+<!--more-->
+<p>There are already very complete meta programming libraries, just like <a href="https://github.com/boostorg/hana">Boost.Hana</a> for example. This article aims to explain, how <em>lists</em> of some kind of payload can be implemented in C++ template syntax. From scratch.</p>
+<h2 id="all-roads-lead-to-rome">All Roads Lead to Rome</h2>
+<p>There are several possibilities to implement lists in template meta language. Different implemetations usually have different trade-offs, so i sketch two implementation variants and discuss their advantages and disadvantages.</p>
+<h3 id="way-1-variadic-template-type-lists">Way 1: Variadic template type lists</h3>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> ... Types&gt; <span class="kw">struct</span> type_list {};
+
+<span class="kw">using</span> my_list = type_list&lt;Type1, Type2, Type3&gt;;</code></pre></div>
+<p>That’s basically it. Type items are just listed as variadic template parameters.</p>
+<h3 id="way-2-nested-template-type-lists">Way 2: Nested template type lists</h3>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> <span class="dt">null_t</span> {};
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> T, <span class="kw">typename</span> U&gt;
+<span class="kw">struct</span> tl
+{
+    <span class="kw">using</span> head = T;
+    <span class="kw">using</span> tail = U;
+};
+
+<span class="kw">using</span> my_list = tl&lt;Type1, tl&lt;Type2, tl&lt;Type3, <span class="dt">null_t</span>&gt; &gt; &gt;;</code></pre></div>
+<p>Nested lists work with recursion. Every element is basically a 2-tuple, wich contains the following:</p>
+<ol style="list-style-type: decimal">
+<li><code>head</code>: The payload type of this list item</li>
+<li><code>tail</code>: The next list item, which is…
+<ul>
+<li>…another tuple (This is the recursive part!)</li>
+<li>…a <code>null_t</code> list delimiter, which denotes the end of the list.</li>
+</ul></li>
+</ol>
+<p>A look at the <code>my_list</code> line which shows how to instantiate a list using this method, quickly uncovers the clumsiness of this approach. Such lists are hard to read when they grow longer, as there are more angle brackets than anything else. The clumsiness of creating such type lists can be overcome with nice helpers.</p>
+<h2 id="advantagesdisadvantages">Advantages/Disadvantages</h2>
+<h3 id="performance">Performance</h3>
+<blockquote>
+<p>This article at first propagated, that <strong>nested</strong> type lists are much faster. Then i did some measurements with metashell, trusting that tool too early, and had the impression that <strong>variadic</strong> type lists are faster. Then i measured again, using real compilers (GCC/Clang), and the impression turned around again. Have a look at the measurements yourself.</p>
+</blockquote>
+<p>The following measurements will show, that <strong>nested template type lists</strong> are compiled <strong>faster</strong> than variadic type lists.</p>
+<p>I wrote a small meta program which generates both recursive and variadic type lists. These type lists just contain integer types sequences.</p>
+<h4 id="metashell">Metashell</h4>
+<p>Metashell is an interactive meta programming shell, and it uses Clang to evaluate template code. Using <a href="http://metashell.org/">metashell</a>’s <code>evaluate -profile</code> command, i measured the time to create lists of both variants, and plotted that. (Actually running <code>g++</code> or <code>clang++</code> yields different results, but metashell allowed me to measure the actual template instantiation, without measuring the overhead of starting the compiler in the shell etc.)</p>
+<div class="figure">
+<img src="../../../../images/compile_time_type_list_creation_benchmark_metashell.png" alt="Metashell: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists" />
+<p class="caption">Metashell: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists</p>
+</div>
+<p>Both variants seem to be within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>, and variadic type lists prove to be significantly faster in metashell.</p>
+<h4 id="gccclang">GCC/Clang</h4>
+<p>The compile times of real compilers are of course more interesting, when writing some serious meta programming code for productive use. Interestingly, the numbers here are <strong>completely different</strong> than the numbers from the measurements in metashell.</p>
+<div class="figure">
+<img src="../../../../images/compile_time_type_list_creation_benchmark_compilers.png" alt="GCC/Clang: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists" />
+<p class="caption">GCC/Clang: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists</p>
+</div>
+<p>Again, both variants seem to be within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>. But this time, nested type lists clearly win the race.</p>
+<p>In fact, nested type lists are so much faster in this benchmarks, that it seems that they are <strong>the</strong> list implementation of choice.</p>
+<p>The graphs of the nested type list runs in GCC/Clang appear really small and similar in the diagram, and it’s hard to compare them from this picture. I do not provide a diagram only showing these, because the lines are extremely noisy, not significantly different, and therefore the comparison between clang and GCC does not seem to be very meaningful in this case.</p>
+<blockquote>
+<p>Versions: g++: GCC 5.3.1 20160406 (Red Hat 5.3.1-6) clang++: Clang version 3.7.0 (tags/RELEASE_370/final)</p>
+</blockquote>
+<h3 id="readability">Readability</h3>
+<p>Creating a variadic template type list (way 1) is clearly <strong>more intuitive</strong> than the long and clumsy way to set up nested template type lists. Variadic template type lists came with <strong>C++11</strong>.</p>
+<p>Alghough i find writing list manipulating code nicer with the old school nested type lists. Let me demonstrate that on an example function <code>prepend_t</code>, which takes a list, and an item, and prepends that item to the list.</p>
+<p>For nested type lists, prepending an item to its front means wrapping it into a new list element tuple:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Prepend an item to a recursive type list</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> RecursiveList, <span class="kw">typename</span> T&gt;
+<span class="kw">using</span> <span class="dt">prepend_t</span> = tl&lt;T, RecursiveList&gt;;</code></pre></div>
+<p>For variadic type lists, this means that we need to extract what it contains already with pattern matching, and then create a new list:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Prepend an item to a variadic type list</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> VariadicList, <span class="kw">typename</span> T&gt;
+<span class="kw">struct</span> prepend;
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> ... ListItems, <span class="kw">typename</span> T&gt;
+<span class="kw">struct</span> prepend&lt;tl&lt;ListItems...&gt;, T&gt;
+{
+    type = <span class="kw">typename</span> prepend&lt;T, ListItems...&gt;::type;
+};
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> VariadicList, <span class="kw">typename</span> T&gt;
+<span class="kw">using</span> <span class="dt">prepend_t</span> = tl&lt;T, VariadicList&gt;;</code></pre></div>
+<p>Of course, one can implement <code>prepend_t</code>, <code>append_t</code>, etc. helpers, and be fine without such pattern matching tricks, but this is another indirection which can make template meta programs slow again. (Although the performance boost of variadic type lists might be good enough to allow for some indirection here and there).</p>
+<p>Another thing about nested type lists: The clumsyness of their creation can be overcome by creating actual variadic type lists first, and then transforming to recursive type lists:</p>
+<div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> ... Ts&gt; <span class="kw">struct</span> make;
+
+<span class="co">// Case: Normal recursion. Consume one type per call.</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> T, <span class="kw">typename</span> ... REST&gt;
+<span class="kw">struct</span> make&lt;T, REST...&gt; { 
+    <span class="kw">using</span> type = tl&lt;T, <span class="kw">typename</span> make&lt;REST...&gt;::type&gt;;
+};
+
+<span class="co">// Case: Recursion abort, because the list of types ran empty</span>
+<span class="kw">template</span> &lt;&gt;
+<span class="kw">struct</span> make&lt;&gt; { <span class="kw">using</span> type = <span class="dt">null_t</span>; };
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> ... Ts&gt;
+<span class="kw">using</span> <span class="dt">make_t</span> = <span class="kw">typename</span> make&lt;Ts...&gt;::type;</code></pre></td></tr></table></div>
+<p>Using <code>make_t</code>, recursive lists can now be as nicely instantiated like variadic type lists: <code>using my_recursive_list = make_t&lt;Type1, Type2, Type3&gt;;</code></p>
+<p>The <code>make</code> struct in line 4 just unwraps the variadic type list (way 2) step by step using pattern matching, and transforms it into a nested template type list (way 1). At some point it arrives at the last item, and the compiler will choose the <code>make</code> struct from line 11 for the last instantiation, which is where the <code>null_t</code> element is inserted to terminate the list.</p>
+<p>In the following sections, we will implement some usual list library functions. I chose to do that on nested type lists, because the implementation looks more like what one might already be used from other purely functional programming languages. All of this is also possible with variadic type lists.</p>
+<h2 id="extracting-head-and-tail-of-lists">Extracting Head and Tail of Lists</h2>
+<div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> TList&gt;
+<span class="kw">struct</span> list_content;
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> Head, <span class="kw">typename</span> Tail&gt;
+<span class="kw">struct</span> list_content&lt;tl&lt;Head, Tail&gt;&gt; {
+    <span class="kw">using</span> head = Head;
+    <span class="kw">using</span> tail = Tail;
+};
+
+<span class="kw">template</span> &lt;&gt;
+<span class="kw">struct</span> list_content&lt;<span class="dt">null_t</span>&gt; {
+    <span class="kw">using</span> head = <span class="dt">null_t</span>;
+    <span class="kw">using</span> tail = <span class="dt">null_t</span>;
+};
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> TList&gt;
+<span class="kw">using</span> <span class="dt">head_t</span> = <span class="kw">typename</span> list_content&lt;TList&gt;::head;
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> TList&gt;
+<span class="kw">using</span> <span class="dt">tail_t</span> = <span class="kw">typename</span> list_content&lt;TList&gt;::tail;</code></pre></td></tr></table></div>
+<p>The <code>list_content</code> helper struct applies pattern matching to whatever list is provided as a parameter. It gives access to <code>head</code> and <code>tail</code> by <em>lifting</em> those types out of the list type. This code looks really similar to purely functional programming, and this <em>pattern matching</em> pattern will occur all the time when we go more complex.</p>
+<p>Empty lists are defined to have a <code>null_t</code> head and tail.</p>
+<ul>
+<li><strong>Line 2:</strong> defines the general <code>list_content</code> <em>function</em> which takes one parameter - a list type.</li>
+<li><strong>Line 5:</strong> defines the head/tail return types in case a list is provided as a parameter. Its definition is specialized, which enables to pick out which types the list head contains.</li>
+<li><strong>Line 11:</strong> defines what happens if a list’s tail or an empty list is provided as parameter. It returns <code>null_t</code> in both cases.</li>
+</ul>
+<p>In case someone tries to use this function with non-list types, the compiler will error-out, as it cannot find a templated structure definition of <code>list_content</code> which would accept such type.</p>
+<p>The <code>head_t</code> and <code>tail_t</code> helpers again spare some typing. Those <code>using</code> helpers will look the same all the time, as they do no real work.</p>
+<h2 id="appending-items-or-lists-to-a-lists-tail">Appending Items or Lists to a List’s Tail</h2>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Function declaration: Takes a list, and a type. </span>
+<span class="co">// Using (list, type) notation in following comments</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> TList, <span class="kw">typename</span> T&gt;
+<span class="kw">struct</span> append;
+
+<span class="co">// (empty list, null_t item) -&gt; Still an empty list</span>
+<span class="kw">template</span> &lt;&gt;
+<span class="kw">struct</span> append&lt;<span class="dt">null_t</span>, <span class="dt">null_t</span>&gt; { <span class="kw">using</span> type = <span class="dt">null_t</span>; };
+
+<span class="co">// (empty list, T) -&gt; List which only contains T</span>
+<span class="co">// This is usually the recursion abort step when adding an item to a list</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;
+<span class="kw">struct</span> append&lt;<span class="dt">null_t</span>, T&gt; { <span class="kw">using</span> type = tl&lt;T, <span class="dt">null_t</span>&gt;; };
+
+<span class="co">// (list, T) -&gt; Recurse until tail of list, and return a version with T at its end</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> Head, <span class="kw">typename</span> Tail, <span class="kw">typename</span> T&gt;
+<span class="kw">struct</span> append&lt;tl&lt;Head, Tail&gt;, T&gt;
+{ <span class="kw">using</span> type = tl&lt;Head, <span class="kw">typename</span> append&lt;Tail, T&gt;::type&gt;; };
+
+<span class="kw">template</span> &lt;<span class="kw">typename</span> TList, <span class="kw">typename</span> T&gt;
+<span class="kw">using</span> <span class="dt">append_t</span> = <span class="kw">typename</span> append&lt;TList, T&gt;::type;</code></pre></div>
+<p>When appending items to a list, there are 4 cases, which is the cartesian product of <code>{non-empty list, empty list} x {real item, list terminator item}</code>:</p>
+<table style="width:86%;">
+<colgroup>
+<col width="22%" />
+<col width="31%" />
+<col width="32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">List case</th>
+<th align="center">item case</th>
+<th>implementation strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><code>empty list</code></td>
+<td align="center"><code>list terminator item</code></td>
+<td>Return an empty list, of course.</td>
+</tr>
+<tr class="even">
+<td align="center"><code>empty list</code></td>
+<td align="center"><code>real item</code></td>
+<td>Return a single-item list with the new item.</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>non-empty list</code></td>
+<td align="center"><code>list terminator item</code></td>
+<td>Just return the unchanged list.</td>
+</tr>
+<tr class="even">
+<td align="center"><code>non-empty list</code></td>
+<td align="center"><code>real item</code></td>
+<td>This is the only step which is not a trivial one-step thing. This function specialization calls itself recursively on the list’s tail in order to get at its end and append the payload item there.</td>
+</tr>
+</tbody>
+</table>
+<p>The implementation contains of only 3 function specializations, instead of 4, although we just identified 4 different scenarios. Because the <code>(non-empty list, list terminator item)</code> case is not implemented explicitly, the implementation will actually waste some computing cycles by appending <code>null_t</code> to the list. This can easily be fixed, which is left as an exercise for the reader.</p>
+<p>Another specialization of the function can be added in order to support <strong>list concatenation</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// (empty list, non-empty list) -&gt; Return the non-empty list</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> Head, <span class="kw">typename</span> T&gt;
+<span class="kw">struct</span> append&lt;<span class="dt">null_t</span>, tl&lt;Head, T&gt;&gt; { <span class="kw">using</span> type = tl&lt;Head, T&gt;; };</code></pre></div>
+<p>Even without this specialization, it is possible to append a list to another, but the result would be ill-formed, if the expected result is one concatenated list. Imagine <code>l1 = tl&lt;T1, null_t&gt;</code> and <code>l2 = tl&lt;T2, null_t&gt;</code>: Without the new function specialization, appending <code>l2</code> to <code>l1</code> would result in <code>tl&lt;T1, tl&lt;tl&lt;T1, null_t&gt;, null_t&gt;&gt;</code>. This is actually correct, because we appended an item which is a list, to the list. (Which means that we just created a multi-dimensional list, or a <em>tree</em>) The new specialization will <em>flatten</em> this down, so we get an ordinary one dimensional list as a result.</p>
+<p>It has to be noted that this change does not work well any longer, if someone actually <em>wants</em> to append lists to lists in order to have <em>lists of lists</em>. A production library would have separate functions for <em>appending</em> and <em>concatenating</em>.</p>
+<h2 id="i-want-to-see-something.-how-do-i-print-results">I Want to <em>see</em> Something. How Do I Print Results?</h2>
+<p>When playing around with such composed types, it’s nice to see if all that actually worked. To debug a list in different composition steps, it is valuable to print its state.</p>
+<p>Printing at compile time can be done by just emitting a compile error.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> Type1; <span class="co">// Just some artificial types</span>
+<span class="kw">class</span> Type2;
+<span class="kw">class</span> Type3;
+
+<span class="kw">using</span> list123 = <span class="dt">make_t</span>&lt;Type1, Type2, Type3&gt;;
+
+<span class="co">// This is our little debugging helper. </span>
+<span class="co">// By not defining it, but instantiating it, we provoke a compile error.</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; <span class="kw">class</span> <span class="dt">debug_t</span>;
+
+<span class="dt">debug_t</span>&lt;list123&gt; d; <span class="co">// Does not compile, but unveils state</span></code></pre></div>
+<p>The output looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">g++</span> main.cpp -std=c++14
+<span class="ex">main.cpp</span>:65:18: error: aggregate ‘debug_t<span class="op">&lt;</span>tl<span class="op">&lt;</span>Type1, tl<span class="op">&lt;</span>Type2, tl<span class="op">&lt;</span>Type3, null_t<span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> dt’ has incomplete type and cannot be defined
+ <span class="ex">debug_t</span><span class="op">&lt;</span>list123<span class="op">&gt;</span> dt<span class="kw">;</span>
+                  ^</code></pre></div>
+<p>It is a bit uncomfortable to fiddle it out, but the compiler error message reflects, that the list state is <code>&lt;tl&lt;Type1, tl&lt;Type2, tl&lt;Type3, null_t&gt; &gt; &gt;</code>, which is what we expected.</p>
+<p>Now we can append things to it…</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> Type4;
+
+<span class="kw">using</span> new_list = <span class="dt">append_t</span>&lt;list123, Type4&gt;;
+
+<span class="dt">debug_t</span>&lt;new_list&gt; d;</code></pre></div>
+<p>Output:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">g++</span> main.cpp -std=c++14
+<span class="ex">main.cpp</span>:68:19: error: aggregate ‘debug_t<span class="op">&lt;</span>tl<span class="op">&lt;</span>Type1, tl<span class="op">&lt;</span>Type2, tl<span class="op">&lt;</span>Type3, tl<span class="op">&lt;</span>Type4, null_t<span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> dt’ has incomplete type and cannot be defined
+ <span class="ex">debug_t</span><span class="op">&lt;</span>new_list<span class="op">&gt;</span> dt<span class="kw">;</span>
+                   ^</code></pre></div>
+<p>It is nice to see that <code>Type4</code> was correctly appended. Concatenating a list to another does also work:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> Type1;
+<span class="kw">class</span> Type2;
+<span class="kw">class</span> Type3;
+<span class="kw">class</span> Type4;
+
+<span class="kw">using</span> list1 = <span class="dt">make_t</span>&lt;Type1, Type2&gt;;
+<span class="kw">using</span> list2 = <span class="dt">make_t</span>&lt;Type3, Type4&gt;;
+
+<span class="kw">using</span> new_list = <span class="dt">append_t</span>&lt;list1, list2&gt;;
+
+<span class="dt">debug_t</span>&lt;new_list&gt; d;</code></pre></div>
+<p>Output:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">g++</span> main.cpp -std=c++14
+<span class="ex">main.cpp</span>:69:19: error: aggregate ‘debug_t<span class="op">&lt;</span>tl<span class="op">&lt;</span>Type1, tl<span class="op">&lt;</span>Type2, tl<span class="op">&lt;</span>Type3, tl<span class="op">&lt;</span>Type4, null_t<span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;</span> dt’ has incomplete type and cannot be defined
+ <span class="ex">debug_t</span><span class="op">&lt;</span>new_list<span class="op">&gt;</span> dt<span class="kw">;</span>
+                   ^</code></pre></div>
+<h2 id="outlook">Outlook</h2>
+<p>With not too much code (Although it is actually a lot and ugly code, compared to most other programming languages), it is possible to maintain lists of types.</p>
+<p>In the next article i show how to put them to use in order to do useful stuff at compile time: <a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">Link to the article about transformations between user input/output and type lists</a></p>
+<p>One example of code which does heavily use type lists, is my fun <a href="https://github.com/tfc/cpp_template_meta_brainfuck_interpreter">brainfuck interpreter template meta program on github</a>. Link to is its <a href="https://github.com/tfc/cpp_template_meta_brainfuck_interpreter/blob/master/typelist.hpp">typelist.hpp list implementation</a></p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/05/08/compile_time_type_lists';
+this.page.identifier = 'nicecpp/2016/05/08/compile_time_type_lists';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-28506344-2', 'auto');
+ga('send', 'pageview');</script>
+</body>
+</head>
+</html>
