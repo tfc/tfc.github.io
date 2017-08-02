@@ -16,7 +16,7 @@ This article shows how to use the CRTP in order to get the compile time advantag
 A very typical example for polymorphy are objects which represent animals, where every animal is expected to make a typical animal sound.
 Different kinds of animals like cats and dogs would then inherit the animal interface from the abstract class `Animal`:
 
-{% highlight c++ %}
+``` cpp
 class Animal
 {
 public:
@@ -45,7 +45,7 @@ public:
         return {"Meow"};
     }
 };
-{% endhighlight %}
+```
 
 So the `Animal` class does all the generic work, without knowing anything about specific animal sounds, and asks its subclass for exactly that information.
 
@@ -53,7 +53,7 @@ If the code which uses that later is not calling `make_sound()` on pointers or r
 
 Instead, *CRTP* can be used, which stands for ***C*uriously *R*ecurring *T*emplate *P*attern**.
 
-{% highlight c++ %}
+``` cpp
 template <typename T>
 class Animal
 {
@@ -86,7 +86,7 @@ public:
         return {"Meow"};
     }
 };
-{% endhighlight %}
+```
 
 The casting part within class `Animal` is the interesting detail here (Which happens in `thisT()`).
 So class `Animal` still implements the generic part of making an animal noise, but then does not call a virtual function on itself any longer, but it calls a function which itself does not declare at all.

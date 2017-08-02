@@ -19,14 +19,14 @@ Let's compare it with C++ stream style printing in different situations:
 
 Consider the following simple program:
 
-{% highlight c++ %}
+``` cpp
 #include <cstdio>
 
 int main()
 {
     printf("%u, %x, %0.8f, %0.8lf, %s\n", 123u, 0x123u, 1.0f, 2.0, "Hello World"); 
 }
-{% endhighlight %}
+```
 
 It's simply no fun to tell `printf` of which type all variables are.
 The compiler *knows* the types already, so why must the programmer type the type names *again*?
@@ -34,7 +34,7 @@ The compiler *knows* the types already, so why must the programmer type the type
 C++ streams fix this, as the `operator<<` is properly overloaded for any type, which selects the right formatting method automatically.
 Let's have a look how to get exactly the same output with C++ streams:
 
-{% highlight c++ %}
+``` cpp
 #include <cstdio>
 #include <iostream>
 
@@ -49,7 +49,7 @@ int main()
               << "Hello World" << std::endl
 
 }
-{% endhighlight %}
+```
 
 All type safety aside, at this point most likely everyone will agree that this is, from a readability and comfort perspective, *no* improvement over to `printf`.
 
@@ -61,15 +61,15 @@ All type safety aside, at this point most likely everyone will agree that this i
 
 When compiling the following program on a 64-bit machine, everything is fine:
 
-{% highlight c++ %}
+``` cpp
 printf("%ld\n", static_cast<uint64_t>(123)); 
-{% endhighlight %}
+```
 
 Compiling it on a 32-bit machine, the compiler quickly comes up with errors like:
 
-{% highlight bash %}
+``` bash
 error: format '%ld' expects argument of type 'long int', but argument 2 has type 'uint64_t {aka long long unsigned int}' [-Werror=format=]
-{% endhighlight %}
+```
 
 So on 32bit systems, one should better have used `%lld`.
 This feels needlessly complicated because in both cases, the compiler knows the \*@!#\* type, but nevertheless the programmer has to deal with this now.
@@ -78,9 +78,9 @@ There is a portable solution: `PRIu64`.
 The header file <cinttypes> brings a lot of PRI macros.
 Using this here looks like the following:
 
-{% highlight c++ %}
+``` cpp
 printf("%" PRIu64 "\n", static_cast<uint64_t>(123)); 
-{% endhighlight %}
+```
 
 All the `printf` fans who laughed at the ugliness of C++ streams, now again look a *little bit* like fools.
 
@@ -89,32 +89,32 @@ All the `printf` fans who laughed at the ugliness of C++ streams, now again look
 There are certain types which are a data composition of multiple values.
 A very typical example are *vectors* of data, e.g. geometric vectors:
 
-{% highlight c++ %}
+``` cpp
 struct vec3d {
     double x;
     double y;
     double z;
 };
-{% endhighlight %}
+```
 
 When printing some game state or similar, one usually wants to see vectors formatted like `(1.000, 2.000, 0.000)`.
 
 Okay, easy:
 
-{% highlight c++ %}
+``` cpp
 printf("(%0.3lf, %0.3lf, %0.3lf)\n", v.x, v.y, v.z);
-{% endhighlight %}
+```
 
 What if there are a lot of vectors?
 
-{% highlight c++ %}
+``` cpp
 printf("(%0.3lf, %0.3lf, %0.3lf), "
        "(%0.3lf, %0.3lf, %0.3lf), "
        "(%0.3lf, %0.3lf, %0.3lf)\n", 
        v1.x, v1.y, v1.z,
        v2.x, v2.y, v2.z,
        v2.x, v3.y, v3.z);
-{% endhighlight %}
+```
 
 Okay, it starts to get very repetitive.
 
@@ -123,34 +123,34 @@ Okay, it starts to get very repetitive.
 
 C++ iostream users would just overload `operator<<` for `std::ostream` **once** and be done with this forever:
 
-{% highlight c++ %}
+``` cpp
 std::ostream& operator<<(std::ostream &os, const vec3d &v) {
     return os << "(" 
               << std::setprecision(4) 
               << v.x << ", " << v.y << ", " << v.z 
               << ")";
 }
-{% endhighlight %}
+```
 
 Printing multiple vectors now looks like this:
 
-{% highlight c++ %}
+``` cpp
 std::cout << v1 << ", " << v2 << ", " << v3 << std::endl;
-{% endhighlight %}
+```
       
 `printf` users may start defining helpful macros:
 
-{% highlight c++ %}
+``` cpp
 #define PRIvec3d       "(%0.3lf, %0.3lf, %0.3lf)"
 #define UNPACKvec3d(v) (v).x, (v).y, (v).z
-{% endhighlight %}
+```
 
 ...and print their vectors like this:
 
-{% highlight c++ %}
+``` cpp
 printf(PRIvec3d ", " PRIvec3d ", " PRIvec3d "\n", 
        UNPACKvec3d(v1), UNPACKvec3d(v2), UNPACKvec3d(v3));
-{% endhighlight %}
+```
 
 In my opinion, C++ streams clearly win at this point.
 
@@ -172,32 +172,32 @@ When using `printf`, the programmer asks himself "What is the type of the variab
 The compiler can easily answer these questions.
 The next thing is: How to make the compiler do that, without generating additional runtime code?
 
-In the past, I wrote about [type lists which can be used as compile-time data structures for metaprograms]({% post_url 2016-05-08-compile_time_type_lists %}).
-And building on top of that, I wrote about [transforming string literals to type lists, doing something with them and transforming back to string literals]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}).
+In the past, I wrote about [type lists which can be used as compile-time data structures for metaprograms](/2016/05/08/compile_time_type_lists).
+And building on top of that, I wrote about [transforming string literals to type lists, doing something with them and transforming back to string literals](/2016/05/14/converting_between_c_strings_and_type_lists).
 Understanding the ideas from those articles is crucial for understanding the code of this library.
 
 After a lot of inspiring discussions with my colleagues, we iterated towards the idea of having a compile time function, which takes a simplified format string, and a list of the types of the parameters the user provided.
 The syntax of the simplified format string was inspired by Python style printing.
 In Python, you can do the following:
 
-{% highlight python %}
+``` python
 python shell >>> "some {} with some var {}".format("string", 123)
 'some string with some var 123'
-{% endhighlight %}
+```
 
 Being inspired from that, I hoped to be able to come up with something like...
 
-{% highlight c++ %}
+``` cpp
 printf(metaprog_result("some {} with some var {}", 
                        typelist<const char *, int>), 
        "string", 123);
-{% endhighlight %}
+```
 
 ...which collapses to the following during compile time:
 
-{% highlight c++ %}
+``` cpp
 printf("some %s with some var %d", "string", 123);
-{% endhighlight %}
+```
 
 With this design, it is also possible to use the meta-program as a frontend for not only `printf`, but also `sprintf`, `fprintf`, etc.
 
@@ -206,7 +206,7 @@ With this design, it is also possible to use the meta-program as a frontend for 
 The first problem is, that the parameters `"string", 123` need to be both present in the `printf` function call as parameters, and at the same time, a type list `<const char*, int>` needs to be extracted out of them.
 The only way I was able to come up with was a preprocessor macro:
 
-{% highlight c++ %}
+``` cpp
 #define AUTOFORMAT(fmtstr, ...) \
     ({ \
         using paramtypes = create_typelist_from_params(__VA_ARGS__)); \
@@ -215,7 +215,7 @@ The only way I was able to come up with was a preprocessor macro:
 
 #define pprintf(fmtstr, ...) \
     printf(AUTOFORMAT(fmtstr, __VA_ARGS__), __VA_ARGS)
-{% endhighlight %}
+```
 
 This way it is possible to extract a type list with all the parameter types, feed it into a metaprogram which preprocesses and transforms the simplified format string, and then puts a `printf` compatible result into `printf`.
 And that would then happen without adding any portion of additional runtime code.
@@ -230,21 +230,21 @@ What we want: `const char*, int`.
 In the `AUTOFORMAT` macro, the parameters, separated by commas, are available via `__VA_ARGS__`.
 These can be put into a template function call, which deduces the types:
 
-{% highlight c++ %}
+``` cpp
 template <typename ... Ts>
 make_t<Ts...> tie_types(Ts...);
-{% endhighlight %}
+```
 
 This function does not even need to be defined because it is only used in a `decltype` environment.
 No runtime code will lever call it.
 Within the `pprintf` macro, it can now be used the following way:
 
-{% highlight c++ %}
+``` cpp
 using paramtypes = decltype(tie_types(__VA_ARGS__));
-{% endhighlight %}
+```
 
 `paramtypes` is now a type list.
-`make_t<const char*, int>` evaluates to `tl<const char*, tl<int, null_t>>` (Read more about how this in particular works in the [type list article]({% post_url 2016-05-08-compile_time_type_lists %})).
+`make_t<const char*, int>` evaluates to `tl<const char*, tl<int, null_t>>` (Read more about how this in particular works in the [type list article](/2016/05/08/compile_time_type_lists)).
 
 ### Third Step: Transforming the Simplified Format String
 
@@ -252,9 +252,9 @@ Having the simplified format string with `{}` braces, and the list of types the 
 
 The following statement will run the metaprogram function `autoformat_t`, which results in a struct with a static member function `str()`, which returns the `printf` compatible result string:
 
-{% highlight c++ %}
+``` cpp
 autoformat_t<strprov, paramtypes>::str();
-{% endhighlight %}
+```
 
 What `autoformat_t` does, is basically:
 
@@ -263,7 +263,7 @@ What `autoformat_t` does, is basically:
  3. For every pair of braces, take the right argument type from the type list.
  4. Map from `type` to `%foo` format string (There is a lookup table of those), and substitute the braces by the format string piece.
 
-The brace match search algorithm looks really similar to the [function of the compile-time brainfuck interpreter, which searches for matching `[]` pairs]({% post_url 2016-06-16-cpp_template_compile_time_brainfuck_interpreter %}).
+The brace match search algorithm looks really similar to the [function of the compile-time brainfuck interpreter, which searches for matching `[]` pairs](/2016/06/16/cpp_template_compile_time_brainfuck_interpreter).
 
 ### Detail Features
 
@@ -283,9 +283,9 @@ Different implementation strategies can be applied:
 I chose method *2*.
 Printing a string now looks like this:
 
-{% highlight c++ %}
+``` cpp
 pprintf("Some string: {s}", "Hello World");
-{% endhighlight %}
+```
 
 #### Formatting Integers as Hex Numbers
 
@@ -333,7 +333,7 @@ The meta-program refuses to compile if...
 
 All types are cleaned from any `const` etc. noise, and then fed into the `type2fmt` function:
 
-{% highlight c++ %}
+``` cpp
 template <typename T> struct type2fmt;
 
 // Integral types
@@ -355,7 +355,7 @@ template <> struct type2fmt<double> { using type = char_tl_t<'l', 'f'>; };
 // Pointers
 template <> struct type2fmt<std::nullptr_t> { using type = char_tl_t<'p'>; };
 template <typename T> struct type2fmt<T*>   { using type = char_tl_t<'p'>; };
-{% endhighlight %}
+```
 
 `type2fmt` will then return a character type list, which can be used to compose the right format string for `printf`.
 
@@ -371,7 +371,7 @@ What's with the "no runtime overhead" and "no additional runtime code" promise?
 
 Compiling the program...
 
-{% highlight c++ %}
+``` cpp
 #include <cstdio>
 #include <pprintpp.hpp>
 
@@ -379,11 +379,11 @@ int main()
 {
     pprintf("{} hello {s}! {}\n", 1, "world", 2);
 }
-{% endhighlight %}
+```
 
 ...leads to the following `main` function in the binary:
 
-{% highlight bash %}
+``` bash
 bash $ objdump -d example
 ...
 0000000000400450 <main>:
@@ -399,18 +399,18 @@ bash $ objdump -d example
   400477:       48 83 c4 08             add    $0x8,%rsp
   40047b:       c3                      retq
 ...
-{% endhighlight %}
+```
 
 Excerpt of the data section where the strings which are loaded reside:
 
-{% highlight bash %}
+``` bash
 bash $ objdump -s -j .rodata example
 ...
 Contents of section .rodata:
  400600 01000200 776f726c 64000000 00000000  ....world.......
  400610 25642068 656c6c6f 20257321 2025640a  %d hello %s! %d.
  400620 00                                   .
-{% endhighlight %}
+```
 
 The string looks exactly as if one had written `printf("%d hello %s! %d\n", /* ... */);`.
 
@@ -435,7 +435,7 @@ However, all such libraries add additional runtime overhead to the resulting pro
 Heavy template meta-programs tend to be slow.
 I invested a lot of time in measuring different type list implementations, in order to make this `printf` frontend *fast*.
 
-In another blog article, I [measured the performance of type lists]({% post_url 2016-06-25-cpp_template_type_list_performance %}) using variadic template parameters, and recursive type lists.
+In another blog article, I [measured the performance of type lists](/2016/06/25/cpp_template_type_list_performance) using variadic template parameters, and recursive type lists.
 This library builds on the faster list implementation.
 
 The resulting compile time overhead is *rarely* in measurable timing regions, which makes it useful for real life projects.

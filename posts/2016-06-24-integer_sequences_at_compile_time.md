@@ -14,7 +14,7 @@ We are going to build integer sequences, which will look like the following:
 
 `sequence<0, 1, 2, 3, 4, 5, 6, 7, 8, 9>`
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 // This is the type which holds sequences
 template <int ... Ns> struct sequence {};
 
@@ -42,7 +42,7 @@ struct seq_gen<0, Ns...>
 
 template <int N>
 using sequence_t = typename seq_gen<N>::type;
-{% endhighlight %}
+```
 
 `sequence_t`'s purpose is solely carrying number sequences.
 Note that it is an empty class which is actually *defined* (because it has an empty `{}` definition body).
@@ -76,7 +76,7 @@ It would be nicer to have a function wrapper which has semantics like "*Use this
 This is indeed possible since C++11.
 Let's have a look how to implement that:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 #include <iostream>
 #include <tuple>
 
@@ -114,7 +114,7 @@ int main()
     tuple<double, float, int> tup {1.0, 2.0, 3};
     unpack_and_call(func, tup); // same effect
 }
-{% endhighlight %}
+```
 
 `func` is the example function with its own specific signature.
 It has no knowledge about tuples at all.

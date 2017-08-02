@@ -8,7 +8,7 @@ After about 6 months of writing, I am happy that it is out the door and hope it 
 
 <!--more-->
 
-<img align="left" style="margin: 0px 30px 10px 0px;" src="{{ site.url }}/assets/cpp17_stl_cookbook_cover.png">
+<img align="left" style="margin: 0px 30px 10px 0px;" src="/images/cpp17_stl_cookbook_cover.png">
 
 ## Why did I write this book?
 
@@ -29,18 +29,18 @@ Such programmers are happy to use data structures like `std::vector`, `std::list
 
 So in real life, people rather write code like this:
 
-{% highlight c++ %}
+``` cpp
 int sum = 0;
 for (int i = 0; i < my_vector.length(); ++i) {
     sum += my_vector[i];
 }
-{% endhighlight %}
+```
 
 ... instead of this:
 
-{% highlight c++ %}
+``` cpp
 int sum = accumulate(begin(my_vector), end(my_vector), 0);
-{% endhighlight %}
+```
 
 The `for` loop variant is *not faster* and *not shorter*, but it comes with the disadvantage that it is hardwired to arrays and vectors.
 If one wanted to do the same with lists, it would be necessary to *rewrite* this piece of code.
@@ -72,25 +72,43 @@ All recipes try to solve problems *the STL way*.
 In roughly 500 pages, the book covers the following topics:
 
  1. **The new C++17 features**
- - An overview of the most interesting new C++17 *language* features: `constexpr if`, structured bindings, initializers in `if` statements, fold expressions, etc.
+
+    An overview of the most interesting new C++17 *language* features: `constexpr if`, structured bindings, initializers in `if` statements, fold expressions, etc.
+
  2. **STL Containers**
- - A quick overview what kind of data structures we already have in the C++ STL, and what their characteristics are. The recipes show how to use them in C++17.
+    
+    A quick overview what kind of data structures we already have in the C++ STL, and what their characteristics are. The recipes show how to use them in C++17.
+
+
  3. **Iterators**
- - This chapter explains the important concept of iterators in C++ and how to implement them. This includes the new perks introduced by C++17.
+
+    This chapter explains the important concept of iterators in C++ and how to implement them. This includes the new perks introduced by C++17.
+
  4. **Lambda expressions**
- - Lambda expressions were added in C++11 but evolved in every following standard. This chapter shows their current state and demonstrates what we can do with them. There is some functional programming style involved here.
+
+    Lambda expressions were added in C++11 but evolved in every following standard. This chapter shows their current state and demonstrates what we can do with them. There is some functional programming style involved here.
+
  5. **STL algorithm basics**
- - This chapter is a quick reintroduction to STL algorithms.
+
+    This chapter is a quick reintroduction to STL algorithms.
+
  6. **Advanced use of STL algorithms**
- - After having reintroduced how standard algorithms work, this chapter demonstrates how to combine them in order to solve more complex tasks without reinventing the wheel (or `for` loop) all the time.
+
+    After having reintroduced how standard algorithms work, this chapter demonstrates how to combine them in order to solve more complex tasks without reinventing the wheel (or `for` loop) all the time.
+
  7. **Strings, stream classes, and regular expressions**
  - The streaming library is an ancient and large, but very important part of the STL. This chapter shows how to solve the typical I/O tasks.
  8. **Utility classes**
- - Time conversion, `std::optional`, `std::any`, `std::variant`, automatic memory management with smart pointers, and random number generation.
+    
+    Time conversion, `std::optional`, `std::any`, `std::variant`, automatic memory management with smart pointers, and random number generation.
+
  9. **Parallelism and concurrency**
- - It was always possible to write multicore programs with C++, but that was a rather operating system dependent task until C++11 introduced `std::task`, `std::future`, and a lot of synchronization classes. This chapter gives a lot of examples how to write portable multicore programs.
+
+    It was always possible to write multicore programs with C++, but that was a rather operating system dependent task until C++11 introduced `std::task`, `std::future`, and a lot of synchronization classes. This chapter gives a lot of examples how to write portable multicore programs.
+
  10. **Filesystem**
- - C++17 also introduced another sub-library that is solely about accessing and iterating file system structures in an operating system independent way. This chapter concentrates on example apps that can be implemented with this new addition to the C++ standard.
+
+     C++17 also introduced another sub-library that is solely about accessing and iterating file system structures in an operating system independent way. This chapter concentrates on example apps that can be implemented with this new addition to the C++ standard.
 
 ## Book formats/Ordering
 

@@ -10,7 +10,7 @@ This article shows a nice one-liner approach to define new SFINAE type traits.
 
 <!--more-->
 
-> If you are not familiar with *SFINAE*, have a look at the article which [describes how SFINAE works]({% post_url 2016-02-19-how_do_sfinae_traits_work %}).
+> If you are not familiar with *SFINAE*, have a look at the article which [describes how SFINAE works](/2016/02/19/how_do_sfinae_traits_work).
 
 ## Encapsulating the Boiler Plate into a Macro
 
@@ -24,7 +24,7 @@ The only details which differ are of course the type traits *name*, and the *exp
 The following macro does construct a type trait from two parameters:
 The later type name of the constructed type trait, and the expression which it shall check for compilability.
 
-{% highlight c++ %}
+``` cpp
 #define DEFINE_IF_COMPILES(NAME, EXPR) \
     template <typename U1> \
     struct NAME \
@@ -41,7 +41,7 @@ The later type name of the constructed type trait, and the expression which it s
         static constexpr const bool value { \
             sizeof(NAME::f1<U1>(NAME::makeU<U1>())) == sizeof(NAME::yes_t)}; \
     }
-{% endhighlight %}
+```
 
 The macro assumes a specific convention:
 When checking an expression for compilability, the expression needs to be written in terms of an instance of the type on which the trait shall work.
@@ -50,32 +50,32 @@ In order to do that, `EXPR` needs access to such an instance, and the convention
 
 The following example will use the macro to create a type trait which can check if the user provided type is dereferenceable:
 
-{% highlight c++ %}
+``` cpp
 DEFINE_IF_COMPILES(is_dereferenceable, *x1);
-{% endhighlight %}
+```
 
 The type trait's name is `is_dereferenceable`, and its expression is `*x1`.
 It simply tries to dereference the artificial instance of the template type.
 
 Usage then looks like the following:
 
-{% highlight c++ %}
+``` cpp
 static_assert(is_dereferenceable<int                  >::value == false, "");
 static_assert(is_dereferenceable<int*                 >::value == true,  "");
 static_assert(is_dereferenceable<vector<int>::iterator>::value == true,  "");
-{% endhighlight %}
+```
 
 This is pretty cool and easy to use.
 It is not necessary to look for specific members, specialize any template structs/functions, etc., to see if some type is dereferenceable like an array, an iterator, or a smart pointer.
 
 Some more examples, which are hopefully self-explanatory enough:
 
-{% highlight c++ %}
+``` cpp
 DEFINE_IF_COMPILES(has_begin_function,             x1.begin());
 DEFINE_IF_COMPILES(supports_addition_with_ints,    x1 + 123);
 DEFINE_IF_COMPILES(supports_addition_with_strings, x1 + "abc");
 DEFINE_IF_COMPILES(is_serializable,                x1.serialize());
-{% endhighlight %}
+```
 
 It is possible to complicate this further by providing a macro which enables for expressions like `two_type_trait<T, U>::value`, which provides instances `x1` and `x2` (Example: `supports_addition<T, U>::value`, which tries to add: `x1 + x2`).
 The macro is easily extensible to support that.

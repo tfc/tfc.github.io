@@ -14,25 +14,25 @@ This article describes an example situation and a proper fix.
 Imagine we have a base class `C`, which inherits from `B`, which inherits from `A`.
 They all have one `int` member (4 Bytes each):
 
-{% highlight c++ %}
+``` cpp
 struct A     { int a; };
 struct B : A { int b; };
 struct C : B { int c; };
-{% endhighlight %}
+```
 
 Assuming that we have an instance of class `C` somewhere in memory at address `X`, we know that its member `a` which it inherited from struct `A` lies at exactly the same offset.
 Member `b` is located at `X + 4`, and `c` is located at `X + 8`.
 
 If we are just interested in one of those specific members, we could simply calculate the offset, and then `reinterpret_cast`, just like this:
 
-{% highlight c++ %}
+``` cpp
 // Print c, assuming x is the address of an instance of struct C:
 std::cout << *reinterpret_cast<int*>(x + 8) << std::endl; 
-{% endhighlight %}
+```
 
 Let's assume we have some code, which *relies* on getting addresses of `struct A` typed addresses in integral form:
 
-{% highlight c++ %}
+``` cpp
 struct A {
     int a {0xa};
 };
@@ -60,7 +60,7 @@ int main()
 
     return 0;
 }
-{% endhighlight %}
+```
 
 That's no good style, but this program works. 
 The structures have standard definitions which initialize members `a`, `b`, and `c` to values `0xa`, `0xb`, and `0xc`.
@@ -78,7 +78,7 @@ The inheritance chain wraps every inheriting member's variables past the structu
 
 This program stops to work so nicely when changing the inheritance chain a bit:
 
-{% highlight c++ %}
+``` cpp
 struct A     { int a {0xa}; };
 struct B : A { int b {0xb}; };
 
@@ -105,7 +105,7 @@ int main()
 
     return 0;
 }
-{% endhighlight %}
+```
 
 This program version will print `f`, and not `a`.
 This is, because we disturbed the memory layout by letting `C` first inherit from `Foo`, then from `B` (which still inherits from `A`).
@@ -119,7 +119,7 @@ This is, because we disturbed the memory layout by letting `C` first inherit fro
 `reinterpret_cast` is just not the right tool for this, if we just assume that inheriting from `A` somehow shall do the magic.
 Before showing how to do it right, i first present another failing example:
 
-{% highlight c++ %}
+``` cpp
 /* Unchanged definition of struct A and B... */
 
 struct C : B {
@@ -136,7 +136,7 @@ int main()
 
     return 0;
 }
-{% endhighlight %}
+```
 
 In this case, the program *might* print `a`, but in many cases it will print *something*.
 
@@ -151,7 +151,7 @@ And that is why it does not work.
 
 ## Casting done right
 
-{% highlight c++ %}
+``` cpp
 int main()
 {
     C1 c1; // normal C B A inheritance
@@ -162,7 +162,7 @@ int main()
     print_a_from_address(reinterpret_cast<std::uintptr_t>(static_cast<const A*>(&c2)));
     print_a_from_address(reinterpret_cast<std::uintptr_t>(static_cast<const A*>(&c3)));
 }
-{% endhighlight %}
+```
 
 I renamed the 3 variants of struct `C` to `C1`, `C2`, and `C3`.
 This program will now correctly print `a` in all these cases.

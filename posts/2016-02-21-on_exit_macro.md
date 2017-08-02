@@ -13,7 +13,7 @@ When wrapping such code in C++, it is possible to tidy such code paths up by usi
 
 The following example shall illustrate the problem:
 
-{% highlight c++ %}
+``` cpp
 void f()
 {
     int ret;
@@ -49,7 +49,7 @@ void f()
     release_b(b);
     release_a(a);
 }
-{% endhighlight %}
+```
 
 This example looks ugly and repetitive.
 The programmer needs to write code manually which behaves correctly in all cases.
@@ -59,7 +59,7 @@ It is even quite error prone, if the programmer forgets one release somewhere, o
 Another way to do this is using `goto`.
 This looks more elegant, but for good reasons, using `goto` is also discouraged in the majority of projects/companies/communities.
 
-{% highlight c++ %}
+``` cpp
 void f()
 {
     int ret;
@@ -85,7 +85,7 @@ rel_b:
 rel_a:
     release_a(a);
 }
-{% endhighlight %}
+```
 
 There are actually a lot of possible ways to implement, some safer and less error prone than the other.
 Have a look at [this blog post, which shows more variants](http://codedgers.com/blog/2009/apr/8/3/).
@@ -96,7 +96,7 @@ The point is, that they are all ugly, and C++ provides syntax which can help fix
 It would be much nicer to express "As soon as a resource is instantiated, it is also initialized.", and "As soon as a resource instance goes out of scope, it is released.", without doing anything else than instantiating it explicit.
 This principle is indeed very usual within the C++ community, and it is called **RAII**, as in ***R**esource **A**llocation **I**s **I**nitialization*.
 
-{% highlight c++ %}
+``` cpp
 void f()
 {
     int ret;
@@ -118,19 +118,19 @@ void f()
 
     do_whatever_those_resources_were_acquired_for(c);
 }
-{% endhighlight %}
+```
 
 This version does exactly that.
 The macro `ON_EXIT` saves some code, and executes it, as soon as the current scope is left by returning from the procedure.
 This version does also respect that the resources must be released in the opposite order of their allocation.
 
-> Please note that this is ideally mixed with `shared_ptr`/`unique_ptr` with custom deleters. Please also have a look at this article, which describes [how to use smart pointers with custom delete procedures to automatically manage resources]({% post_url 2016-02-21-automatic_resource_release_with_sdl %}).
+> Please note that this is ideally mixed with `shared_ptr`/`unique_ptr` with custom deleters. Please also have a look at this article, which describes [how to use smart pointers with custom delete procedures to automatically manage resources](/2016/02/21/automatic_resource_release_with_sdl).
 
 The implementation is pretty simple:
 `ON_EXIT` represents an anonymous class instance which contains a lambda expression, which is provided by the user.
 The lambda expression (which contains the resource release code) will be executed by the anonymous object's destructor:
 
-{% highlight c++ %}
+``` cpp
 template <class F>
 class OnExit
 {
@@ -148,7 +148,7 @@ struct OnExitHelper
     template <class F>
     OnExit<F> operator+(F &&f) const {return {std::forward<F>(f)}; }
 };
-{% endhighlight %}
+```
 
 `OnExit` is the object which will be automatically put on the stack and calls the custom resource releasing lambda, as soon as it is deallocated again.
 
@@ -160,11 +160,11 @@ It is still necessary to express the declaration and initialization of a new var
 
 A short macro can help doing all that automatically:
 
-{% highlight c++ %}
+``` cpp
 #define COMBINE1(x, y) x##y
 #define COMBINE(x, y) COMBINE1(x, y)
 #define ON_EXIT const auto COMBINE(onexit, __LINE__) = OnExitHelper() + [&]()
-{% endhighlight %}
+```
 
 The strange combination of `COMBINE` preprocessor calls creates a new symbol name which is concatenated from `onexit` and the line number where the macro is used.
 This symbol name is then guaranteed to be unique within the function/procedure scope.
@@ -178,18 +178,18 @@ A version of this macro, which only executes in the success/error case, would be
 
 Imagine the following code:
 
-{% highlight c++ %}
+``` cpp
 void move_file(FileHandle source, FileHandle destination)
 {
     copy_file(source, destination);
     ON_SUCCESS { delete_file(source); }
     ON_FAILURE { delete_file(destination); }
 }
-{% endhighlight %}
+```
 
 ... as opposed to:
 
-{% highlight c++ %}
+``` cpp
 void move_file(FilePath source, FilePath destination)
 {
     try {
@@ -200,7 +200,7 @@ void move_file(FilePath source, FilePath destination)
     }
     delete_file(source);
 }
-{% endhighlight %}
+```
 
 The first version is much more elegant, because the code just expresses *what* needs to happen, and not *how* the error handling code shall look like.
 

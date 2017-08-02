@@ -20,7 +20,7 @@ Let's consider a class `Foo`, which enables its instances to be compared against
 To keep the example very simple, class `Foo` does just contain a trivially comparable integer member.
 All function parameters are non-`const` and by value, to not bloat the example code for the eye.
 
-{% highlight c++ %}
+``` cpp
 class Foo
 {
     int x;
@@ -39,7 +39,7 @@ public:
 
     // More repetitive lines of code
 };
-{% endhighlight %}
+```
 
 This is not really bad yet.
 It is now possible to compare `Foo` instances with integers, which is fine.
@@ -50,7 +50,7 @@ But as soon as this code gets used, it becomes apparent, that the `Foo` instance
 
 To fix this, one has to implement more operators:
 
-{% highlight c++ %}
+``` cpp
 // Just turn around the parameters and use the already existing operators
 bool operator==(int x, Foo foo) { return foo == x; }
 bool operator!=(int x, Foo foo) { return foo != x; }
@@ -60,7 +60,7 @@ bool operator> (int x, Foo foo) { return foo <  x; }
 
 bool operator<=(int x, Foo foo) { return foo >= x; }
 bool operator>=(int x, Foo foo) { return foo <= x; }
-{% endhighlight %}
+```
 
 At this stage, one maybe realized that `x <= y` is the same as `!(x > y)` (same applies to `<` and `!(>=)`), and there is already some code duplication by providing a special implementation for it...
 
@@ -75,7 +75,7 @@ That is exactly where CRTP comes to the rescue.
 CRTP stands for ***C**uriously **R**ecurring **T**emplate **P**attern*.
 There are multiple things which can be done with it, and they basically look like the following:
 
-{% highlight c++ %}
+``` cpp
 template <typename INHERITOR_TYPE>
 class bla_base_functionality
 {
@@ -96,11 +96,11 @@ class Foo : public bla_base_functionality<Foo>
         // some foo-specific code
     }
 };
-{% endhighlight %}
+```
 
 This is an example for *static polymorphy*!
 
-> There is also an article [which explains static polymorphy using CRTP]({% post_url 2016-02-27-static_polymorphy %})
+> There is also an article [which explains static polymorphy using CRTP](/2016/02/27/static_polymorphy)
 
 Class `Foo` just implements a specific part of some more generic function.
 The rest is implemented in class `bla_base_functionality`.
@@ -111,7 +111,7 @@ This pattern is a little bit strange in the beginning, but as soon as one gets h
 A specialized version of this is the *Barton-Nackman Trick*, and that is what helps out with the comparison operator mess.
 The whole lot of operator definitions can be defined *once* in a CRTP base class, and then one can inherit from that in order to just implement the really needed minimum of code:
 
-{% highlight C++ %}
+``` cpp
 template <typename T>
 class comparison_impl
 {
@@ -132,7 +132,7 @@ public:
     template <typename U>
     bool operator<=(const U& o) const { return !(thisT() >  o); }
 };
-{% endhighlight %}
+```
 
 This is a super generic variant using a type `T` for the class which will inherit from this, and another type `U`.
 Type `U` could be hardcoded to `T`, but then it would only allow for comparing the class with instances of *same type*.
@@ -140,7 +140,7 @@ Instead, it could also be another class-template parameter (`template <typename 
 
 The current version allows to make `T` comparable with multiple types at the same time:
 
-{% highlight c++ %}
+``` cpp
 class Foo : public comparison_impl<Foo>
 {
     int x;
@@ -150,7 +150,7 @@ public:
     bool operator==(const Foo &o) const { return x == o.x; }
     bool operator==(int        o) const { return x == o; }
 };
-{% endhighlight %}
+```
 
 `Foo` is now comparable with other `Foo` instances and with integers directly, using the `==` and `!=` operators.
 In order to enable this, only the equality operator had to be implemented.
@@ -163,7 +163,7 @@ The other operators are not implemented, but that is fine as long as anything wh
 There is again that limitation, that `Foo` must be at the left side of the comparison, and the other type must be at the right side of it.
 In order to solve that, there needs to be some more code accompanying the header file which defines `comparison_impl`:
 
-{% highlight c++ %}
+``` cpp
 template <typename U, typename T>
 bool operator==(const U &lhs, const comparison_impl<T> &rhs) 
 {
@@ -177,7 +177,7 @@ bool operator!=(const U &lhs, const comparison_impl<T> &rhs)
 }
 
 // same for the others...
-{% endhighlight %}
+```
 
 It is strange, that these operator signatures match with `comparison_impl<T>` at the right side, but then cast it to T.
 Why the hell is *that*?
@@ -193,7 +193,7 @@ What if we compare an instance `Foo` with another instance `Foo`?
 The compiler will see `Foo::operator==(const Foo&)`, and also the freestanding `operator==(const U &lhs, const comparison_impl<T> &rhs)`, and both match.
 It will error-out, telling us that these are two *ambiguous* implementations, which is true:
 
-{% highlight shell %}
+``` bash
 tfc@graviton comparison_impl $ clang++ -o main main.cpp -std=c++11 && ./main
 main.cpp:80:8: error: use of overloaded operator '!=' is ambiguous (with operand types 'Foo' and 'Foo')
     (f != Foo(1));
@@ -204,16 +204,16 @@ main.cpp:36:10: note: candidate function [with U = Foo]
 main.cpp:56:6: note: candidate function [with U = Foo, T = Foo]
 bool operator!=(const U &lhs, const comparison_impl<T> &rhs)
      ^
-{% endhighlight %}
+```
 
 ## SFINAE to the Rescue
 
-> If you are not familiar with *SFINAE*, have a look at the article which [describes how SFINAE works]({% post_url 2016-02-19-how_do_sfinae_traits_work %}).
+> If you are not familiar with *SFINAE*, have a look at the article which [describes how SFINAE works](/2016/02/19/how_do_sfinae_traits_work).
 
 In case class `Foo` already implements the operation, the right freestanding operator shall better not be *visible* for the compiler.
 This can be done using *SFINAE* magic, using `enable_if`:
 
-{% highlight c++ %}
+``` cpp
 template <typename U, typename T>
 typename std::enable_if<!std::is_same<U, T>::value, bool>::type
 operator==(const U &lhs, const comparison_impl<T> &rhs) 
@@ -227,7 +227,7 @@ operator!=(const U &lhs, const comparison_impl<T> &rhs)
 {
     return !(static_cast<const T&>(rhs) == lhs);
 }
-{% endhighlight %}
+```
 
 Maybe we just arrived at level "That's *exactly* why i don't get all this template bloat."
 

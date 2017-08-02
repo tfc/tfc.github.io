@@ -7,8 +7,8 @@ This article completes a series which aims at explaining how to implement a Brai
 
 <!--more-->
 
-> The code in this article depends largely on the code in [the article about type lists]({% post_url 2016-05-08-compile_time_type_lists %}), [the article about character type list transformations]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists %}), and [the article about implementing a Turing tape]({% post_url 2016-05-15-turing_tape_with_type_lists %}). 
-> There is also [the article about template meta-programming 101 things]({% post_url 2016-05-05-template_meta_programming_basics %}).
+> The code in this article depends largely on the code in [the article about type lists](/2016/05/08/compile_time_type_lists), [the article about character type list transformations](/2016/05/14/converting_between_c_strings_and_type_lists), and [the article about implementing a Turing tape](/2016/05/15/turing_tape_with_type_lists). 
+> There is also [the article about template meta-programming 101 things](/2016/05/05/template_meta_programming_basics).
 
 ## First Things First: What is Brainfuck?
 
@@ -18,7 +18,7 @@ Brainfuck programs are composed of only 8 operators and assume to operate on a *
 A Brainfuck machine looks like a Turing machine: It has a cursor which sits on a tape consisting of infinitely many memory cells.
 
 |Operator|Meaning|
-|:------:|-------|
+|:------:|---------------------------------------------------------|
 |`+`|Increment the value of the memory cell at tape cursor position|
 |`-`|Increment the value of the memory cell at tape cursor position|
 |`<`|Move the tape cursor one cell further to the left|
@@ -61,7 +61,7 @@ Hello World!
 ## Implementation in C++ Template Meta Language
 
 Ok, let us implement that.
-We will start with adapting the [Turing Tape]({% post_url 2016-05-15-turing_tape_with_type_lists %}) from the previous article in order to represent the state of a Brainfuck Machine.
+We will start with adapting the [Turing Tape](/2016/05/15/turing_tape_with_type_lists) from the previous article in order to represent the state of a Brainfuck Machine.
 
 ## Adapting the Turing Tape
 
@@ -73,7 +73,7 @@ How an *empty* cell looks like, is not really defined, as it just contains a `nu
 There is no proper rule to which value a *formerly untouched* brainfuck cell shall be initialized.
 I decided to initialize such cells to the value `0`.
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <class Tape>
 struct null_to_0;
 
@@ -86,7 +86,7 @@ template <class Tape> struct null_to_0 { using type = Tape; };
 
 template <class Tape> using null_to_0_t = 
                                typename null_to_0<Tape>::type;
-{% endhighlight %}
+```
 
 Instead of subclassing the Turing tape or similar, we will just use the function `null_to_0_t`, which transforms empty cell elements to `0` elements, and leaves others untouched.
 Whenever the list is altered for moving, this function is applied to it, and then this is set as the new list state.
@@ -97,7 +97,7 @@ A Turing machine tape is enough to represent the state of the whole brainfuck ma
 We define a type `machine`, which carries a tape state as template parameter, and provides functions to read and alter the state.
 This way the user does not need to know about any implementation details:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <typename Tape>
 struct machine {
     using move_left  = machine<null_to_0_t<
@@ -114,10 +114,11 @@ struct machine {
     using increment = set<value + 1>;
     using decrement = set<value - 1>;
 };
-{% endhighlight %}
+```
+<br>
 
 | Function Name | What It Does |
-|:-------------:|--------------|
+|:-------------:|----------------------------------------------|
 `move_left` / `move_right` | Moves the tape one step to the left/right, and returns a new `machine` type with the altered state. If it reaches the end of the tape while moving, it appends a new cell. This new cell is then initialized to `0`.
 `get` | Returns the type at cursor position. 
 `set<value>` | Returns a new `machine` type with altered tape state. The tape is altered in that way, that it contains the new character `value` at cursor position.
@@ -125,7 +126,7 @@ struct machine {
 
 The following code only adds a wrapper for every single function we just defined. This is to make the user code shorter:
 
-{% highlight c++ %}
+``` cpp
 template <typename Machine>
 using move_left_t = typename Machine::move_left;
 template <typename Machine>
@@ -142,7 +143,7 @@ template <typename Machine>
 using decrement_t = typename Machine::decrement;
 
 using make_t = machine<tt_make_t<char_t<0>>>;
-{% endhighlight %}
+```
 
 Note the additional helper `make_t`, which just returns a fresh initialized brainfuck machine.
 
@@ -155,7 +156,7 @@ This is enough to represent a single naked Brainfuck Machine.
 However, we still have to feed it with commands by hand.
 Some example lines show how to do that:
 
-{% highlight c++ %}
+``` cpp
 using empty_bfm    = make_t;
 
 using a_bfm        = set_t<empty_bfm, 'a'>;
@@ -168,7 +169,7 @@ using bc_bfm       = set_t<shifted_left, 'c'>;
 
 // Or in just one line:
 using bc_bfm_state = set_t<move_left_t<increment_t<set_t<make_t, 'a'> > >, 'c'>;
-{% endhighlight %}
+```
 
 What we want it to do: It shall automatically interpret a brainfuck script.
 
@@ -187,13 +188,13 @@ We will push around this bundle throughout the whole brainfuck program and alter
 The output list will grow, while the program is executed (assuming it outputs something).
 The input list will shrink, as characters are consumed (assuming it reads from input), one-by-one.
 
-{% highlight c++ %}
+``` cpp
 template <class BFM, class Inlist, class OutList>
 struct io_bfm {
     using output = OutList;
     using state  = BFM;
 };
-{% endhighlight %}
+```
 
 Being a purely functional programming novice, i found the fact that the state is never a structure member, but a template parameter, most unusual.
 Our I/O brainfuck machine bundle is represented by the tuple `(machine state, input program, output list)`, and these all are template parameters.
@@ -209,7 +210,7 @@ Its result is the new state of the brainfuck machine, which results from applyin
 Mapping brainfuck command character mnemonics to brainfuck machine state manipulating commands is simple for most commands:
 
 | BF Command | Returns new `io_bfm` state with... |
-|:----------:|---------|
+|:----------:|--------------------------------------------|
 `.`| ...no changes, but the new output list has the current cursor value appended to its end.
 `,`| ...the current cell set to the first input character, the input list with the first character chopped off, and an unaltered output list.
 `+`| ...the current cursor value incremented by one.
@@ -221,7 +222,7 @@ This is the simple part.
 The `[` and `]` commands which define loop structures are missing.
 We will get at those just after the other command implementations:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <class IOBFM, char InputChar>
 struct interpret_step;
 
@@ -275,7 +276,7 @@ struct interpret_step<io_bfm<BFM, InList, OutList>, '>'> {
 template <class IOBFM, char InputChar>
 using interpret_step_t = 
           typename interpret_step<IOBFM, InputChar>::type;
-{% endhighlight %}
+```
 
 In this lengthy list of ugly definitions you will find no if-else control structures.
 The function call flow is completely controlled by *pattern matching*.
@@ -320,16 +321,16 @@ Whenever we see an opening `[` bracket, we *increment* a bracket counter, and wh
 Assuming we start at value `1`, because the first opening bracket denotes the beginning of the first loop. 
 The next closing `]` bracket we see, while the counter is back at value `1`, is then the right loop end.
 
-{% highlight bash %}
+``` bash
 ......[......[......[.....]....].....]......
       1      2      3     2    1     X
       
 position X: Do not increment, but abort search. We found it.
-{% endhighlight %}
+```
 
 Let's have a look at the C++ TMP implementation:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 // Find the closing brace, assuming we have seen an opening 
 // one already.
 //
@@ -391,7 +392,7 @@ struct find_brace<tl<char_t<C>, InList>,
                         append_t<OutList, char_t<C>>,
                         N>
 {};
-{% endhighlight %}
+```
 
 Reading this function implementation it becomes apparent, that each implementation does not *return* some type, apart from the final case.
 They do rather *inherit* from the next matching function structure.
@@ -425,7 +426,7 @@ In order to do that decision, the interpreter will:
 
 Armored with that workflow in your mind, have a look at the implementation:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 // Execute a brainfuck machine, defined by its IO/BFM state
 //
 // IOBFM:    The initial I/O and BF machine pair.
@@ -478,7 +479,7 @@ struct run_tm<IOBFM, ::tl::null_t> {
 
 template <class IOBFM, class ProgList>
 using run_tm_t = typename run_tm<IOBFM, ProgList>::type;
-{% endhighlight %}
+```
 
 ## Play
 
@@ -487,7 +488,7 @@ We can now execute brainfuck programs at compile time, and produce binaries, whi
 
 Let's throw all the code into a .cpp file and write a `main()` function, which will print our compile time results.
 
-{% highlight c++ %}
+``` cpp
 // The program input is provided by a string provider.
 // The type list transformation article explains, how these work.
 struct program_str { 
@@ -523,7 +524,7 @@ int main()
 
     return 0;
 };
-{% endhighlight %}
+```
 
 Using the compile time BFM is not as ugly as writing it.
 To play with it yourself, and to completely understand it, i suggest looking at the real code.
@@ -533,15 +534,15 @@ The code in the repository does encapsulate input string and program string into
 This way it is possible to feed different sets of input and BF programs via the command line.
 In the end, it looks like this:
 
-{% highlight bash %}
+``` bash
 Jacek.Galowicz ~/src/tmp_brainfuck $ g++ -o main main.cpp -std=c++14 -DPROGRAM_STR='"++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.+++."'
 Jacek.Galowicz ~/src/tmp_brainfuck $ ./main
 Hello World!
-{% endhighlight %}
+```
 
 Printing at compile time looks like this:
 
-{% highlight bash %}
+``` bash
 Jacek.Galowicz ~/src/tmp_brainfuck $ g++ -o main main.cpp -std=c++14 -DPROGRAM_STR='"++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.+++."'
 
 main.cpp:31:51: error: implicit instantiation of undefined template 
@@ -554,7 +555,7 @@ template <typename T> class debug_t;
 1 error generated.
 Makefile:3: recipe for target 'default' failed
 make: *** [default] Error 1
-{% endhighlight %}
+```
 
 ## Summary
 

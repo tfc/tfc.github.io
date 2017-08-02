@@ -31,13 +31,13 @@ C++ template variables can contain types or values.
 For template variables containing values, simple builtin integral types are supported. `bool` is one of them.
 So let's write some code which does at compile time what we want to achieve:
 
-{% highlight c++ %}
+``` cpp
 template <bool X>
 struct not
 {
     static constexpr bool value {!X};
 };
-{% endhighlight %}
+```
 
 This class just takes the parameter `X` which is provided using template syntax, and initializes its only member.
 This member is `static`, so it can be accessed from the type directly without us having to allocate an instance of it first.
@@ -45,10 +45,10 @@ Furthermore, it is `constexpr`, which means that we can assume it is already acc
 
 Actually using it looks like this:
 
-{% highlight c++ %}
+``` cpp
 static_assert(not<true >::value == false, "");
 static_assert(not<false>::value == true,  "");
-{% endhighlight %}
+```
 
 We simply feed the structure with a `true`/`false` input value and scope down to its static member, to get at the return value. 
 That's it, we just implemented a complicated way to express `bool y = not(x)`.
@@ -58,12 +58,12 @@ The cool thing is, that this code will be completely fixed at runtime, so the co
 
 Of course, since the release of C++11, we also could have written:
 
-{% highlight c++ %}
+``` cpp
 static constexpr not(bool x) 
 {
     return !x;
 }
-{% endhighlight %}
+```
 
 ...and both use this function at compile time and at run time.
 This is amazingly useful, but it's not today's topic.
@@ -71,7 +71,7 @@ This is amazingly useful, but it's not today's topic.
 Getting back to bloated template syntax, we could have implemented it a different way.
 Many type traits need to be implemented this other way, because it's not always simple `true`/`false` situations:
 
-{% highlight c++ %}
+``` cpp
 // (A)
 template <bool X>
 struct not
@@ -85,7 +85,7 @@ struct not<false>
 {
     static constexpr bool value {true};
 };
-{% endhighlight %}
+```
 
 So we have two structs now.
 Or, to be specific, one general definition `(A)` of `struct not` and a specialized one `(B)`.
@@ -102,7 +102,7 @@ We can, for example, ask at compile time if some user provided type which we got
 Maybe we have an if-else construct somewhere, and need this information to decide which branch to take.
 This is easily possible:
 
-{% highlight c++ %}
+``` cpp
 // (A)
 template <typename T, typename U>
 struct is_same_type
@@ -116,23 +116,23 @@ struct is_same_type<T, T>
 {
     static constexpr bool value {true};
 };
-{% endhighlight %}
+```
 
 Again, we have a general implementation `(A)`, and a specialized one `(B)`.
 Both take two input types, in order to compare them, and they also both have the same static member variable, but they initialize it to different values.
 Usage:
 
-{% highlight c++ %}
+``` cpp
 static_assert(is_same_type<int, char>::value == false, "");
 static_assert(is_same_type<int, int >::value == true,  "");
-{% endhighlight %}
+```
 
 If both input types are equal, the specialized implementation `(B)` is a perfect match.
 `(B)` still uses template type `T`, which is completely unspecified and could be anything, but it constraints its input parameters to be the same, which is exactly what we want to determine.
 
 It is now perfectly fine to write code like:
 
-{% highlight c++ %}
+``` cpp
 template <typename T>
 T myfunc(T x)
 {
@@ -142,11 +142,11 @@ T myfunc(T x)
         /* do the general thing */
     }
 }
-{% endhighlight %}
+```
 
 Of course, this is just an alternative to:
 
-{% highlight c++ %}
+``` cpp
 template <typename T>
 T myfunc(T x)
 { /* do the general thing */ }
@@ -154,7 +154,7 @@ T myfunc(T x)
 template <>
 FooType myfunc(FooType x)
 { /* do something which is completely FooType specific */ }
-{% endhighlight %}
+```
 
 It depends on the situation, which one is more useful/better to read/whatever.
 
@@ -166,7 +166,7 @@ One can constraint the parameter specializations to `const`, append `*` and `[N]
 This example determines, if type `T` is a pointer.
 This is useful in some situations.
 
-{% highlight c++ %}
+``` cpp
 template <typename T>
 struct is_pointer
 {
@@ -178,12 +178,12 @@ struct is_pointer<T*>
 {
     static constexpr bool value {true};
 };
-{% endhighlight %}
+```
 
-{% highlight c++ %}
+``` cpp
 static_assert(is_pointer<int >::value == false, "");
 static_assert(is_pointer<int*>::value == true,  "");
-{% endhighlight %}
+```
 
 However, this trait is not useful when asking if T is dereferenceable in general.
 Pointers are dereferenceable, but iterators are also dereferenceable.

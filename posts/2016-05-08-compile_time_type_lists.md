@@ -21,18 +21,18 @@ Different implemetations usually have different trade-offs, so i sketch two impl
 
 ### Way 1: Variadic template type lists
 
-{% highlight c++ %}
+``` cpp
 template <typename ... Types> struct type_list {};
 
 using my_list = type_list<Type1, Type2, Type3>;
-{% endhighlight %}
+```
 
 That's basically it.
 Type items are just listed as variadic template parameters.
 
 ### Way 2: Nested template type lists
 
-{% highlight c++ %}
+``` cpp
 struct null_t {};
 
 template <typename T, typename U>
@@ -43,7 +43,7 @@ struct tl
 };
 
 using my_list = tl<Type1, tl<Type2, tl<Type3, null_t> > >;
-{% endhighlight %}
+```
 
 Nested lists work with recursion.
 Every element is basically a 2-tuple, wich contains the following:
@@ -74,18 +74,18 @@ Metashell is an interactive meta programming shell, and it uses Clang to evaluat
 Using [metashell](http://metashell.org/)'s `evaluate -profile` command, i measured the time to create lists of both variants, and plotted that.
 (Actually running `g++` or `clang++` yields different results, but metashell allowed me to measure the actual template instantiation, without measuring the overhead of starting the compiler in the shell etc.)
 
-![Metashell: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists]({{ site.url }}/assets/compile_time_type_list_creation_benchmark_metashell.png)
+![Metashell: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists](/images/compile_time_type_list_creation_benchmark_metashell.png)
 
-Both variants seem to be within $$\mathcal{O}(n^2)$$, and variadic type lists prove to be significantly faster in metashell.
+Both variants seem to be within $\mathcal{O}(n^2)$, and variadic type lists prove to be significantly faster in metashell.
 
 #### GCC/Clang
 
 The compile times of real compilers are of course more interesting, when writing some serious meta programming code for productive use.
 Interestingly, the numbers here are **completely different** than the numbers from the measurements in metashell.
 
-![GCC/Clang: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists]({{ site.url }}/assets/compile_time_type_list_creation_benchmark_compilers.png)
+![GCC/Clang: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists](/images/compile_time_type_list_creation_benchmark_compilers.png)
 
-Again, both variants seem to be within $$\mathcal{O}(n^2)$$.
+Again, both variants seem to be within $\mathcal{O}(n^2)$.
 But this time, nested type lists clearly win the race.
 
 In fact, nested type lists are so much faster in this benchmarks, that it seems that they are **the** list implementation of choice.
@@ -107,15 +107,15 @@ Let me demonstrate that on an example function `prepend_t`, which takes a list, 
 
 For nested type lists, prepending an item to its front means wrapping it into a new list element tuple:
 
-{% highlight c++ %}
+``` cpp
 // Prepend an item to a recursive type list
 template <typename RecursiveList, typename T>
 using prepend_t = tl<T, RecursiveList>;
-{% endhighlight %}
+```
 
 For variadic type lists, this means that we need to extract what it contains already with pattern matching, and then create a new list:
 
-{% highlight c++ %}
+``` cpp
 // Prepend an item to a variadic type list
 template <typename VariadicList, typename T>
 struct prepend;
@@ -128,7 +128,7 @@ struct prepend<tl<ListItems...>, T>
 
 template <typename VariadicList, typename T>
 using prepend_t = tl<T, VariadicList>;
-{% endhighlight %}
+```
 
 Of course, one can implement `prepend_t`, `append_t`, etc. helpers, and be fine without such pattern matching tricks, but this is another indirection which can make template meta programs slow again.
 (Although the performance boost of variadic type lists might be good enough to allow for some indirection here and there).
@@ -136,7 +136,7 @@ Of course, one can implement `prepend_t`, `append_t`, etc. helpers, and be fine 
 Another thing about nested type lists:
 The clumsyness of their creation can be overcome by creating actual variadic type lists first, and then transforming to recursive type lists:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <typename ... Ts> struct make;
 
 // Case: Normal recursion. Consume one type per call.
@@ -152,7 +152,7 @@ struct make<> { using type = null_t; };
 template <typename ... Ts>
 using make_t = typename make<Ts...>::type;
 
-{% endhighlight %}
+```
 
 Using `make_t`, recursive lists can now be as nicely instantiated like variadic type lists: `using my_recursive_list = make_t<Type1, Type2, Type3>;`
 
@@ -165,7 +165,7 @@ All of this is also possible with variadic type lists.
 
 ## Extracting Head and Tail of Lists
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <typename TList>
 struct list_content;
 
@@ -186,7 +186,7 @@ using head_t = typename list_content<TList>::head;
 
 template <typename TList>
 using tail_t = typename list_content<TList>::tail;
-{% endhighlight %}
+```
 
 The `list_content` helper struct applies pattern matching to whatever list is provided as a parameter.
 It gives access to `head` and `tail` by *lifting* those types out of the list type.
@@ -205,7 +205,7 @@ Those `using` helpers will look the same all the time, as they do no real work.
 
 ## Appending Items or Lists to a List's Tail
 
-{% highlight c++ %}
+``` cpp
 // Function declaration: Takes a list, and a type. 
 // Using (list, type) notation in following comments
 template <typename TList, typename T>
@@ -227,16 +227,16 @@ struct append<tl<Head, Tail>, T>
 
 template <typename TList, typename T>
 using append_t = typename append<TList, T>::type;
-{% endhighlight %}
+```
 
 When appending items to a list, there are 4 cases, which is the cartesian product of `{non-empty list, empty list} x {real item, list terminator item}`:
 
-| List case | item case | implementation strategy |
-|:---------:|:---------:|-------------------------|
-|`empty list` | `list terminator item` | Return an empty list, of course.|
-|`empty list` | `real item` | Return a single-item list with the new item.|
+| List case       | item case              | implementation strategy |
+|:---------------:|:----------------------:|-------------------------|
+|`empty list`     | `list terminator item` | Return an empty list, of course.|
+|`empty list`     | `real item`            | Return a single-item list with the new item.|
 |`non-empty list` | `list terminator item` | Just return the unchanged list.|
-|`non-empty list` | `real item` | This is the only step which is not a trivial one-step thing. This function specialization calls itself recursively on the list's tail in order to get at its end and append the payload item there. |
+|`non-empty list` | `real item`            | This is the only step which is not a trivial one-step thing. This function specialization calls itself recursively on the list's tail in order to get at its end and append the payload item there. |
 
 The implementation contains of only 3 function specializations, instead of 4, although we just identified 4 different scenarios.
 Because the `(non-empty list, list terminator item)` case is not implemented explicitly, the implementation will actually waste some computing cycles by appending `null_t` to the list.
@@ -244,11 +244,11 @@ This can easily be fixed, which is left as an exercise for the reader.
 
 Another specialization of the function can be added in order to support **list concatenation**:
 
-{% highlight c++ %}
+``` cpp
 // (empty list, non-empty list) -> Return the non-empty list
 template <typename Head, typename T>
 struct append<null_t, tl<Head, T>> { using type = tl<Head, T>; };
-{% endhighlight %}
+```
 
 Even without this specialization, it is possible to append a list to another, but the result would be ill-formed, if the expected result is one concatenated list.
 Imagine `l1 = tl<T1, null_t>` and `l2 = tl<T2, null_t>`: Without the new function specialization, appending `l2` to `l1` would result in `tl<T1, tl<tl<T1, null_t>, null_t>>`. 
@@ -265,7 +265,7 @@ To debug a list in different composition steps, it is valuable to print its stat
 
 Printing at compile time can be done by just emitting a compile error.
 
-{% highlight c++ %}
+``` cpp
 class Type1; // Just some artificial types
 class Type2;
 class Type3;
@@ -277,40 +277,40 @@ using list123 = make_t<Type1, Type2, Type3>;
 template <typename T> class debug_t;
 
 debug_t<list123> d; // Does not compile, but unveils state
-{% endhighlight %}
+```
 
 The output looks like this:
 
-{% highlight bash %}
+``` bash
 $ g++ main.cpp -std=c++14
 main.cpp:65:18: error: aggregate ‘debug_t<tl<Type1, tl<Type2, tl<Type3, null_t> > > > dt’ has incomplete type and cannot be defined
  debug_t<list123> dt;
                   ^
-{% endhighlight %}
+```
 
 It is a bit uncomfortable to fiddle it out, but the compiler error message reflects, that the list state is `<tl<Type1, tl<Type2, tl<Type3, null_t> > >`, which is what we expected.
 
 Now we can append things to it...
 
-{% highlight c++ %}
+``` cpp
 class Type4;
 
 using new_list = append_t<list123, Type4>;
 
 debug_t<new_list> d;
-{% endhighlight %}
+```
 Output:
-{% highlight bash %}
+``` bash
 $ g++ main.cpp -std=c++14
 main.cpp:68:19: error: aggregate ‘debug_t<tl<Type1, tl<Type2, tl<Type3, tl<Type4, null_t> > > > > dt’ has incomplete type and cannot be defined
  debug_t<new_list> dt;
                    ^
-{% endhighlight %}
+```
 
 It is nice to see that `Type4` was correctly appended.
 Concatenating a list to another does also work:
 
-{% highlight c++ %}
+``` cpp
 class Type1;
 class Type2;
 class Type3;
@@ -322,21 +322,20 @@ using list2 = make_t<Type3, Type4>;
 using new_list = append_t<list1, list2>;
 
 debug_t<new_list> d;
-{% endhighlight %}
+```
 Output:
-{% highlight bash %}
+``` bash
 $ g++ main.cpp -std=c++14
 main.cpp:69:19: error: aggregate ‘debug_t<tl<Type1, tl<Type2, tl<Type3, tl<Type4, null_t> > > > > dt’ has incomplete type and cannot be defined
  debug_t<new_list> dt;
                    ^
-{% endhighlight %}
+```
 
 ## Outlook
 
 With not too much code (Although it is actually a lot and ugly code, compared to most other programming languages), it is possible to maintain lists of types.
 
 In the next article i show how to put them to use in order to do useful stuff at compile time:
-[Link to the article about transformations between user input/output and type lists]({% post_url 2016-05-14-converting_between_c_strings_and_type_lists
-%})
+[Link to the article about transformations between user input/output and type lists](/2016/05/14/converting_between_c_strings_and_type_lists)
 
 One example of code which does heavily use type lists, is my fun [brainfuck interpreter template meta program on github](https://github.com/tfc/cpp_template_meta_brainfuck_interpreter). Link to is its [typelist.hpp list implementation](https://github.com/tfc/cpp_template_meta_brainfuck_interpreter/blob/master/typelist.hpp)

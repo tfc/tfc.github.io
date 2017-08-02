@@ -14,7 +14,7 @@ The approach is easily extendable to other kinds of resources, too.
 
 ## Typical C-Style SDL Code
 
-{% highlight c++ %}
+``` cpp
 #include <SDL2/SDL.h>
 
 int main() {
@@ -63,7 +63,7 @@ int main() {
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
-{% endhighlight %}
+```
 
 This code contains a list of resource release code which is also quite error prone to write/maintain.
 
@@ -81,7 +81,7 @@ This lambda expression will then be called (with the payload pointer as its only
 
 The following code provides a function `sdl_shared`, which takes a pointer to an SDL resource, and wraps it into a `shared_ptr` instance which automatically calls the right SDL specific release function at its end of life cycle:
 
-{% highlight c++ %}
+``` cpp
 #include <memory> // shared_ptr
 #include <SDL2/SDL.h>
 
@@ -94,14 +94,14 @@ template <typename T>
 std::shared_ptr<T> sdl_shared(T *t) {
     return std::shared_ptr<T>(t, [](T *t) { SDL_DelRes(t); });
 }
-{% endhighlight %}
+```
 
 `sdl_shared` is a template function which deduces the pointer type from the input parameter.
 This helper function can be wrapped around any SDL resource allocating function, as long as one `SDL_DelRes` overload is defined for the specific SDL resource type.
 
 Using this helper, the resource management can be implemented much cleaner:
 
-{% highlight c++ %}
+``` cpp
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         return 1;
@@ -127,9 +127,9 @@ int main() {
 
     // ...
 }
-{% endhighlight %}
+```
 
-*Also have a look at the other article, which [describes the `ON_EXIT` macro]({% post_url 2016-02-21-on_exit_macro %})*.
+*Also have a look at the other article, which [describes the `ON_EXIT` macro](/2016/02/21/on_exit_macro)*.
 
 All resources are automatically released, and the programmer does not need to define which resource is to be released in which case and what order.
 

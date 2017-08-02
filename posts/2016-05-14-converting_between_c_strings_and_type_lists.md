@@ -16,18 +16,18 @@ At first, a type is needed which can carry one actual character, without having 
 This is the requirement for all value-carrying types in order to be able to use them at compile time.
 Using that type, it is possible to compose character type lists, which carry whole strings.
 
-{% highlight c++ %}
+``` cpp
 template <char val> 
 struct char_t { 
     static const constexpr char value {val};
 };
-{% endhighlight %}
+```
 
 `char_t`'s only template parameter is an actual character. 
 To carry the character 'a', one just instanciates it like this: `char_t<'a'>`.
 The character can now be accessed via the `value` member of the structure type, both at compile- and at run time:
 
-{% highlight c++ %}
+``` cpp
 // Define the character 'a' carrying type
 using my_char = char_t<'a'>;
 
@@ -39,22 +39,22 @@ int f()
     // Accessing it at run time
     std::cout << my_char::value << std::endl;
 }
-{% endhighlight %}
+```
 
 This type is now fundamental to character type lists.
 
 ## Converting from Strings to Type Lists
 
 Using type lists, these can now easily be chained together, using the `make_t` helper from the previous article.
-(Link to [the article which explains how to create type lists]({% post_url 2016-05-08-compile_time_type_lists %}))
+(Link to [the article which explains how to create type lists](/2016/05/08/compile_time_type_lists))
 
-{% highlight c++ %}
+``` cpp
 using my_abc_string = make_t<char_t<'a'>, char_t<'b'>, char_t<'c'>>;
-{% endhighlight %}
+```
 
 Although `make_t`'s purpose is to make type list creation less clumsy, this does not look optimal.
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <char c, char ... chars>
 struct char_tl;
 
@@ -73,7 +73,8 @@ struct char_tl<c> {
 
 template <char ... chars>
 using char_tl_t = typename char_tl<chars...>::type;
-{% endhighlight %}
+```
+<br>
 
 - **line 2** defines the general type signature of the conversion function `char_tl` which accepts a variadic character list
 - **line 5** describes the recursion which is applied in order to *unroll* the variadic type list into a type list. It *wraps* each individual character into a `char_t` type. This new `char_t` type is then again wrapped as the head element into a new type list, and its tail is the next recursion step.
@@ -82,16 +83,16 @@ using char_tl_t = typename char_tl<chars...>::type;
 
 Character type lists can now be instantiated like this:
 
-{% highlight c++ %}
+``` cpp
 using my_abc_string = char_tl_t<'a', 'b', 'c'>;
-{% endhighlight %}
+```
 
 This is already a significant improvement over what we had before.
 Pretty nice, but the ***real** optimum* would be a transformation from an actual C-string in the form `"abc"` to a type list.
 
 Of course, that is also possible:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <class Str, size_t Pos, char C>
 struct string_list;
 
@@ -116,7 +117,8 @@ using string_list_t = typename string_list<
                           0, 
                           Str::str()[0]
                       >::type;
-{% endhighlight %}
+```
+<br>
 
  - **line 2** Declares our function which takes a string provider, a position index, and the character at the current position. The user will later only provide the string provider. The position index as well as the character are for internal use. `string_list_t` adds them automatically (line 20).
 
@@ -125,13 +127,13 @@ Before continuing with the following lines of code: **What** is a *string provid
 A string, or a string pointer, cannot just be used as template parameters directly.
 Therefore a type carrying a string as payload and provides static access to it is needed:
 
-{% highlight c++ %}
+``` cpp
 struct my_string_provider {
    static constexpr const char * str() {
        return "foo bar string";
    }
 };
-{% endhighlight %}
+```
 
 This type can now be used as a template parameter by template classes, and the template code can access its static string member.
 Because of this additional, but necessary, indirection it is called a *string provider*.
@@ -140,7 +142,7 @@ Because of this additional, but necessary, indirection it is called a *string pr
  - **line 15** defines the recursion abort step. As soon as we trip on the zero character which terminates the string, we also terminate the list.
  - **line 20** is the easy-to-use wrapper which is meant to be used by the user. It takes a single string provider parameter and extracts any other needed parameter from it.
 
-{% highlight c++ %}
+``` cpp
 struct abc_string_provider {
    static constexpr const char * str() {
        return "abc";
@@ -148,7 +150,7 @@ struct abc_string_provider {
 };
 
 using my_abc_string = string_list_t<abc_string_provider>;
-{% endhighlight %}
+```
 
 This is as easy as it gets.
 Having to define a string provider around every simple string is still a lot of scaffolding, but this is still the only reasonable way to convert long C-strings into type lists.
@@ -163,7 +165,7 @@ This is the exact reverse operation from what we just implemented before.
 The generic idea is to convert a type list to a variadic character template parameter list.
 That variadic list can be used to initialize a character array, which can then be provided to the user:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <typename typelist, char ... chars>
 struct tl_to_vl;
 
@@ -179,7 +181,8 @@ struct tl_to_vl<tl::null_t, chars...> {
         return ret;
     }
 }
-{% endhighlight %}
+```
+<br>
 
  - **line 2** defines the general function signature: It takes a character type list as first parameter, and then a variadic list of characters. 
  - **line 5** defines the recursion: The idea is to let the type list shrink stepwise, while the character, which is taken from it, is appended to the variadic character list.
@@ -193,7 +196,7 @@ Because every member of a `struct` is public by default, the actually instantiat
 
 Example of how to print a type list on the terminal, after converting it into a C-String:
 
-{% highlight c++ %}
+``` cpp
 struct abc_string_provider {
    static constexpr const char * str() {
        return "abc";
@@ -207,13 +210,13 @@ using string_provider = tl_to_vl<my_abc_string>;
 int f() {
     puts(string_provider::str());
 }
-{% endhighlight %}
+```
 
 When compiling code like this, the assembly code will still result in a function call of `str()`, which returns a pointer to the C-string, and then a call of `puts`.
 
 Compiling the code *without* any optimization (clang++ [clang-703.0.29]):
 
-{% highlight bash %}
+``` asm
 _main:
 pushq   %rbp
 movq    %rsp, %rbp
@@ -232,11 +235,11 @@ movl    %ecx, %eax
 addq    $0x10, %rsp
 popq    %rbp
 retq
-{% endhighlight %}
+```
 
 Compiling the code *with* `-O1` or `-O2` optimization (clang++):
 
-{% highlight bash %}
+``` asm
 _main:
 pushq %rbp
 movq  %rsp, %rbp
@@ -245,7 +248,7 @@ callq 0x100000f84        ## symbol stub for: _puts
 xorl  %eax, %eax
 popq  %rbp
 retq
-{% endhighlight %}
+```
 
 The disassembly shows that the string is just read out of the binary, where it is available without any processing.
 It is pretty nice to see that there is *no trace* of any meta programming code in the binary.

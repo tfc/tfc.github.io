@@ -11,7 +11,7 @@ That is fine in general, but what happens to all objects which need to be proper
 
 Let's try it out:
 
-{% highlight c++ %}
+``` cpp
 #include <iostream>
 #include <string>
 
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
     return 0;
 }
-{% endhighlight %}
+```
 
 This program instanciates three `Foo` objects: A global one, a static global one, and a local stack instance.
 `Foo`'s destructor just emits a message which tells which one of the three instances was just destructed.
@@ -45,7 +45,7 @@ This program instanciates three `Foo` objects: A global one, a static global one
 
 In the ideal case, the compiler should emit code which unrolls the stack as soon as the exception is thrown, destructs all objects which are in flight and then terminates the program:
 
-{% highlight text %}
+``` bash
 $ clangg++ -o main main.cpp -std=c++11 && ./main bla
 local stack 1 Foo's dtor called.
 static global Foo's dtor called.
@@ -54,14 +54,14 @@ global Foo's dtor called.
 $ ./main
 terminate called after throwing an instance of 'int'
 Aborted (core dumped)
-{% endhighlight %}
+```
 
 *Ooops*, unfortunately, this is not the case:
 If those `Foo` objects held any unflushed buffers, they'd be gone now!
 
 Wrapping the exception into a `try`-`catch` clause fixes this behaviour.
 
-{% highlight c++ %}
+``` cpp
 #include <iostream>
 #include <string>
 
@@ -87,19 +87,19 @@ int main()
     }
     return 0;
 }
-{% endhighlight %}
+```
 
 The output looks much better now. 
 *All* objects are properly destructed:
 
-{% highlight text %}
+``` bash
 $ clang++ -o main main.cpp -std=c++11 && ./main
 local stack 2 Foo's dtor called.
 Caught Exception.
 local stack 1 Foo's dtor called.
 static global Foo's dtor called.
 global Foo's dtor called.
-{% endhighlight %}
+```
 
 The C++11 standard says the following in section `15.3.9`:
 

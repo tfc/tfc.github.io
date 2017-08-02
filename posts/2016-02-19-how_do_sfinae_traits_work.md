@@ -8,13 +8,13 @@ This article explains what SFINAE means, how it works and how it can be used to 
 
 <!--more-->
 
-> If you are not familiar with *type traits*, have a look at the article which [describes how type traits work]({% post_url 2016-02-18-what_is_a_type_trait %}).
+> If you are not familiar with *type traits*, have a look at the article which [describes how type traits work](/2016/02/18/what_is_a_type_trait).
 
 ## What Does SFINAE Stand for?
 
 *SFINAE* is an abbreviation for ***S**ubstitution **F**ailure **I**s **N**ot **A**n **E**rror*, and describes a principle a C++ compiler adheres to while it substitutes template types by the type which it deduced from the program's context.
 
-{% highlight c++ %}
+``` cpp
 // Little type deduction example:
 template <typename T> f(T x) { /* do something with x */ }
 
@@ -23,7 +23,7 @@ int a {123};
 f<int>(a); // The user already specified T. No deduction necessary.
 f(a);      // Here, the compiler needs to deduce T from the type of "a"
 // The next example will be more complex to point out SFINAE mechanics
-{% endhighlight %}
+```
 
 The SFINAE principle works as follows:
 If the compiler detects an error while it tries to substitute a type during template type deduction, it will not emit a compilation error. 
@@ -34,7 +34,7 @@ Of course, the compiler will error-out if there are no suitable candidates left.
 
 The in my opinion simplest example to demonstrate how this behaviour can be used, is one which i found on [cppreference.com](http://en.cppreference.com/w/cpp/language/sfinae):
 
-{% highlight c++ %}
+``` cpp
 template<int I>
 void f(char(*)[I % 2 == 0] = nullptr) {
     // this overload is selected when I is even
@@ -43,7 +43,7 @@ template<int I>
 void f(char(*)[I % 2 == 1] = nullptr) {
     // this overload is selected  when I is odd
 }
-{% endhighlight %}
+```
 
 Both functions have the same signature, when they are selected: `void f(char (*)[1])` (They take a pointer to a character array of length 1, and return nothing).
 Although the signature is not fixed, as it depends on a variable template parameter, no other signatures can be generated from this. 
@@ -77,7 +77,7 @@ The following type trait is able to tell, if a type `T` is dereferenceable.
 Pointers to any type are dereferenceable, iterators are dereferenceable, and types as `std::shared_ptr<T>`, but also `std::optional<T>` are dereferenceable, although they may not have anything else in common.
 If the dereferenceability is the only thing some functionality must know about the type in use, this is the right type trait for that job:
 
-{% highlight c++ %}
+``` cpp
 template <typename U1>
 struct is_dereferenceable
 {
@@ -94,7 +94,7 @@ struct is_dereferenceable
     static constexpr bool value {
         sizeof(f<U1>(makeU<U1>())) == sizeof(yes_t)};
 };
-{% endhighlight %}
+```
 
 Let's have a look at the peripheral details first, which are necessary, but do not contain the interesting mechanism, yet.
 
@@ -131,10 +131,10 @@ The comparison will then evaluate to `true`, and then `is_dereferenceable<FooTyp
 
 Usage:
 
-{% highlight c++ %}
+``` cpp
 static_assert(is_dereferenceable<int >::value == false, "");
 static_assert(is_dereferenceable<int*>::value == true,  "");
-{% endhighlight %}
+```
 
 That was (just as the simpler SFINAE type trait before) an awfully awkward way to answer the fundamential question "Is T dereferenceable?", but it is perfectly simple to use in the end.
 

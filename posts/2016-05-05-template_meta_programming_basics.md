@@ -16,13 +16,13 @@ C++ TMP programs work on types, not values.
 In some cases, it is useful to work with values, and for that, they need to be wrapped into types.
 This is very easy for any type which can be used as template parameters, just like integers, characters, etc.:
 
-{% highlight c++ %}
+``` cpp
 template <int n>
 struct int_type
 {
     static constexpr int value {n};
 };
-{% endhighlight %}
+```
 
 The `int_type` enables for bijective mappings between `int_type<N>` and integers `N`.
 This way integers can be put where only types are accepted, without losing the actual value information, as it is fixed in the type name.
@@ -39,7 +39,7 @@ This is done using a typical pattern:
 
 The typical convention is, that a structure, which represents a TMP function, will provide a member type called `type`, which contains the result of the parameter mapping.
 
-{% highlight c++ %}
+``` cpp
 template <typename T>
 struct to_pointer
 {
@@ -47,7 +47,7 @@ struct to_pointer
 };
 
 using int_pointer = typename to_pointer<int>::type; // Result: int *
-{% endhighlight %}
+```
 
 This example presents the `to_pointer` *function*, which takes any parameter type `T` and returns `T*`.
 In the last line, it is used to transform `int` to an `int *` type.
@@ -60,22 +60,22 @@ The function is *applied* by writing `typename function_name<parameter>::type`.
 Using `typename ...::type` quickly looks clumsy when applying TMP functions in a nested way.
 Since C++11, it is possible to wrap that clumsy part of function application into `using` clauses:
 
-{% highlight c++ %}
+``` cpp
 template <typename param>
 using function_t = typename function<param>::type;
-{% endhighlight %}
+```
 
 The naming typically follows the convention, that if the function name is `foo`, the helper name is `foo_t`.
 
 Example use:
 
-{% highlight c++ %}
+``` cpp
 // without using-clause helper
 using result = typename function<FooParam>::type;
 
 // with using-clause helper
 using result = function_t<FooParam>;
-{% endhighlight %}
+```
 
 ## Pattern Matching
 
@@ -84,7 +84,7 @@ using result = function_t<FooParam>;
 In the following example it is used to provide a completely different implementation for a TMP function which takes integers, in the case the integer is a `10`.
 It will return `false` in all cases, but `true` in case the integer is of the value `10`.
 
-{% highlight c++ %}
+``` cpp
 template <int n>
 struct is_ten {
     static constexpr bool value {false};
@@ -97,14 +97,14 @@ struct is_ten<10> {
 
 bool result1 {is_ten<12>::value}; // false
 bool result2 {is_ten<10>::value}; // true
-{% endhighlight %}
+```
 
 It would have been possible to have only one implementation of `is_ten` which initializes its `value` field to `n == 10`, which would be a correct implementation, too.
 This example uses pattern matching on this *problem* just for the sake of simplicity.
 
 Pattern matching becomes extremely useful when used in more complicated cases, because it can be used to look *into* template types:
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 template <class vector_type>
 struct is_pointer_vector {
     static constexpr bool value {false};
@@ -120,7 +120,8 @@ bool result1 {is_pointer_vector<std::vector<int >::value};
 
 // Vector of int pointers: true
 bool result2 {is_pointer_vector<std::vector<int*>::value};
-{% endhighlight %}
+```
+<br>
 
 - **Line 2** defines the generic matcher, which will always return `false`.
 - **Line 7** defines the case which only matches on vectors with pointer payload types. The type being pointed to could be anything, but it has to be a pointer.
@@ -131,7 +132,7 @@ Often, this would even be slower, as i experienced that the compiler will be a l
 
 ## If-Else Branches
 
-{% highlight c++ %}
+``` cpp
 template <bool condition, typename true_t, typename false_t>
 if_else 
 {
@@ -151,7 +152,7 @@ struct even_t;
 struct odd_t;
 
 using result = if_else<5 % 2 == 0, even_t, odd_t>;
-{% endhighlight %}
+```
 
 Especially when nesting a lot of `if_else_t` expressions, the code becomes quickly **less readable**.
 Pattern matching can help out a lot here, being both easier to read in most cases.

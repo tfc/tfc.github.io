@@ -15,7 +15,7 @@ This article shows how to wrap such calculations into **iterators** in order to 
 The fibonacci number sequence is widely known.
 Generating those numbers is often used as a typical example for recursions, but at least in standard imperative programming languages, the iterative version is more performant:
 
-{% highlight c++ %}
+``` cpp
 size_t fib(size_t n)
 {
     size_t a {0};
@@ -29,7 +29,7 @@ size_t fib(size_t n)
 
     return b;
 }
-{% endhighlight %}
+```
 
 This way it is easy to generate any fibonacci number.
 But if all fibonacci numbers up to a certain limit need to be generated for some purpose, this implementation is not too handy any longer.
@@ -47,16 +47,16 @@ What do we need in order to implement the simplest possible iterator?
 
 Let us have a look at what the C++ compiler asks for if we want to iterate over a container class:
 
-{% highlight c++ %}
+``` cpp
 for (const auto &item : vector) {
     /* loop body */
 }
-{% endhighlight %}
+```
 
 This kind of loop declaration exists since C++11.
 The compiler will expand this to the following equivalent code:
 
-{% highlight c++ %}
+``` cpp
 {
     auto it  (std::begin(vector));
     auto end (std::end(vector));
@@ -66,7 +66,7 @@ The compiler will expand this to the following equivalent code:
         /* loop body */
     }
 }
-{% endhighlight %}
+```
 
 Looking at the expanded loop, it is pretty obvious what needs to be implemented.
 First, we need to distinguish between two kinds of objects: `vector` is the **iterable range**, and `it` is the **iterator**.
@@ -86,7 +86,7 @@ The **iterator** class needs to implement the following:
 In order to implement any kind of algorithm-generated range, we would first implement an iterator which basically hides variables and the algorithm itself in the `operator++` implementation.
 An iterable class would then just provide a begin and end iterator as needed, in order to enable for C++11 style `for` loops.
 
-{% highlight C++ %}
+``` cpp
 class iterator
 {
     // ... state variables ...
@@ -100,7 +100,7 @@ public:
 
     bool operator!= const (const iterator& o) { /* compare states */ }
 }
-{% endhighlight %}
+```
 
 The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in `operator++` and return the integer in `operator*`. 
 `operator!=` would then just compare this number with the number of another iterator.
@@ -109,7 +109,7 @@ But now let us continue with the fibonacci iterator.
 
 # Fibonacci Iterator
 
-{% highlight c++ %}
+``` cpp
 class fibit
 {
     size_t i {0};
@@ -135,11 +135,11 @@ public:
 
     bool operator!=(const fibit &o) const { return i != o.i; }
 };
-{% endhighlight %}
+```
 
 Using this iterator, it is already possible to iterate over fibonacci numbers:
 
-{% highlight c++ %}
+``` cpp
 fibit it;
 
 // As the comparison operator only compares the "i" variable,
@@ -154,11 +154,11 @@ while (it != end) {
 
 // Or do it the elegant STL way: (include <iterator> first)
 std::copy(it, end, std::ostream_iterator<size_t>{std::cout,"\n"});
-{% endhighlight %}
+```
 
 In order to do it the nice C++11 way, we need an iterable class:
 
-{% highlight c++ %}
+``` cpp
 class fib_range
 {
     fibit  begin_it;
@@ -172,22 +172,22 @@ public:
     fibit begin() const { return begin_it; }
     fibit end()   const { return {0, 0, end_n}; }
 };
-{% endhighlight %}
+```
 
 We can now write...
 
-{% highlight c++ %}
+``` cpp
 for (const size_t num : fib_range(10)) {
     std::cout << num << std::endl;
 }
-{% endhighlight %}
+```
 
 ... which will print the first 10 fibonacci numbers.
 
 What does the function `fibit_at` do?
 This function is a `constexpr` function, which advances a fibonacci iterator at *compile time* if possible, in order to push the iterator towards the fibonacci number which the user wants:
 
-{% highlight c++ %}
+``` cpp
 constexpr fibit fibit_at(size_t n)
 {
     fibit it;
@@ -196,7 +196,7 @@ constexpr fibit fibit_at(size_t n)
     }
     return it;
 }
-{% endhighlight %}
+```
 
 This function enables us to for example iterate from the 100th fibonacci number to the 105th, without having to calculate the first 100 fibonacci numbers at run time, because we can make the compiler prepare everything at compile time.
 
@@ -204,26 +204,26 @@ This function enables us to for example iterate from the 100th fibonacci number 
 
 In order to guarantee, that the 100th fibonacci number is already calculated, when the compiler writes the binary program to disk, we can just put the range into a `constexpr` variable:
 
-{% highlight c++ %}
+``` cpp
 constexpr const fib_range hundred_to_hundredfive {105, 100};
 
 for (size_t num : hundred_to_hundredfive) {
     // Do whatever
 }
-{% endhighlight %}
+```
 
 # Combine the Fibonacci Iterator with STL algorithms
 
 Imagine we need a vector with the first 1000 fibonacci numbers.
 Having the fibonacci algorithm already wrapped into a handy iterator class, we can now use it with any STL algorithm from namespace `std`:
 
-{% highlight c++ %}
+``` cpp
 std::vector<size_t> fib_nums;
 fib_nums.resize(1000);
 
 constexpr const fib_range first1000 {1000};
 std::copy(std::begin(first1000), std::end(first1000), std::begin(fib_nums));
-{% endhighlight %}
+```
 
 This is pretty neat and useful.
 However, with the current example code provided as is, this will not compile (yet), because we did not provide an iterator tag.

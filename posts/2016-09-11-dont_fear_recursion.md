@@ -40,7 +40,7 @@ Tail recursion occurs, when the result of a recursive function call completely d
 
 Example:
 
-{% highlight c++ %}
+``` cpp
 int f(int a, int b)
 {
     // Some nonsense-algorithm which shows tail recursion
@@ -49,7 +49,7 @@ int f(int a, int b)
     }
     return f(a * b, b - 1);
 }
-{% endhighlight %}
+```
 
 In this case, only the parameters need to be refreshed with the values the next recursion call shall get.
 Then, instead of `call`ing the function (which jumps to the function beginning again, but also adds the return address on the stack), it can just be `jmp`ed at, which completely preserves the stack.
@@ -57,7 +57,7 @@ Then, instead of `call`ing the function (which jumps to the function beginning a
 
 An example case in which this would not work:
 
-{% highlight c++ %}
+``` cpp
 int f(int a, int b)
 {
     if (a == 0) {
@@ -65,13 +65,13 @@ int f(int a, int b)
     }
     return 1 + f(a * b, b - 1);
 }
-{% endhighlight %}
+```
 
 In this case, the `1 + ` part needs to be executed for *every* recursive call, which happens **after** the recursive call.
 And for that, real function calls instead of tail jumps are assembled by the compiler.
 That can be fixed, however:
 
-{% highlight c++ %}
+``` cpp
 int f(int a, int b, int sum = 0)
 {
     if (a == 0) {
@@ -79,7 +79,7 @@ int f(int a, int b, int sum = 0)
     }
     return f(a * b, b - 1, sum + 1);
 }
-{% endhighlight %}
+```
 
 This way, we pushed the information of that "post-adding 1" into the parameter variables and transformed the nonoptimal recursion into a tail recursion.
 (At this point, this algorithm does not look nicer than an iterative implementation using a loop. However, other algorithms do.)
@@ -92,16 +92,16 @@ There are actually nice and very generic rules in literature, which describe how
 In order to proof the point of tail recursion, and to motivate people to use more recursion for tidy, but still fast code, I chose the [GCD (*Greatest Common Divisor*)](https://en.wikipedia.org/wiki/Greatest_common_divisor) algorithm, and the two typical different implementations of it:
 
 The recursive version, which looks very similar to a math formula (at least in terms of C syntax):
-{% highlight c++ %}
+``` cpp
 unsigned gcd_rec(unsigned a, unsigned b)
 {
     return b ? gcd_rec(b, a % b) : a;
 }
-{% endhighlight %}
+```
 
 ... and the iterative version, which would have a better performance, if the compiler did not know about tail recursion:
 
-{% highlight c++ %}
+``` cpp
 unsigned gcd_itr(unsigned a, unsigned b)
 {
     while (b) {
@@ -111,7 +111,7 @@ unsigned gcd_itr(unsigned a, unsigned b)
     }
     return a;
 }
-{% endhighlight %}
+```
 
 In my opinion, the recursive version looks much cleaner.
 What I particularly dislike when regarding the iterative version, is the fact that it is telling the compiler how exactly to temporarily save the value of `b`, in order to refresh `a` with it after the modulo operation.
@@ -124,7 +124,7 @@ Putting those two functions into a `.cpp` file and compiling it with `clang++ -c
 First, having a look at the recursive version shows, that it does indeed not contain any `call` instructions because it is implemented using solely jumps (conditional `je` and `jne` instructions).
 This shows, that this recursive version of the GCD algorithm can never lead to steep stack growth.
 
-{% highlight asm %}
+``` asm
 0000000000000000 <_Z7gcd_recjj>:
    0:	89 f2                	mov    %esi,%edx
    2:	89 f8                	mov    %edi,%eax
@@ -141,12 +141,12 @@ This shows, that this recursive version of the GCD algorithm can never lead to s
   1c:	89 c8                	mov    %ecx,%eax
   1e:	c3                   	retq   
   1f:	c3                   	retq   
-{% endhighlight %}
+```
 
 However, looking at the iterative version shows, that both versions are completely **identical**.
 This is pretty cool, because this way we can profit from the performance of iterative code, although our C++ code is a slick and tidy recursive implementation!
 
-{% highlight asm %}
+``` asm
 0000000000000020 <_Z7gcd_itrjj>:
   20:	89 f2                	mov    %esi,%edx
   22:	89 f8                	mov    %edi,%eax
@@ -165,7 +165,7 @@ This is pretty cool, because this way we can profit from the performance of iter
   3f:	c3                   	retq   
 
 
-{% endhighlight %}
+```
 
 ## Summary
 

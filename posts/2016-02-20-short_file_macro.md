@@ -15,7 +15,7 @@ This article describes how to implement a `__SHORT_FILE__` macro, that does not 
 It is of course easy, to find the last slash in a string like `/home/user/src/project/src/file.cpp`, and return a pointer to the token `file.cpp`.
 This could be done at run time, and the overhead would most probably be neglibible in most thinkable situations, but it is no hassle to do it at compile time with C++11 using a `constexpr` function:
 
-{% highlight c++ %}
+``` cpp
 using cstr = const char * const;
 
 static constexpr cstr past_last_slash(cstr str, cstr last_slash)
@@ -30,7 +30,7 @@ static constexpr cstr past_last_slash(cstr str)
 { 
     return past_last_slash(str, str);
 }
-{% endhighlight %}
+```
 
 This is certainly not the most elegant way to express a substring search.
 A nicer way would be to search for the last slash in a loop, or simply use library functions.
@@ -47,11 +47,11 @@ One could now write `printf` or `std::cout` (or whatever) to print just the file
 
 I wrote a small program which just does a `puts(__SHORT_FILE__)` using this *bad* macro, and it produced the following assembly output:
 
-{% highlight asm %}
+``` asm
 callq	__ZL15past_last_slashPKc ## past_last_slash(char const*)
 movq	%rax, %rdi
 callq	0x100000f58             ## symbol stub for: _puts
-{% endhighlight %}
+```
 
 In order to obtain the short version of `__FILE__`, a function is called.
 This function is also called without parameters, which means that the compiler generated a function which is hard coded to this specific string.
@@ -61,9 +61,9 @@ Important: *The return values of functions marked `constexpr` are only guarantee
 
 The following macro, which looks strange, fixes both:
 
-{% highlight c++ %}
+``` cpp
 #define __SHORT_FILE__ ({constexpr cstr sf__ {past_last_slash(__FILE__)}; sf__;})
-{% endhighlight %}
+```
 
 This macro uses a `{}` scope, to instantiate a new helper variable on the fly, in order to force the return value of the helper function into a `constexpr` variable.
 At this point it is guaranteed, that the compiler will embed the return value into the binary, without generating a run time function call.
@@ -73,10 +73,10 @@ The parentheses around that allow for transforming this scope block into an expr
 It is now possible to put this macro into any expression which would also accept `__FILE__` for logging, or printing.
 The assembly of the example program also looks better:
 
-{% highlight asm %}
+``` asm
 leaq	0x45(%rip), %rdi        ## literal pool for: "main.cpp"
 callq	0x100000f54             ## symbol stub for: _puts
-{% endhighlight %}
+```
 
 I found this macro pretty cool, as it reduces binary- and code size.
 And it even does this if optimization flags are disabled, in order to have a close look at the assembly while debugging.

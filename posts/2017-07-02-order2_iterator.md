@@ -33,7 +33,7 @@ The size of a chunk is described by its *order*.
 Example:
 A memory range that is 4 memory pages large and begins at address `0x123000` is described by `(0x123, 2)`.
 We get from `0x123000` to `0x123`, because pages are 4096 bytes (0x1000 in hex) large. That means that we need to divide a virtual address pointer value by `0x1000` and get a virtual page number.
-From 4 pages we get to the order value `2`, because $$4 = 2^2$$, so the order is 2.
+From 4 pages we get to the order value `2`, because $4 = 2^2$, so the order is 2.
 
 Ok, that is simple. It stops being simple as soon as one describes real-life memory ranges.
 Such a `(base, order)` tuple is also called a *capability range descriptor*, and must follow the following rules:
@@ -43,14 +43,14 @@ Such a `(base, order)` tuple is also called a *capability range descriptor*, and
 
 That means if we want to describe the memory range `[0x100, 0x107)` (the notation `[a, b)` means that the range goes from `a` to `b`, but does not contain `b`. Like it is the case for begin/end iterator pairs) following those rules, we would break it into multiple capability range descriptors:
 
-- `(0x100, 2)`, $$2^2 = 4$$ pages
-- `(0x104, 1)`, $$2^1 = 2$$ pages
-- `(0x106, 0)`, $$2^0 = 1$$ pages
+- `(0x100, 2)`, $2^2 = 4$ pages
+- `(0x104, 1)`, $2^1 = 2$ pages
+- `(0x106, 0)`, $2^0 = 1$ pages
 
 Let's get towards actual code:
 Mapping such an example range to another process's address space would then look like the following code, which maps its own range `[0x100, 0x107)` to `[0x200, 0x207)` in the namespace of the other process using a structure `map_helper`:
 
-{% highlight c++ %}
+``` cpp
 map_helper.source_base = 0x100;
 
 map_helper.push_back(0x200, 2); // 2^2 pages = 4 pages
@@ -59,7 +59,7 @@ map_helper.push_back(0x206, 0); // 2^0 pages = 1 page
                                 //       sum = 7 pages
 
 map_helper.delegate(target_address_space);
-{% endhighlight %}
+```
 
 The `map_helper.delegate(...)` call results in a system call to the kernel which does the actual memory mapping.
 In order to not result in one system call per mapping, `map_helper` accepts a whole batch of mappings that are sent to the kernel in one run.
@@ -71,7 +71,7 @@ In order to not result in one system call per mapping, `map_helper` accepts a wh
 Ok, that is nearly everything about expressing memory mappings with the logic of capability range descriptors.
 There is one last quirk.
 
-Imagine we want to map the range `[0x0, 0x10)`, which can be expressed as `(0x0, 4)` (`0x10 = 16`, and $$16 = 2^4$$), to the range `[0x1, 0x11)` in the other process's address space.
+Imagine we want to map the range `[0x0, 0x10)`, which can be expressed as `(0x0, 4)` (`0x10 = 16`, and $16 = 2^4$), to the range `[0x1, 0x11)` in the other process's address space.
 That should be easy since they only have an offset of 1 page to each other.
 What is visible at address `0x1000` in the first process, will be visible at address `0x2000` in the other.
 Actually, it is not that easy, because the capability range descriptor `(0x0, 4)` can not simply be described as `(0x1, 4)` in the other process's address space.
@@ -86,7 +86,7 @@ That allows for larger chunks.
 
 A generic function that maps *any* page range to another process's address space could finally look like the following:
 
-{% highlight c++ %}
+``` cpp
 void map(word_t base1, word_t base2, word_t size, foo_t target_address_space)
 {
     map_helper.source_base = base1;
@@ -118,7 +118,7 @@ void map(word_t base1, word_t base2, word_t size, foo_t target_address_space)
 
     map_helper.delegate(target_address_space);
 }
-{% endhighlight %}
+```
 
 As a newcomer to such a project, you will soon understand the maths behind it.
 You will see it everywhere, because the same technique is used for sharing memory, I/O ports, and descriptors for kernel objects like threads, semaphores, etc. between processes.
@@ -140,7 +140,7 @@ This would have multiple advantages:
 
 One possibility is to write a function `map_generic` that accepts a callback function that would get already calculated chunks as parameters and that would then do the payload magic:
 
-{% highlight c++ %}
+``` cpp
 template <typename F>
 void map_generic(word_t base1, word_t base2, word_t size, F f)
 {
@@ -181,7 +181,7 @@ void map(word_t base1, word_t base2, word_t size, foo_t target_address_space)
 
     map_helper.delegate(target_address_space);
 }
-{% endhighlight %}
+```
 
 What we have is now the pure math of capability range composition of generic ranges in `map_generic` and actual memory mapping code in `map`.
 This is already much better but leaves us without control *how many* chunks we actually want to consume at a time.
@@ -201,9 +201,9 @@ When such a range is iterated over, it emits the sub-ranges.
 
 
 So let's implement this in terms of an iterator.
-If you don't know yet how to implement iterators, you might want to have a look at [my other article where i explain how to implement your own iterator]({% post_url 2016-09-04-algorithms_in_iterators %}).
+If you don't know yet how to implement iterators, you might want to have a look at [my other article where i explain how to implement your own iterator](/2016/09/04/algorithms_in_iterators).
 
-{% highlight c++ linenos %}
+``` {.cpp .numberLines }
 #include <cstdint>   // uintptr_t
 #include <algorithm> // min/max
 #include <tuple>
@@ -246,7 +246,7 @@ struct order_range
     order_range begin() const { return *this; }
     it_sentinel end()   const { return {}; }
 };
-{% endhighlight %}
+```
 
 This looks a bit bloaty at first, but this is a one-time implementation after all.
 When we compare it with the initial `for`-loop version, we realize that all the calculations are in the function `current_order` and `operator++`.
@@ -261,14 +261,14 @@ This allows for a simpler abort condition (which is: `size == 0`).
 With this tiny order 2 range iterator *"library"*, we can now do the following.
 (Let's move away from the memory mapping examples to simple `printf` examples because we will compare them in [Godbolt](https://gcc.godbolt.org) later)
 
-{% highlight c++ %}
+``` cpp
 void print_range(word_t base1, word_t base2, word_t size)
 {
     for (const auto &[b1, b2, order] : order_range{base1, base2, size}) {
         printf("%4zx -> %4zx, order %2zu\n", b1, b2, order);
     }
 }
-{% endhighlight %}
+```
 
 This code just contains *pure payload*.
 There is no trace of the mathematical obfuscation left.
@@ -280,7 +280,7 @@ Another differentiating feature from the callback function variant is that we ca
 What is the price of this abstraction? 
 Let us see how the non-iterator-version of the same code would look like, and then compare it in the Godbolt assembly output view.
 
-{% highlight c++ %}
+``` cpp
 void print_range(word_t base1, word_t base2, word_t size)
 {
     constexpr word_t max_bit {1ull << (8 * sizeof(max_bit) - 1)};
@@ -299,12 +299,12 @@ void print_range(word_t base1, word_t base2, word_t size)
         size  -= step;
     }
 }
-{% endhighlight %}
+```
 
 Interestingly, `clang++` sees exactly what we did there and emits exactly **the same assembly** in **both** cases.
 That means that this iterator is a real **zero cost** abstraction!
 
-{% highlight asm %}
+``` asm
 print_range(unsigned long, unsigned long, unsigned long): 
         push    r15
         push    r14
@@ -347,7 +347,7 @@ print_range(unsigned long, unsigned long, unsigned long):
         ret
 .L.str:
         .asciz  "%4zx -> %4zx, order %2zu\n"
-{% endhighlight %}
+```
 
 [See the whole example in gcc.godbolt.org.](https://godbolt.org/g/hn3yix)
 
