@@ -1,0 +1,31 @@
+<div .posts>
+  \$for(posts)$
+    <div>
+      <h4>
+        <a href="$url$">$title$
+      \$if(date)$
+        <p>
+          <strong>
+            <small>
+              \$date$
+      \$endif$
+      \$teaser$
+      <p>
+        <a .btn .btn-sm .btn-primary href="$url$" role="button">
+          Read more 
+          <i .fa .fa-arrow-circle-right>
+    \$sep$
+    <hr>
+  \$endfor$
+
+<div .pagination>
+  \$if(previousPageNum)$
+    <a .pagination-item .newer href="$previousPageUrl$">Newer
+  \$else$
+    <span .pagination-item .newer>Newer
+  \$endif$
+  \$if(nextPageNum)$
+    <a .pagination-item .older href="$nextPageUrl$">Older
+  \$else$
+    <span .pagination-item .older>Older
+  \$endif$

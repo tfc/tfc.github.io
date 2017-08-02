@@ -1,0 +1,4 @@
+<div .post>
+  <h1 .post-title>$title$
+  <span .post-date>$date$
+  \$body$

@@ -1,10 +1,9 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
-import           Data.Monoid (mappend)
+import Control.Monad (liftM)
+import           Data.Monoid ((<>))
 import           Hakyll
+import           Hamlet
 
-
---------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
     match "images/*" $ do
@@ -15,53 +14,57 @@ main = hakyll $ do
         route   idRoute
         compile compressCssCompiler
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
-        route   $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/default.html" defaultContext
-            >>= relativizeUrls
+    match "templates/*.hamlet" $ compile hamlTemplateCompiler
 
-    match "posts/*" $ do
-        route $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/post.html"    postCtx
-            >>= loadAndApplyTemplate "templates/default.html" postCtx
-            >>= relativizeUrls
+    indexPages <- buildPaginateWith grouper "posts/*" makeId
 
-    create ["archive.html"] $ do
-        route idRoute
-        compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
-            let archiveCtx =
-                    listField "posts" postCtx (return posts) `mappend`
-                    constField "title" "Archives"            `mappend`
-                    defaultContext
+    paginateRules indexPages $ \pageNum pattern -> do
+      route idRoute
+      compile $ do
+          posts <- recentFirst =<< loadAll pattern
+          let paginateCtx = paginateContext indexPages pageNum
+              ctx =
+                  constField "title" ("Blog Archive - Page " ++ (show pageNum)) <>
+                  listField "posts" (teaserCtx) (return posts) <>
+                  paginateCtx <>
+                  defaultContext
+          makeItem ""
+              >>= loadAndApplyTemplate "templates/index.hamlet" ctx
+              >>= loadAndApplyTemplate "templates/default.hamlet" ctx
+              >>= relativizeUrls
 
-            makeItem ""
-                >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
-                >>= loadAndApplyTemplate "templates/default.html" archiveCtx
-                >>= relativizeUrls
-
-
+{-
     match "index.html" $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
-            let indexCtx =
-                    listField "posts" postCtx (return posts) `mappend`
-                    constField "title" "Home"                `mappend`
-                    defaultContext
-
+            let ctx = listField "posts" teaserCtx (return posts) <>
+                      defaultContext
             getResourceBody
-                >>= applyAsTemplate indexCtx
-                >>= loadAndApplyTemplate "templates/default.html" indexCtx
-                >>= relativizeUrls
+              >>= applyAsTemplate ctx
+              >>= loadAndApplyTemplate "templates/default.hamlet" ctx
+              >>= relativizeUrls
+              -}
 
-    match "templates/*" $ compile templateBodyCompiler
+    match "posts/*" $ do
+        route $ setExtension "html"
+        compile $ pandocCompiler
+            >>= saveSnapshot "post_content"
+            >>= loadAndApplyTemplate "templates/post.hamlet" postCtx
+            >>= loadAndApplyTemplate "templates/default.hamlet" postCtx
+            >>= relativizeUrls
 
 
 --------------------------------------------------------------------------------
 postCtx :: Context String
-postCtx =
-    dateField "date" "%B %e, %Y" `mappend`
-    defaultContext
+postCtx = dateField "date" "%B %e, %Y" <> defaultContext
+
+teaserCtx :: Context String
+teaserCtx = teaserField "teaser" "post_content" <> postCtx
+
+grouper :: MonadMetadata m => [Identifier] -> m [[Identifier]]
+grouper = liftM (paginateEvery 10) . sortRecentFirst
+
+makeId :: PageNumber -> Identifier
+makeId pageNum = fromFilePath $ "index" ++ pageStr ++ ".html"
+    where pageStr = if pageNum == 1 then "" else show pageNum

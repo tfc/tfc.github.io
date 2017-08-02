@@ -21,11 +21,15 @@ module Hamlet (
   , renderHaml
   ) where
 
-import Hakyll
-import Data.Text(Text)
-import Text.Hamlet.Runtime (HamletSettings, HamletData, parseHamletTemplate, renderHamletTemplate, HamletSettings, defaultHamletSettings)
-import Data.Map (Map)
-import Text.Blaze.Html.Renderer.String (renderHtml)
+import           Data.Map                        (Map)
+import           Data.Text                       (Text)
+import           Hakyll
+import           Text.Blaze.Html.Renderer.String (renderHtml)
+import           Text.Hamlet.Runtime             (HamletData, HamletSettings,
+                                                  HamletSettings,
+                                                  defaultHamletSettings,
+                                                  parseHamletTemplate,
+                                                  renderHamletTemplate)
 
 -- | Read complete file contents as a string using Hamlet, with the default options.
 hamlCompiler :: Compiler (Item String)
