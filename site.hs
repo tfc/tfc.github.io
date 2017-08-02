@@ -49,6 +49,13 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
             >>= relativizeUrls
 
+    create ["atom.xml"] $ do
+        route idRoute
+        compile $ do
+            let feedCtx = postCtx <>
+                          bodyField "description"
+            posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "post_content"
+            renderAtom feedConfig feedCtx posts
 
 --------------------------------------------------------------------------------
 dropIndexHtml :: String -> Context a
@@ -78,3 +85,12 @@ postRoute =
     where
         replaceChars c | c == '-' || c == '_' = '/'
                        | otherwise = c
+
+feedConfig :: FeedConfiguration
+feedConfig = FeedConfiguration {
+    feedTitle       = "Jacek's C++ Blog",
+    feedDescription = "This blog is about C++",
+    feedAuthorName  = "Jacek Galowicz",
+    feedAuthorEmail = "jacek@galowicz.de",
+    feedRoot        = "https://blog.galowicz.de"
+}
