@@ -10,3 +10,7 @@ This is my personal blog, where i aim to write regularly about interesting daily
 C++ is the programming language i have most experience and expertise with.
 It is my main vehicle for striving after elegant, fast, and generic code.
 
+------------------------------------------
+
+This site was generated with [Hakyll](https://jaspervdj.be/hakyll/)
+![Haskell Logo](/images/haskell-logo.png)
