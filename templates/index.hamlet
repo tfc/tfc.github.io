@@ -1,4 +1,0 @@
-<h3>Posts
-
-\$partial("templates/post-list.hamlet")$
-

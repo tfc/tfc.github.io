@@ -1,4 +1,17 @@
 <div .post>
-  <h1 .post-title>$title$
   <span .post-date>$date$
   \$body$
+
+<div #disqus_thread>
+<script>
+  var disqus_developer = 1;
+  var disqus_config = function () {
+    this.page.url = 'https://blog.galowicz.de$url$';
+    this.page.identifier = 'nicecpp$url$';
+  };
+  (function() {
+    var d = document, s = d.createElement('script');
+    s.src = '//nicecpp.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
