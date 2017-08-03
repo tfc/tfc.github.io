@@ -114,7 +114,7 @@ In roughly 500 pages, the book covers the following topics:
 
 The book will soon be available in **printed form**, but the **ebook** can be ordered already.
 
-If you want a **DRM-free** version of it, you should order it [directly from PACKT](https://www.packtpub.com/application-development/c17-stl-cookbook). Of course, [Amazon has the book](https://www.amazon.com/17-STL-Cookbook-Jacek-Galowicz-ebook/dp/B01MTSADN8), too.
+If you want a **DRM-free** version of it, you should order it [directly from PACKT](https://www.packtpub.com/application-development/c17-stl-cookbook). Of course, [Amazon has the book](http://amzn.to/2hqAyFX), too.
 
 ## Thank you
 
