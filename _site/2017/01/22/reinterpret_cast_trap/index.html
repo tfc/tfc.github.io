@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's C++ Blog &middot; A reinterpret_cast Trap</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+</h1>
+<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About</a>
+<a class="sidebar-nav-item" href="https://galowicz.de">CV Info</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+</a>
+<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>A reinterpret_cast Trap</h1>
+<div class="post"><span class="post-date">January 22, 2017</span>
+<p>Sometimes, casting is just inevitable. And then there’s even not much science behind it, at least it seems so. Once some address is provided in a variable of the right size, a typed pointer can be casted out of it, and then the object can be accessed via its members and methods as usual. In some situations it is really easy to get the casting wrong, leading to interesting bugs. This article describes an example situation and a proper fix.</p>
+<!--more-->
+<p>Imagine we have a base class <code>C</code>, which inherits from <code>B</code>, which inherits from <code>A</code>. They all have one <code>int</code> member (4 Bytes each):</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> A     { <span class="dt">int</span> a; };
+<span class="kw">struct</span> B : A { <span class="dt">int</span> b; };
+<span class="kw">struct</span> C : B { <span class="dt">int</span> c; };</code></pre></div>
+<p>Assuming that we have an instance of class <code>C</code> somewhere in memory at address <code>X</code>, we know that its member <code>a</code> which it inherited from struct <code>A</code> lies at exactly the same offset. Member <code>b</code> is located at <code>X + 4</code>, and <code>c</code> is located at <code>X + 8</code>.</p>
+<p>If we are just interested in one of those specific members, we could simply calculate the offset, and then <code>reinterpret_cast</code>, just like this:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Print c, assuming x is the address of an instance of struct C:</span>
+<span class="bu">std::</span>cout &lt;&lt; *<span class="kw">reinterpret_cast</span>&lt;<span class="dt">int</span>*&gt;(x + <span class="dv">8</span>) &lt;&lt; <span class="bu">std::</span>endl; </code></pre></div>
+<p>Let’s assume we have some code, which <em>relies</em> on getting addresses of <code>struct A</code> typed addresses in integral form:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> A {
+    <span class="dt">int</span> a {<span class="bn">0xa</span>};
+};
+
+<span class="kw">struct</span> B : A {
+    <span class="dt">int</span> b {<span class="bn">0xb</span>};
+};
+
+<span class="co">// Simple inheritance: A -&gt; B1 -&gt; C</span>
+<span class="kw">struct</span> C : B {
+    <span class="dt">int</span> c {<span class="bn">0xc</span>};
+};
+
+<span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)
+{
+    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};
+    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;
+}
+
+<span class="dt">int</span> main()
+{
+    C c;
+ 
+    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));
+
+    <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></div>
+<p>That’s no good style, but this program works. The structures have standard definitions which initialize members <code>a</code>, <code>b</code>, and <code>c</code> to values <code>0xa</code>, <code>0xb</code>, and <code>0xc</code>.</p>
+<p>The program will print <code>a</code> at run time, which is what we expect.</p>
+<p>The inheritance chain wraps every inheriting member’s variables past the structure members in memory from which it is inheriting. So the memory layout of <code>c</code> looks like:</p>
+<p>|Relative offset|Value|Structure Type Origin| |0x0|0xa|A| |0x4|0xb|B| |0x8|0xc|C|</p>
+<p>(Every table row represents an integer in memory)</p>
+<p>This program stops to work so nicely when changing the inheritance chain a bit:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> A     { <span class="dt">int</span> a {<span class="bn">0xa</span>}; };
+<span class="kw">struct</span> B : A { <span class="dt">int</span> b {<span class="bn">0xb</span>}; };
+
+<span class="kw">struct</span> Foo {
+    <span class="dt">int</span> f {<span class="bn">0xf</span>};
+};
+
+<span class="co">// Multiple inheritance: (Foo), (A, B) -&gt; C</span>
+<span class="kw">struct</span> C : Foo, B {
+    <span class="dt">int</span> c {<span class="bn">0xc</span>};
+};
+
+<span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)
+{
+    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};
+    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;
+}
+
+<span class="dt">int</span> main()
+{
+    C c;
+ 
+    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));
+
+    <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></div>
+<p>This program version will print <code>f</code>, and not <code>a</code>. This is, because we disturbed the memory layout by letting <code>C</code> first inherit from <code>Foo</code>, then from <code>B</code> (which still inherits from <code>A</code>).</p>
+<p>|Relative offset|Value|Structure Type Origin| |0x0|0xf|Foo| |0x4|0xa|A| |0x8|0xb|B| |0xc|0xc|C|</p>
+<p><code>reinterpret_cast</code> is just not the right tool for this, if we just assume that inheriting from <code>A</code> somehow shall do the magic. Before showing how to do it right, i first present another failing example:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">/* Unchanged definition of struct A and B... */</span>
+
+<span class="kw">struct</span> C : B {
+    <span class="dt">int</span> c {<span class="bn">0xd</span>};
+
+    <span class="kw">virtual</span> <span class="dt">void</span> f() {};
+};
+
+<span class="dt">int</span> main()
+{
+    C c;
+ 
+    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));
+
+    <span class="cf">return</span> <span class="dv">0</span>;
+}</code></pre></div>
+<p>In this case, the program <em>might</em> print <code>a</code>, but in many cases it will print <em>something</em>.</p>
+<p>The only difference is, that we added a virtual function in struct <code>C</code>. This leads to this object containing another <em>pointer</em>. It points to a <strong>vtable</strong>. (That vtable itself is globally accessible at runtime and contains pointers to all virtual functions which that class contains. This is roughly how C++ implements polymorphy.) The vtable pointer can be located <em>somewhere</em> in the object. In the clang and GCC case, it is located at the beginning of the object, where we assumed the <code>a</code> member. And that is why it does not work.</p>
+<h2 id="casting-done-right">Casting done right</h2>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> main()
+{
+    C1 c1; <span class="co">// normal C B A inheritance</span>
+    C2 c2; <span class="co">// Foo C B A inheritance</span>
+    C3 c3; <span class="co">// virtual function added in class C</span>
+
+    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c1)));
+    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c2)));
+    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c3)));
+}</code></pre></div>
+<p>I renamed the 3 variants of struct <code>C</code> to <code>C1</code>, <code>C2</code>, and <code>C3</code>. This program will now correctly print <code>a</code> in all these cases.</p>
+<p>What is different here (But same in all cases!), is that the address of the objects are first <code>static_cast</code>ed to <code>const A*</code>, and <strong>then</strong> <code>reinterpret_cast</code>ed to <code>std::uintptr_t</code>.</p>
+<p><code>static_cast</code> applies some magic to the pointer: As it knows from what to what we are casting (from type <code>C</code> to <code>A</code>), it can <em>modify</em> the actual pointer address. And it must do that, because if we want an <code>A</code>-typed pointer from the <code>C2</code> object (which first inherits from <code>Foo</code>, and then from <code>B</code>), then we must add 4 bytes to the address, in order to have an actual <code>A</code> pointer. (Because the <code>A</code> part lies 4 bytes behind the <code>Foo</code> part)</p>
+<p>In the <code>C3</code> case (which adds a virtual function), the pointer must be fixed in the sense that the <code>A</code> part of the object lies behind (or in front of? That is compiler dependend, but <code>static_cast</code> will always get it right!) the vtable. So in this case, clang’s <code>static_cast</code> will add 8 bytes offset to the pointer, to make it an actual <code>A</code> typed pointer. (It’s 8 bytes, because a pointer is 8 bytes large on 64bit systems which we assume here)</p>
+<p>Another nice feature is, that <code>static_cast</code> will refuse to compile, if the object is by no means related to type <code>A</code>. <code>reinterpret_cast</code> just ignores this and gives us no safety.</p>
+<p>However, it was not possible to completely avoid <code>reinterpret_cast</code>, because of the <em>type erasing</em> cast from <code>A*</code> to <code>std::uintptr_t</code>, which <code>static_cast</code> would refuse to do. Although we could have used a union which overlays an <code>A</code> pointer with a <code>std::uintptr_t</code>.</p>
+<h2 id="summary">Summary</h2>
+<p>Only use <code>reinterpret_cast</code> when you are <em>1000000%</em> sure what type you have in front of you. And even if you could do the math of pointer offset correction yourself - don’t.</p>
+<p>When casting, you should always first consider to <code>static_cast</code> to the type you need first. This will <em>fail</em> if you got the types wrong - this is useful in situations where you deal with templates or <code>auto</code> types) Do the <code>reinterpret_cast</code> only if it is really inevitable, and even then double check its correctness.</p>
+<p><code>reinterpret_cast</code>-<code>static_cast</code> <em>chains</em> will not make your code prettier. As Stroustrup states in his original C++ books, the C++ style casts are <em>intentionally ugly</em>, because they are also potentionally <strong>dangerous</strong>.</p>
+<p><em>EDIT on 2017-01-27: Changed the type from <code>uint64_t</code> to <code>std::uintptr_t</code>, as a comment on <a href="https://www.reddit.com/r/cpp/comments/5pju7q/a_reinterpret_cast_trap/">reddit.com/r/cpp</a> suggested. Thanks for the input!</em></p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2017/01/22/reinterpret_cast_trap/';
+this.page.identifier = 'nicecpp/2017/01/22/reinterpret_cast_trap/';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-28506344-2', 'auto');
+ga('send', 'pageview');</script>
+</body>
+</head>
+</html>

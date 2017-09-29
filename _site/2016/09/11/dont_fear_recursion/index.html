@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's C++ Blog &middot; Do Not Fear Recursion</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+</h1>
+<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About</a>
+<a class="sidebar-nav-item" href="https://galowicz.de">CV Info</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+</a>
+<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Do Not Fear Recursion</h1>
+<div class="post"><span class="post-date">September 11, 2016</span>
+<p>There are a lot of algorithms which can be implemented using <em>recursive</em> or <em>iterative</em> style. Actually, <strong>everything</strong> can be implemented in both styles. For a lot of algorithms, the recursive version is simpler to read, write, and understand. But nevertheless, programmers know, that recursive functions burden a lot of memory consumption, because there is usually a <code>call</code> instruction per recursive call, which puts another call frame on the stack. Interestingly, this is not true for some special cases.</p>
+<!--more-->
+<p>The idea to write this article came into my mind when I thought about a discussion which I listened to many years ago. At that time I worked at a company as a freelancer, before I started studying at university. The whole discussion was very open, but I felt a bit disturbed when a colleague said, that C/C++ is very limited in their optimization potential. One example for that point was, that languages like <em>Scala</em> can eliminate the stack growth in some recursion cases. I was very unexperienced, so I didn’t know better. Not too much later, I learned at university, that this special kind of recursion is called <a href="https://en.wikipedia.org/wiki/Tail_call"><strong>tail recursion</strong></a>. I was pretty happy when I realized that the optimization potential which that brings, is not a question of the language, but more a question of the compiler implementation.</p>
+<p>As of today, this topic came to my attention multiple times. Since C++11, it is possible to let the compiler execute <em>normal</em> functions (instead of template meta code) at compile time, and get a guarantee that the result will be embedded in the binary, reducing execution time. Such functions are called <code>constexpr</code> functions. However, those functions had to be implemented recursively, as it is not possible to define variables and loops in <code>constexpr</code> functions in C++11. (This is fixed and allowed in C++14) At this occasion (and because of template meta-programming and learning Haskell) I got some more practice in thinking recursion aware.</p>
+<h2 id="tail-recursion">Tail Recursion</h2>
+<p>Some algorithms are very short and pretty, when implemented recursively. However, because of the fear that they would be inefficient, coders often just think how to implement them iteratively. Iterative versions do not increase the stack size, so they feel better.</p>
+<p>Alternatively, by thinking of a <strong>tail</strong> recursive version, both simplicity of recursion, and performance of iterative style can be combined.</p>
+<p>First: What <em>is</em> tail recursion?</p>
+<p>Tail recursion occurs, when the result of a recursive function call completely depends on the same function call, just with other parameters.</p>
+<p>Example:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b)
+{
+    <span class="co">// Some nonsense-algorithm which shows tail recursion</span>
+    <span class="cf">if</span> (a == <span class="dv">0</span>) {
+        <span class="cf">return</span> b;
+    }
+    <span class="cf">return</span> f(a * b, b - <span class="dv">1</span>);
+}</code></pre></div>
+<p>In this case, only the parameters need to be refreshed with the values the next recursion call shall get. Then, instead of <code>call</code>ing the function (which jumps to the function beginning again, but also adds the return address on the stack), it can just be <code>jmp</code>ed at, which completely preserves the stack. (At this point I am talking about the <em>assembler</em> instructions <code>call</code> and <code>jmp</code>, which work similarly for most processor architectures, but may have slightly different names.)</p>
+<p>An example case in which this would not work:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b)
+{
+    <span class="cf">if</span> (a == <span class="dv">0</span>) {
+        <span class="cf">return</span> b;
+    }
+    <span class="cf">return</span> <span class="dv">1</span> + f(a * b, b - <span class="dv">1</span>);
+}</code></pre></div>
+<p>In this case, the <code>1 +</code> part needs to be executed for <em>every</em> recursive call, which happens <strong>after</strong> the recursive call. And for that, real function calls instead of tail jumps are assembled by the compiler. That can be fixed, however:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b, <span class="dt">int</span> sum = <span class="dv">0</span>)
+{
+    <span class="cf">if</span> (a == <span class="dv">0</span>) {
+        <span class="cf">return</span> b + sum;
+    }
+    <span class="cf">return</span> f(a * b, b - <span class="dv">1</span>, sum + <span class="dv">1</span>);
+}</code></pre></div>
+<p>This way, we pushed the information of that “post-adding 1” into the parameter variables and transformed the nonoptimal recursion into a tail recursion. (At this point, this algorithm does not look nicer than an iterative implementation using a loop. However, other algorithms do.)</p>
+<p>That was just a cheap example. There are actually nice and very generic rules in literature, which describe how to transform between the different coding styles. (See also the Wikipedia article about tail recursion)</p>
+<h2 id="gcd-example">GCD Example</h2>
+<p>In order to proof the point of tail recursion, and to motivate people to use more recursion for tidy, but still fast code, I chose the <a href="https://en.wikipedia.org/wiki/Greatest_common_divisor">GCD (<em>Greatest Common Divisor</em>)</a> algorithm, and the two typical different implementations of it:</p>
+<p>The recursive version, which looks very similar to a math formula (at least in terms of C syntax):</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">unsigned</span> gcd_rec(<span class="dt">unsigned</span> a, <span class="dt">unsigned</span> b)
+{
+    <span class="cf">return</span> b ? gcd_rec(b, a % b) : a;
+}</code></pre></div>
+<p>… and the iterative version, which would have a better performance, if the compiler did not know about tail recursion:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">unsigned</span> gcd_itr(<span class="dt">unsigned</span> a, <span class="dt">unsigned</span> b)
+{
+    <span class="cf">while</span> (b) {
+        <span class="dt">unsigned</span> tmp {b};
+        b = a % b;
+        a = tmp;
+    }
+    <span class="cf">return</span> a;
+}</code></pre></div>
+<p>In my opinion, the recursive version looks much cleaner. What I particularly dislike when regarding the iterative version, is the fact that it is telling the compiler how exactly to temporarily save the value of <code>b</code>, in order to refresh <code>a</code> with it after the modulo operation. This is as primitive as “Well, do <code>a % b</code>, but I want <code>b</code> saved <strong>here</strong> and then written back <strong>there</strong>”, which is something which has nothing to do with the <em>actual</em> problem (calculating a GCD).</p>
+<h2 id="comparing-compiler-output">Comparing compiler output</h2>
+<p>Putting those two functions into a <code>.cpp</code> file and compiling it with <code>clang++ -c main.cpp -O2</code> reveals something interesting:</p>
+<p>First, having a look at the recursive version shows, that it does indeed not contain any <code>call</code> instructions because it is implemented using solely jumps (conditional <code>je</code> and <code>jne</code> instructions). This shows, that this recursive version of the GCD algorithm can never lead to steep stack growth.</p>
+<div class="sourceCode"><pre class="sourceCode asm"><code class="sourceCode fasm"><span class="dv">0000000000000000</span> &lt;_Z7gcd_recjj&gt;:
+<span class="fu">   0:</span>	<span class="dv">89</span> f2                	<span class="bu">mov</span>    %<span class="kw">esi</span>,%<span class="kw">edx</span>
+<span class="fu">   2:</span>	<span class="dv">89</span> f8                	<span class="bu">mov</span>    %<span class="kw">edi</span>,%<span class="kw">eax</span>
+<span class="fu">   4:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
+<span class="fu">   6:</span>	<span class="dv">74</span> <span class="dv">17</span>                	<span class="bu">je</span>     1f &lt;_Z7gcd_recjj+<span class="bn">0x1f</span>&gt;
+<span class="fu">   8:</span>	0f 1f <span class="dv">84</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> 	nopl   <span class="bn">0x0</span>(%<span class="kw">rax</span>,%<span class="kw">rax</span>,<span class="dv">1</span>)
+<span class="fu">   f:</span>	<span class="dv">00</span> 
+<span class="fu">  10:</span>	<span class="dv">89</span> d1                	<span class="bu">mov</span>    %<span class="kw">edx</span>,%<span class="kw">ecx</span>
+<span class="fu">  12:</span>	<span class="dv">31</span> d2                	<span class="bu">xor</span>    %<span class="kw">edx</span>,%<span class="kw">edx</span>
+<span class="fu">  14:</span>	f7 f1                	<span class="bu">div</span>    %<span class="kw">ecx</span>
+<span class="fu">  16:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
+<span class="fu">  18:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
+<span class="fu">  1a:</span>	<span class="dv">75</span> f4                	<span class="bu">jne</span>    <span class="dv">10</span> &lt;_Z7gcd_recjj+<span class="bn">0x10</span>&gt;
+<span class="fu">  1c:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
+<span class="fu">  1e:</span>	c3                   	retq   
+<span class="fu">  1f:</span>	c3                   	retq   </code></pre></div>
+<p>However, looking at the iterative version shows, that both versions are completely <strong>identical</strong>. This is pretty cool, because this way we can profit from the performance of iterative code, although our C++ code is a slick and tidy recursive implementation!</p>
+<div class="sourceCode"><pre class="sourceCode asm"><code class="sourceCode fasm"><span class="dv">0000000000000020</span> &lt;_Z7gcd_itrjj&gt;:
+<span class="fu">  20:</span>	<span class="dv">89</span> f2                	<span class="bu">mov</span>    %<span class="kw">esi</span>,%<span class="kw">edx</span>
+<span class="fu">  22:</span>	<span class="dv">89</span> f8                	<span class="bu">mov</span>    %<span class="kw">edi</span>,%<span class="kw">eax</span>
+<span class="fu">  24:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
+<span class="fu">  26:</span>	<span class="dv">74</span> <span class="dv">17</span>                	<span class="bu">je</span>     3f &lt;_Z7gcd_itrjj+<span class="bn">0x1f</span>&gt;
+<span class="fu">  28:</span>	0f 1f <span class="dv">84</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> 	nopl   <span class="bn">0x0</span>(%<span class="kw">rax</span>,%<span class="kw">rax</span>,<span class="dv">1</span>)
+<span class="fu">  2f:</span>	<span class="dv">00</span> 
+<span class="fu">  30:</span>	<span class="dv">89</span> d1                	<span class="bu">mov</span>    %<span class="kw">edx</span>,%<span class="kw">ecx</span>
+<span class="fu">  32:</span>	<span class="dv">31</span> d2                	<span class="bu">xor</span>    %<span class="kw">edx</span>,%<span class="kw">edx</span>
+<span class="fu">  34:</span>	f7 f1                	<span class="bu">div</span>    %<span class="kw">ecx</span>
+<span class="fu">  36:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
+<span class="fu">  38:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
+<span class="fu">  3a:</span>	<span class="dv">75</span> f4                	<span class="bu">jne</span>    <span class="dv">30</span> &lt;_Z7gcd_itrjj+<span class="bn">0x10</span>&gt;
+<span class="fu">  3c:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
+<span class="fu">  3e:</span>	c3                   	retq   
+<span class="fu">  3f:</span>	c3                   	retq   
+</code></pre></div>
+<h2 id="summary">Summary</h2>
+<p>The GCD algorithm is a very short example for the behaviour of telling the compiler much more than needed to solve the actual problem, because imperative programming is all about telling the computer <em>what</em> to do, and <em>how</em> to do it. On the level of writing assembler code, it is pretty normal that the question “<em>what</em> data?” is pretty much the same as “which memory <em>address</em>/register and size?”, because there is no abstraction from the hardware implementation nature (a <em>von Neumann</em> machine with untyped memory).</p>
+<p>When using languages like C++, a lot of abstraction can be gained with <em>no cost</em>, which is a favorable thing. <em>Tail recursion</em> is a nice step towards such simplifying abstractions, and can be used for free, which is pretty much worth knowing about it.</p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/09/11/dont_fear_recursion/';
+this.page.identifier = 'nicecpp/2016/09/11/dont_fear_recursion/';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-28506344-2', 'auto');
+ga('send', 'pageview');</script>
+</body>
+</head>
+</html>

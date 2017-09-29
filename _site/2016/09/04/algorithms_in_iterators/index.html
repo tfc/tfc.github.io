@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's C++ Blog &middot; Wrapping Algorithms into Iterators</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+</h1>
+<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About</a>
+<a class="sidebar-nav-item" href="https://galowicz.de">CV Info</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+</a>
+<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Wrapping Algorithms into Iterators</h1>
+<div class="post"><span class="post-date">September  4, 2016</span>
+<p>Sometimes there is the requirement to generate a range of numbers from some algorithm. Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever. Some calculations can be optimized by <em>memorizing</em> some values for the calculation of the next number, just as this applies for <strong>fibonacci numbers</strong>. This article shows how to wrap such calculations into <strong>iterators</strong> in order to have performant, and nicely encapsulated algorithms.</p>
+<!--more-->
+<h1 id="fibonacci-numbers">Fibonacci Numbers</h1>
+<p>The fibonacci number sequence is widely known. Generating those numbers is often used as a typical example for recursions, but at least in standard imperative programming languages, the iterative version is more performant:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">size_t</span> fib(<span class="dt">size_t</span> n)
+{
+    <span class="dt">size_t</span> a {<span class="dv">0</span>};
+    <span class="dt">size_t</span> b {<span class="dv">1</span>};
+
+    <span class="cf">for</span> (<span class="dt">size_t</span> i {<span class="dv">0</span>}; i &lt; n; ++i) {
+        <span class="at">const</span> <span class="dt">size_t</span> old_b {b};
+        b += a;
+        a  = old_b;
+    }
+
+    <span class="cf">return</span> b;
+}</code></pre></div>
+<p>This way it is easy to generate any fibonacci number. But if all fibonacci numbers up to a certain limit need to be generated for some purpose, this implementation is not too handy any longer. When counting fibonacci number <code>N</code>, and then <code>N+1</code>, the content of the variables <code>a</code> and <code>b</code> could be reused, because the next fibonacci number is just the sum of the last two fibonacci numbers.</p>
+<p>In this sense, it would be useful to have a class, which manages some <em>fibonacci state</em> in order to be able to quickly calculate just the next number.</p>
+<p>A lot of people would just implement a class <code>fibonacci_number</code> which has some <code>next()</code> method and a <code>current()</code> method and use that. This is fine, but i propose to go a step further by realizing that this is how <strong><em>iterators</em></strong> work. By implementing this functionality in terms of iterators, it can be used in combination with the STL, boosting up the code readability.</p>
+<h1 id="iterators">Iterators</h1>
+<p>What do we need in order to implement the simplest possible iterator?</p>
+<p>Let us have a look at what the C++ compiler asks for if we want to iterate over a container class:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="cf">for</span> (<span class="at">const</span> <span class="kw">auto</span> &amp;item : vector) {
+    <span class="co">/* loop body */</span>
+}</code></pre></div>
+<p>This kind of loop declaration exists since C++11. The compiler will expand this to the following equivalent code:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">{
+    <span class="kw">auto</span> it  (<span class="bu">std::</span>begin(vector));
+    <span class="kw">auto</span> end (<span class="bu">std::</span>end(vector));
+
+    <span class="cf">for</span> (; it != end; ++it) {
+        <span class="at">const</span> <span class="kw">auto</span> &amp;item (*it);
+        <span class="co">/* loop body */</span>
+    }
+}</code></pre></div>
+<p>Looking at the expanded loop, it is pretty obvious what needs to be implemented. First, we need to distinguish between two kinds of objects: <code>vector</code> is the <strong>iterable range</strong>, and <code>it</code> is the <strong>iterator</strong>.</p>
+<p>The <strong>iterable range</strong> needs to implement a <code>begin()</code> and an <code>end()</code> function. These functions return iterator objects.</p>
+<blockquote>
+<p>Note that this code sample does not call <code>vector.begin()</code> and <code>vector.end()</code>, but <code>std::begin(vector)</code> and <code>std::end(vector)</code>. Those STL functions do actually call <code>vector.begin()</code> and <code>end()</code>, but they are more generic, i.e. they also work on raw arrays and automatically do the right thing in order to obtain begin/end iterators.</p>
+</blockquote>
+<p>The <strong>iterator</strong> class needs to implement the following:</p>
+<ul>
+<li>operator <code>*</code>, which works like dereferencing a pointer (pointers are also valid iterators!)</li>
+<li>operator <code>++</code> (prefix), which increments the iterator to the next item</li>
+<li>operator <code>!=</code>, which is necessary in order to check if the loop shall terminate because <code>it</code> reached the same position as <code>end</code> denotes.</li>
+</ul>
+<p>In order to implement any kind of algorithm-generated range, we would first implement an iterator which basically hides variables and the algorithm itself in the <code>operator++</code> implementation. An iterable class would then just provide a begin and end iterator as needed, in order to enable for C++11 style <code>for</code> loops.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> iterator
+{
+    <span class="co">// ... state variables ...</span>
+
+<span class="kw">public</span>:
+    <span class="co">// Constructor</span>
+
+    iterator&amp; <span class="kw">operator</span>++() { <span class="co">/* increment */</span> <span class="cf">return</span> *<span class="kw">this</span>; }
+
+    T <span class="kw">operator</span>*() <span class="at">const</span> { <span class="co">/* return some value or reference */</span> }
+
+    <span class="dt">bool</span> <span class="kw">operator</span>!= <span class="at">const</span> (<span class="at">const</span> iterator&amp; o) { <span class="co">/* compare states */</span> }
+}</code></pre></div>
+<p>The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in <code>operator++</code> and return the integer in <code>operator*</code>. <code>operator!=</code> would then just compare this number with the number of another iterator.</p>
+<p>But now let us continue with the fibonacci iterator.</p>
+<h1 id="fibonacci-iterator">Fibonacci Iterator</h1>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> fibit
+{
+    <span class="dt">size_t</span> i {<span class="dv">0</span>};
+    <span class="dt">size_t</span> a {<span class="dv">0</span>};
+    <span class="dt">size_t</span> b {<span class="dv">1</span>};
+
+<span class="kw">public</span>:
+    <span class="kw">constexpr</span> fibit() = <span class="cf">default</span>;
+
+    <span class="kw">constexpr</span> fibit(<span class="dt">size_t</span> <span class="va">b_</span>, <span class="dt">size_t</span> <span class="va">a_</span>, <span class="dt">size_t</span> <span class="va">i_</span>)
+        : i{<span class="va">i_</span>}, a{<span class="va">a_</span>}, b{<span class="va">b_</span>}
+    {}
+
+    <span class="dt">size_t</span> <span class="kw">operator</span>*() <span class="at">const</span> { <span class="cf">return</span> b; }
+
+    <span class="kw">constexpr</span> fibit&amp; <span class="kw">operator</span>++() {
+        <span class="at">const</span> <span class="dt">size_t</span> old_b {b};
+        b += a;
+        a  = old_b;
+        ++i;
+        <span class="cf">return</span> *<span class="kw">this</span>;
+    }
+
+    <span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="at">const</span> fibit &amp;o) <span class="at">const</span> { <span class="cf">return</span> i != o.i; }
+};</code></pre></div>
+<p>Using this iterator, it is already possible to iterate over fibonacci numbers:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">fibit it;
+
+<span class="co">// As the comparison operator only compares the &quot;i&quot; variable,</span>
+<span class="co">// define an iterator with everything zeroed, but &quot;i&quot; set</span>
+<span class="co">// to 20, in order to have an iteration terminator</span>
+<span class="at">const</span> fibit end {<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>};
+
+<span class="cf">while</span> (it != end) {
+    <span class="bu">std::</span>cout &lt;&lt; *it &lt;&lt; <span class="bu">std::</span>endl;
+    ++it;
+}
+
+<span class="co">// Or do it the elegant STL way: (include &lt;iterator&gt; first)</span>
+<span class="bu">std::</span>copy(it, end, <span class="bu">std::</span>ostream_iterator&lt;<span class="dt">size_t</span>&gt;{<span class="bu">std::</span>cout,<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>});</code></pre></div>
+<p>In order to do it the nice C++11 way, we need an iterable class:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> fib_range
+{
+    fibit  begin_it;
+    <span class="dt">size_t</span> end_n;
+
+<span class="kw">public</span>:
+    <span class="kw">constexpr</span> fib_range(<span class="dt">size_t</span> <span class="va">end_n_</span>, <span class="dt">size_t</span> begin_n = <span class="dv">0</span>)
+        : begin_it{fibit_at(begin_n)}, end_n{<span class="va">end_n_</span>}
+    {}
+
+    fibit begin() <span class="at">const</span> { <span class="cf">return</span> begin_it; }
+    fibit end()   <span class="at">const</span> { <span class="cf">return</span> {<span class="dv">0</span>, <span class="dv">0</span>, end_n}; }
+};</code></pre></div>
+<p>We can now write…</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="cf">for</span> (<span class="at">const</span> <span class="dt">size_t</span> num : fib_range(<span class="dv">10</span>)) {
+    <span class="bu">std::</span>cout &lt;&lt; num &lt;&lt; <span class="bu">std::</span>endl;
+}</code></pre></div>
+<p>… which will print the first 10 fibonacci numbers.</p>
+<p>What does the function <code>fibit_at</code> do? This function is a <code>constexpr</code> function, which advances a fibonacci iterator at <em>compile time</em> if possible, in order to push the iterator towards the fibonacci number which the user wants:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">constexpr</span> fibit fibit_at(<span class="dt">size_t</span> n)
+{
+    fibit it;
+    <span class="cf">for</span> (<span class="dt">size_t</span> i {<span class="dv">0</span>}; i &lt; n; ++i) {
+        ++it;
+    }
+    <span class="cf">return</span> it;
+}</code></pre></div>
+<p>This function enables us to for example iterate from the 100th fibonacci number to the 105th, without having to calculate the first 100 fibonacci numbers at run time, because we can make the compiler prepare everything at compile time.</p>
+<blockquote>
+<p>When using C++17, <code>fibit_at</code> is useless, as it can be substituted by <code>std::next(fibit{}, n)</code>, because in the C++17 STL <code>std::next</code> is a <code>constexpr</code> function.</p>
+</blockquote>
+<p>In order to guarantee, that the 100th fibonacci number is already calculated, when the compiler writes the binary program to disk, we can just put the range into a <code>constexpr</code> variable:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">constexpr</span> <span class="at">const</span> fib_range hundred_to_hundredfive {<span class="dv">105</span>, <span class="dv">100</span>};
+
+<span class="cf">for</span> (<span class="dt">size_t</span> num : hundred_to_hundredfive) {
+    <span class="co">// Do whatever</span>
+}</code></pre></div>
+<h1 id="combine-the-fibonacci-iterator-with-stl-algorithms">Combine the Fibonacci Iterator with STL algorithms</h1>
+<p>Imagine we need a vector with the first 1000 fibonacci numbers. Having the fibonacci algorithm already wrapped into a handy iterator class, we can now use it with any STL algorithm from namespace <code>std</code>:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="bu">std::</span>vector&lt;<span class="dt">size_t</span>&gt; fib_nums;
+fib_nums.resize(<span class="dv">1000</span>);
+
+<span class="kw">constexpr</span> <span class="at">const</span> fib_range first1000 {<span class="dv">1000</span>};
+<span class="bu">std::</span>copy(<span class="bu">std::</span>begin(first1000), <span class="bu">std::</span>end(first1000), <span class="bu">std::</span>begin(fib_nums));</code></pre></div>
+<p>This is pretty neat and useful. However, with the current example code provided as is, this will not compile (yet), because we did not provide an iterator tag. Providing it is simple: Just make <code>fibit</code> publicly inherit from <code>std::iterator&lt;std::forward_iterator_tag, size_t&gt;</code>.</p>
+<p><code>std::iterator</code> as a base class for our <code>fibit</code> class will only add some typedefs which help STL algorithms identify which kind of iterator this is. For certain iterator types in certain situations, the STL algorithms have different implementations which contain performance optimizations (Which is elegantly hidden from the user!).</p>
+<p>The <code>std::forward_iterator</code> tag states, that this is an iterator which can just be advanced step by step, and that it only advances forward, not backward.</p>
+<h1 id="summary">Summary</h1>
+<p>A lot of algorithms which generate numeric ranges, can be implemented in terms of iterators, which is a natural fit. C++ provides nice syntax sugar for iterators, which makes them a natural interface for abstractions.</p>
+<p>In combination with STL algorithms and any STL compatible data structures, they promote for easy to read, easy to test, easy to maintain, and performant code.</p>
+<p>This article described a kind of iterator, which is not a plain pointer to <em>data</em>. It is an algorithm implementation in the sense, that the <em>increment</em> step does actually calculate something more complex than just a new internal pointer position to some next item. Interestingly, this way one can instantiate some kind of <em>iterable</em> object, which defines a range, which involves a lot of computation - but that computation is not executed until someone actually asks for the result (And the code which asks for the result does not even need to know what kind of algorithm it is implicitly executing, as this is all hidden behind a simple iterator interface). This kind of programming style goes towards <a href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a>, which is a powerful and elegant principle known from purely functional programming languages.</p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/09/04/algorithms_in_iterators/';
+this.page.identifier = 'nicecpp/2016/09/04/algorithms_in_iterators/';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-28506344-2', 'auto');
+ga('send', 'pageview');</script>
+</body>
+</head>
+</html>
