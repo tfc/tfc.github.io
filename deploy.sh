@@ -4,8 +4,8 @@ git stash
 
 git checkout develop
 
-stack exec site clean
 stack build
+stack exec site clean
 stack exec site build
 
 # Get previous files
