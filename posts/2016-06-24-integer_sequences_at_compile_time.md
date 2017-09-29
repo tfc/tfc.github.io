@@ -94,7 +94,7 @@ static void func(double d, float f, int i)
 
 template <typename F, typename TUP, 
           int ... INDICES>
-static void tuple_call(F f, TUP tup, 
+static void tuple_call_(F f, TUP tup, 
                        sequence<INDICES...>)
 {
     f(std::get<INDICES>(tup) ...);   
@@ -112,7 +112,7 @@ int main()
     func(1.0, 2.0, 3); 
 
     tuple<double, float, int> tup {1.0, 2.0, 3};
-    unpack_and_call(func, tup); // same effect
+    tuple_call(func, tup); // same effect
 }
 ```
 
