@@ -12,6 +12,8 @@ stack exec site build
 git fetch --all
 git checkout -b master --track origin/master
 
+mv _site/* .
+
 # Commit
 git add -A
 git commit -m "Publish."
