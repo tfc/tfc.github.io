@@ -35,7 +35,22 @@
 </div>
 </div>
 <div class="content container"><h1>Posts (Page 3)</h1>
-<div class="posts"><div><h4><a href="./2016/02/20/short_file_macro">A __FILE__ Macro Which Does Not Contain the Whole Source File Path</a>
+<div class="posts"><div><h4><a href="./2016/02/21/automatic_resource_release_with_sdl">A Nice Way to Manage SDL Resource Lifetime</a>
+</h4>
+<p><strong><small>February 21, 2016</small>
+</strong>
+</p>
+
+<p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL. SDL is easy to use and portable, but it is a C-style library. Because of that C nature, the library does not really help the user to write elegant, modern code. Acquiring and Releasing SDL resources often ends up in ugly old school resource management. It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases. The approach is easily extendable to other kinds of resources, too.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/02/21/automatic_resource_release_with_sdl" role="button">Read more 
+<i class="fa fa-arrow-circle-right"></i>
+</a>
+</p>
+</div>
+
+<hr>
+<div><h4><a href="./2016/02/20/short_file_macro">A __FILE__ Macro Which Does Not Contain the Whole Source File Path</a>
 </h4>
 <p><strong><small>February 20, 2016</small>
 </strong>

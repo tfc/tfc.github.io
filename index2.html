@@ -35,7 +35,22 @@
 </div>
 </div>
 <div class="content container"><h1>Posts (Page 2)</h1>
-<div class="posts"><div><h4><a href="./2016/05/14/converting_between_c_strings_and_type_lists">Transformations between User Input/Output and Type Lists</a>
+<div class="posts"><div><h4><a href="./2016/05/15/turing_tape_with_type_lists">Implementing a Turing Tape for Use at Compile Time</a>
+</h4>
+<p><strong><small>May 15, 2016</small>
+</strong>
+</p>
+
+<p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table. Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages. It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++. As a preparation for the next article, i will show how to implement a turing tape based on type lists, usable at compile time.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/05/15/turing_tape_with_type_lists" role="button">Read more 
+<i class="fa fa-arrow-circle-right"></i>
+</a>
+</p>
+</div>
+
+<hr>
+<div><h4><a href="./2016/05/14/converting_between_c_strings_and_type_lists">Transformations between User Input/Output and Type Lists</a>
 </h4>
 <p><strong><small>May 14, 2016</small>
 </strong>
@@ -164,21 +179,6 @@
 <p>SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way. Unfortunately, they are extremely bloaty to implement. The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive. This article shows a nice one-liner approach to define new SFINAE type traits.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/21/if_compiles_type_traits" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
-</p>
-</div>
-
-<hr>
-<div><h4><a href="./2016/02/21/automatic_resource_release_with_sdl">A Nice Way to Manage SDL Resource Lifetime</a>
-</h4>
-<p><strong><small>February 21, 2016</small>
-</strong>
-</p>
-
-<p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL. SDL is easy to use and portable, but it is a C-style library. Because of that C nature, the library does not really help the user to write elegant, modern code. Acquiring and Releasing SDL resources often ends up in ugly old school resource management. It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases. The approach is easily extendable to other kinds of resources, too.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/02/21/automatic_resource_release_with_sdl" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
 </a>
 </p>

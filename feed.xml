@@ -7,8 +7,439 @@
         <description><![CDATA[This blog is about C++]]></description>
         <atom:link href="https://blog.galowicz.de/feed.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Sun, 02 Jul 2017 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Tue, 27 Feb 2018 00:00:00 UT</lastBuildDate>
         <item>
+    <title>Managing libraries with Nix</title>
+    <link>https://blog.galowicz.de/2018/02/27/managing_libraries_with_nix</link>
+    <description><![CDATA[<p>While learning Haskell and using its really smart library dependency management tools (<a href="https://www.haskell.org/cabal/"><code>cabal</code></a> and <a href="https://docs.haskellstack.org/en/stable/README/"><code>stack</code></a>), i realized that the C++ eco system has a problem: There are no handy <em>established</em> tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way. <a href="https://nixos.org/nix/"><code>Nix</code></a> however convinced me to be more versatile and powerful than <a href="https://www.conan.io/">Conan</a> and handier than <a href="https://www.docker.com/">Docker</a>, <a href="https://www.vagrantup.com/">Vagrant</a>, etc. (although it’s fair to say that i am mixing use cases here a little bit!) In this article, i am going to showcase this great tool a little bit.</p>
+<!--more-->
+<p>This article is rather long (mostly because of many command line excerpts). Feel free to jump to the end, where we will compile and run the same project with 3 different compilers just by changing the command line a bit.</p>
+<h2 id="use-case-example">Use case example</h2>
+<p>So i have been developing a little library to see if i can implement a handy parser library in C++ that models how you build parsers in Haskell using the <a href="https://hackage.haskell.org/package/parsec"><code>parsec</code> library</a>.</p>
+<p>The project can be checked out on <a href="https://github.com/tfc/attoparsecpp">github.com/tfc/attoparsecpp</a>. It is however not important to look into it. This article is not at all about parsers, Haskell, or my specific library. My little project shall just serve as an example project that has unit tests and benchmarks.</p>
+<p>For libraries it is important that they build warning-free with:</p>
+<ul>
+<li>different compilers</li>
+<li>even different compiler versions</li>
+</ul>
+<p>In addition to that, it is a nice-to-have to also compare the benchmark numbers among those!</p>
+<p>However, the library has the following dependencies:</p>
+<ul>
+<li><a href="https://github.com/catchorg/Catch2"><code>catch</code></a> for building the unit tests</li>
+<li><a href="https://github.com/google/benchmark"><code>benchmark</code> (from Google)</a> for building the benchmarks</li>
+</ul>
+<p>That means: in order to build this project you need to install those. Some developers just install them the oldschool way or they pull them in as git submodules and then embedd them into the <code>Makefile</code> (or <code>cmake</code> pendants etc.). Some other developers would define Docker images (or Vagrant etc.). There is also the Conan package manager which enables the developer to just define which libraries are needed.</p>
+<h2 id="installing-nix">Installing Nix</h2>
+<p>Let us now completely concentrate on Nix. What is it? <a href="https://nixos.org/nix/">The Nix homepage</a> states:</p>
+<blockquote>
+<p>Nix is a powerful package manager for Linux and other Unix systems that makes package management reliable and reproducible. It provides atomic upgrades and rollbacks, side-by-side installation of multiple versions of a package, multi-user package management and easy setup of build environments. …</p>
+</blockquote>
+<p>Nix can be installed on Linux, Mac, and other Unixes. (I guess it can be installed in the Linux-Subsystem on Windows, but i am not sure as i am no Windows user). Just as a side note: There is even a <a href="https://nixos.org/">Linux distribution called “NixOS”</a>.</p>
+<p>The installation of Nix is really simple. Just run the following command in the bash:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">curl</span> https://nixos.org/nix/install <span class="kw">|</span> <span class="fu">sh</span></code></pre></div>
+<p>The installation script will download and extract a large tarball into the <code>/nix</code> folder on your system. In order to create that directory, <code>sudo</code> has to be used once. After the installation, there will never be any need to use <code>sudo</code> in combination with nix calls again. It is generally possible to install nix on systems where even creating <code>/nix</code> is not allowed (see the <a href="https://nixos.wiki/wiki/Nix_Installation_Guide">installation guide</a> for more details).</p>
+<blockquote>
+<p>Everything can be removed again by just deleting <code>/nix</code> and removing the bash profile changes that make the nix binaries visible.</p>
+</blockquote>
+<h2 id="installing-project-dependencies">Installing project dependencies</h2>
+<p>After cloning the C++ project on a mac where only <code>git</code> and <code>clang++</code>, we will have trouble building the project without installing the libraries:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="bu">cd</span> test <span class="kw">&amp;&amp;</span> <span class="fu">make</span>
+<span class="ex">c++</span> -O2 -std=c++14 -c main.cpp
+<span class="ex">main.cpp</span>:2:10: fatal error: <span class="st">&#39;catch/catch.hpp&#39;</span> file not found
+<span class="co">#include &lt;catch/catch.hpp&gt;</span>
+         ^<span class="ex">~~~~~~~~~~~~~~~~</span>
+<span class="ex">1</span> error generated.
+<span class="ex">make</span>: *** [main.o] Error 1</code></pre></div>
+<p>For the unit tests, we only need the <code>catch</code> library. That’s easy, as the Nix repository has that.</p>
+<blockquote>
+<p>Another “catch” is that the <code>make</code> call ended up invoking <code>c++</code>, which is our Mac system compiler that is not really prepared to be used with Nix-installations of packages. This is part of some mechanics which the Nix docs cover much better.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-env</span> -qaP --description <span class="kw">|</span> <span class="fu">grep</span> catch
+<span class="ex">nixpkgs.catch</span>               catch-1.9.6               A multi-paradigm automated test framework for C++ and Objective-C (and, maybe, C)
+<span class="co"># ...</span></code></pre></div>
+<p>So let’s build it with catch installed:</p>
+<pre><code>$ nix-shell -p clang -p catch
+
+[nix-shell:~/project_dir]$ cd test &amp;&amp; make
+clang++ -O2 -std=c++14 -c main.cpp
+clang++ -O2 -std=c++14 -I../include -c test.cpp
+test.cpp:127:46: error: too many arguments provided to function-like macro invocation
+            REQUIRE( r-&gt;first == vect_t{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;});
+                                             ^
+/nix/store/gsklw95pxb9npyqpfpczagchk8kdsgzb-catch-1.9.6/include/catch/catch.hpp:11450:9: note: macro &#39;REQUIRE&#39; defined here
+#define REQUIRE( expr ) INTERNAL_CATCH_TEST( &quot;REQUIRE&quot;, Catch::ResultDisposition::Normal, expr  )
+# ...</code></pre>
+<p>Ok, the compiler can find the <code>catch.hpp</code> header, but it does not compile. The problem here is that i wrote the unit tests with <code>catch2</code> and the package in the Nix repo is a little bit too old. I learned Nix the hard way by doing the following:</p>
+<h2 id="writing-our-own-nix-expressions">Writing our own Nix expressions</h2>
+<p>The Nix ecosystem provides a rich database of packages for everything which does not only include libraries, but also applications. In this case however, the library is too old and we need a more current one.</p>
+<p>While the <code>catch</code> library just consists of a single header that is really easy to download, it is also a really simple example for building a Nix derivation that automatically obtains it from github and provides it for building. So let’s do that here. We will also install a newer google benchmark library (which is a bit more complicated as it is not header-only) this way later.</p>
+<p>A Nix derivation is kind of a cooking recipe that tells where to get what and what to do with it in order to make it useful. In order to get catch version 2.1.2, we create a file <code>catch.nix</code> in the project folder:</p>
+<div class="sourceCode"><table class="sourceCode numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+</pre></td><td class="sourceCode"><pre><code class="sourceCode"># file: catch.nix
+{ stdenv, fetchurl }:
+
+stdenv.mkDerivation rec {
+  name = &quot;catch-${version}&quot;;
+  version = &quot;2.1.2&quot;;
+
+  src = fetchurl {
+      url = &quot;https://github.com/catchorg/Catch2/releases/download/v2.1.2/catch.hpp&quot;;
+      sha256 = &quot;e8b8f3109716891aa99b1a8e29cd0d627419bdc4a8d2eeef0d8370aaf8d5e483&quot;;
+  };
+
+  # It is just the file. No unpacking needed. Seems like we need to create
+  # _some_ folder, otherwise we get errors.
+  unpackCmd = &quot;mkdir dummy_dir&quot;;
+
+  installPhase = &#39;&#39;
+    mkdir -p $out/include/catch
+    cp ${src} $out/include/catch/catch.hpp
+  &#39;&#39;;
+
+  meta = {
+    description = &quot;A modern, C++-native, header-only, test framework for unit-tests, TDD and BDD - using C++11, C++14, C++17 and later&quot;;
+    homepage = http://catch-lib.net;
+  };
+}</code></pre></td></tr></table></div>
+<p>There is a lot of <em>voodoo</em> going on here for anyone who does not know Nix. Nix is its own scripting language (a purely functional one), that is why it that script initially looks so complicated. The important parts are:</p>
+<ul>
+<li>lines 8-11, <code>fetchurl</code>:
+<ul>
+<li>Where to get the catch header file?</li>
+<li>For control reasons we also define what hash it needs to have.</li>
+</ul></li>
+<li>lines 17-20, <code>installPhase</code>:
+<ul>
+<li>We define that <code>catch.hpp</code> needs to be installed into <code>$out/include/catch/catch.hpp</code>, wherever that is.</li>
+</ul></li>
+</ul>
+<p>Let us bring <code>nix-shell</code> to use that file and install catch for us:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> -p <span class="st">&#39;with (import &lt;nixpkgs&gt; {}); callPackage ./catch.nix {}&#39;</span>
+<span class="ex">these</span> derivations will be built:
+  <span class="ex">/nix/store/byy8sgy8crdhzyvjxzzbq4zhg8kbvhpp-catch.hpp.drv</span>
+  <span class="ex">/nix/store/v75n72czr0vgqz4zacrzk2wsrr1jg1kc-catch-2.1.2.drv</span>
+<span class="ex">these</span> paths will be fetched (0.82 MiB download, 4.50 MiB unpacked)<span class="bu">:</span>
+  <span class="ex">/nix/store/0cs9d2ml9cql18l1vsxrdmjliiz0p0rg-bash-4.4-p12-info</span>
+  <span class="ex">/nix/store/0p2m9iz8w4551qkgzsqvl2vm2ilyb6ww-stdenv-darwin</span>
+  <span class="ex">/nix/store/2pvbzmacxfhm1akl9a5shqrk47i53cpv-libssh2-1.8.0-dev</span>
+  <span class="ex">/nix/store/cxz0drsrlbmdi1krr0n57zfcswjmrv5i-mirrors-list</span>
+  <span class="ex">/nix/store/czw3qnwsify74b5bljll1lmm8k6kk09h-curl-7.55.1-dev</span>
+  <span class="ex">/nix/store/icm30zksjzx8546d02y9gi4vzdi42j2w-bash-4.4-p12-man</span>
+  <span class="ex">/nix/store/kwclw4knsrs6l4fi98wnzg713r8p0wls-openssl-1.0.2l-dev</span>
+  <span class="ex">/nix/store/n2aycrbi6myl9wqr6b7w2n578j505czd-curl-7.55.1-man</span>
+  <span class="ex">/nix/store/w4m16gcmlxsgx468p7k3993vwf6i6hsx-bash-4.4-p12-dev</span>
+  <span class="ex">/nix/store/yw461g3iqihmq6i1mrjn6khbwn6gx0rl-bash-4.4-p12-doc</span>
+<span class="co"># ...</span>
+<span class="ex">building</span> path(s) ‘<span class="ex">/nix/store</span>/<span class="ex">62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</span>’
+<span class="ex">unpacking</span> sources
+<span class="ex">unpacking</span> source archive /nix/store/4nx2d1j5jnnb9zqlmpl45g68msqycfjy-catch.hpp
+<span class="co"># ...</span>
+<span class="ex">patching</span> script interpreter paths in /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</code></pre></div>
+<p>There was a lot going on after firing that command: Nix even installed <code>curl</code> and all its dependencies, because it needs a tool to download the header file. The last line tells us that there is now something in <code>/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</code>. Let’s have a look into it:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">[<span class="ex">nix-shell</span>:~/Desktop/p]$ ls -lsa /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2/include/catch/catch.hpp
+<span class="ex">428</span> -r--r--r-- 1 root wheel 435409 Jan  1  1970 /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2/include/catch/catch.hpp</code></pre></div>
+<p>Ok, so whenever we add this strange path to the compiler command line using <code>-I/nix/store/...</code>, then our tests will compile.</p>
+<p>Let’s again start the nix shell with our catch derivation and clang and GNU make and try again:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> -p clang <span class="st">&#39;with (import &lt;nixpkgs&gt; {}); callPackage ./catch.nix {}&#39;</span>
+
+[<span class="ex">nix-shell</span>:~/project_dir]$ cd test <span class="kw">&amp;&amp;</span> <span class="fu">make</span>
+<span class="fu">clang</span>++ -O2 -std=c++14 -c main.cpp
+<span class="fu">clang</span>++ -O2 -std=c++14 -I../include -c test.cpp
+<span class="fu">clang</span>++ -O2 -std=c++14 -I../include -c math_expression.cpp
+<span class="fu">clang</span>++ -o main main.o test.o math_expression.o
+
+[<span class="ex">nix-shell</span>:~/project_dir]$ ./main
+===============================================================================
+<span class="ex">All</span> tests passed (172 assertions in 11 test cases)</code></pre></div>
+<p>Yes, that went well!</p>
+<blockquote>
+<p>(The <code>-I/nix/store/...</code> parameter was handled for us implicitly) by the Nix-installed compiler</p>
+</blockquote>
+<p>It is however pretty ugly to call <code>nix-shell</code> with all those arguments that are hard to memorize. For this purpose we can define a <code>default.nix</code> file that will be automatically sourced by Nix:</p>
+<pre><code># file: default.nix
+{ pkgs ? import &lt;nixpkgs&gt; {}, }:
+rec {
+  myProject = pkgs.stdenv.mkDerivation {
+    name = &quot;attoparsecpp&quot;;
+    version = &quot;dev-0.1&quot;;
+    buildInputs = with pkgs; [
+      (callPackage ./catch.nix { })
+    ];
+  };
+}</code></pre>
+<p>There’s again some voodoo for Nix-novices, but the important part is that we call our package <code>catch.nix</code> in the context of a standard build environment (<code>stdenv</code>). With <code>stdenv</code> we don’t need to reference the compiler explicitly any longer.</p>
+<p>Now, we can do the following:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> --command <span class="st">&quot;cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span>
+<span class="fu">clang</span>++ -O2 -std=c++14 -c main.cpp
+<span class="fu">clang</span>++ -O2 -std=c++14 -I../include -c test.cpp
+<span class="fu">clang</span>++ -O2 -std=c++14 -I../include -c math_expression.cpp
+<span class="fu">clang</span>++ -o main main.o test.o math_expression.o
+===============================================================================
+<span class="ex">All</span> tests passed (172 assertions in 11 test cases)</code></pre></div>
+<p>Nix finds our <code>default.nix</code> file and gets everything in order.</p>
+<p>Ok, great. How about running benchmarks?</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> --command <span class="st">&quot;cd benchmark &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span>
+<span class="fu">clang</span>++ -O2 -std=c++14 -I../include main.cpp -o main -lbenchmark -lpthread
+<span class="ex">main.cpp</span>:7:10: fatal error: <span class="st">&#39;benchmark/benchmark.h&#39;</span> file not found
+<span class="co">#include &lt;benchmark/benchmark.h&gt;</span>
+         ^<span class="ex">~~~~~~~~~~~~~~~~~~~~~~</span>
+<span class="ex">1</span> error generated.
+<span class="ex">make</span>: *** [Makefile:8: main] Error 1</code></pre></div>
+<p>Seems like we need to install google benchmark, too. There is a <code>gbenchmark</code> package, but it’s again too old. Nothing we couldn’t fix with our own Nix expression, though:</p>
+<div class="sourceCode"><table class="sourceCode numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+</pre></td><td class="sourceCode"><pre><code class="sourceCode"># file googlebench.nix
+{ stdenv, fetchFromGitHub, cmake }:
+
+stdenv.mkDerivation rec {
+  name = &quot;googlebench-${version}&quot;;
+  version = &quot;1.3.0&quot;;
+
+  src = fetchFromGitHub {
+      owner = &quot;google&quot;;
+      repo = &quot;benchmark&quot;;
+      rev = &quot;v${version}&quot;;
+      sha256 = &quot;1qx2dp7y0haj6wfbbfw8hx8sxb8ww0igdfrmmaaxfl0vhckylrxh&quot;;
+  };
+
+  nativeBuildInputs = [ cmake ];
+
+  meta = {
+    description = &quot;google benchmark&quot;;
+  };
+}</code></pre></td></tr></table></div>
+<p>Building the benchmark library involves compiling it with <code>cmake</code>, as it is more than just headers. Luckily, the Nix expression language came with its own library installed. It has handy little helpers like <code>fetchFromGitHub</code> that accepts some arguments needed to construct a download link from it and automatically unpack it!</p>
+<p>The line <code>nativeBuildInputs</code> instructs Nix to install <code>cmake</code> for building this package. Everything else is automatically deduced. After adding this Nix derivation to our <code>default.nix</code> file, it will build google benchmark for us before we can run our own makefile:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> --command <span class="st">&quot;cd benchmark &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span>
+<span class="ex">these</span> derivations will be built:
+  <span class="ex">/nix/store/vbi7a7kjxz24zmq7lwaa044735hdlmb3-benchmark-v1.3.0-src.drv</span>
+  <span class="ex">/nix/store/il7biicbp3pa39nl5ffkyi9b1wwkw0b1-googlebench-1.3.0.drv</span>
+<span class="ex">these</span> paths will be fetched (0.12 MiB download, 0.44 MiB unpacked)<span class="bu">:</span>
+  <span class="ex">/nix/store/i1b5rym52fhqkdz2kzaqn1gnk6nhf0b7-unzip-6.0</span>
+<span class="co"># ...</span>
+<span class="fu">clang</span>++ -O2 -std=c++14 -I../include main.cpp -o main -lbenchmark -lpthread
+<span class="ex">Run</span> on (8 X 2300 MHz CPU s)
+<span class="ex">2018-02-27</span> 21:50:34
+<span class="ex">-----------------------------------------------------------------------</span>
+<span class="ex">Benchmark</span>                                Time           CPU Iterations
+<span class="ex">-----------------------------------------------------------------------</span>
+<span class="ex">measure_word_parsing/10</span>                 55 ns         55 ns   12703483
+<span class="ex">measure_word_parsing/100</span>              1107 ns       1105 ns     654444
+<span class="ex">measure_word_parsing/1000</span>             6021 ns       6012 ns     125101
+<span class="ex">measure_word_parsing/10000</span>           47889 ns      47812 ns      13667
+<span class="ex">measure_word_parsing/100000</span>         481643 ns     480574 ns       1428
+<span class="ex">measure_word_parsing/1000000</span>       4865444 ns    4854115 ns        130
+<span class="ex">measure_word_parsing/10000000</span>     54049501 ns   53973846 ns         13
+<span class="ex">measure_word_parsing_BigO</span>             5.40 N       5.39 N
+<span class="ex">measure_word_parsing_RMS</span>                 2 %          2 %
+<span class="ex">measure_vector_filling/10</span>              457 ns        455 ns    1683712
+<span class="ex">measure_vector_filling/100</span>            2282 ns       2279 ns     305181
+<span class="co"># ...</span></code></pre></div>
+<p>Yes, that’s some successful benchmark output! This time it even installed <code>unzip</code> in case we don’t have it, yet.</p>
+<p>However, we do not have to care about anything library-related other than linking. The Makefile does not reflect any knowledge of Nix or the install location of our dependencies:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">cat</span> benchmark/Makefile
+<span class="ex">default</span>: main
+
+<span class="va">CXXFLAGS=</span>-O2 <span class="ex">-std</span>=c++14
+
+<span class="va">LDFLAGS=</span>-lbenchmark <span class="ex">-lpthread</span>
+
+<span class="ex">main</span>: main.cpp ../include/parser.hpp ../include/math_expression.hpp
+	<span class="va">$(</span><span class="ex">CXX</span><span class="va">)</span> <span class="va">$(</span><span class="ex">CXXFLAGS</span><span class="va">)</span> <span class="ex">-I../include</span> main.cpp -o main <span class="va">$(</span><span class="ex">LDFLAGS</span><span class="va">)</span>
+
+<span class="ex">clean</span>:
+	<span class="fu">rm</span> -rf main *.o</code></pre></div>
+<h2 id="compiling-and-running-tests-with-different-compilers">Compiling and running tests with different compilers</h2>
+<p>So… when pulling in compilers and libraries is so simple with Nix - how about checking if our library compiles with all compilers and versions of those?</p>
+<p>We need to add a little modification to the <code>default.nix</code> file in order to <em>parametrize</em> it:</p>
+<div class="sourceCode"><table class="sourceCode numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="sourceCode"><pre><code class="sourceCode"># file default.nix
+{
+    pkgs   ? import &lt;nixpkgs&gt; {},
+    stdenv ? pkgs.stdenv
+}:
+rec {
+  myProject = stdenv.mkDerivation {
+    name = &quot;attoparsecpp&quot;;
+    version = &quot;dev-0.1&quot;;
+    buildInputs = with pkgs; [
+      (callPackage ./catch.nix { })
+      (callPackage ./googlebench.nix { stdenv = stdenv; })
+    ];
+  };
+}</code></pre></td></tr></table></div>
+<p>We applied the following changes:</p>
+<ul>
+<li>line 4: We added <code>stdenv</code> as a named parameter of this Nix derivation. <code>pkgs.stdenv</code> is its default value.</li>
+<li>line 7: Now we use <code>stdenv.mkDerivation</code> instead of <code>pkgs.stdenv.mkDerivation</code>.</li>
+<li>line 12: If our <code>stdenv</code> changes, this change is also forwarded into the <code>googlebench.nix</code> derivation. (Which then needs to be built just for this compiler, too)</li>
+</ul>
+<p>With this change, we can now build and execute our tests with different compilers just by changing varying <code>nix-shell</code> arguments. Let’s try GCC now:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> \
+<span class="op">&gt;</span>  --command <span class="st">&quot;</span><span class="dt">\$</span><span class="st">CXX --version &amp;&amp; cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span> \
+<span class="op">&gt;</span>  --arg stdenv <span class="st">&quot;with (import &lt;nixpkgs&gt; {}); gccStdenv&quot;</span>
+<span class="ex">these</span> derivations will be built:
+  <span class="ex">/nix/store/cs2r1wbz8n33fspdlqrcm5pf174qdgcj-googlebench-1.3.0.drv</span>
+<span class="ex">these</span> paths will be fetched (35.32 MiB download, 145.96 MiB unpacked)<span class="bu">:</span>
+  <span class="ex">/nix/store/1krs71lr68pvwjf21fq3f8wbw4c460sh-gcc-6.4.0</span>
+  <span class="ex">/nix/store/gya4nskw8khp28vy0f8m01lf4z8337cz-stdenv-darwin</span>
+  <span class="ex">/nix/store/yn7m3qnp0m3kf1acpjyxwqxzf3b40jf8-gcc-wrapper-6.4.0</span>
+<span class="co"># ...</span>
+<span class="ex">g++</span> (GCC) <span class="ex">6.4.0</span>
+<span class="ex">Copyright</span> (C) <span class="ex">2017</span> Free Software Foundation, Inc.
+<span class="ex">This</span> is free software<span class="kw">;</span> <span class="ex">see</span> the source for copying conditions.  There is NO
+<span class="ex">warranty</span><span class="kw">;</span> <span class="ex">not</span> even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+<span class="ex">g++</span> -O2 -std=c++14 -c main.cpp
+<span class="ex">g++</span> -O2 -std=c++14 -I../include -c test.cpp
+<span class="ex">g++</span> -O2 -std=c++14 -I../include -c math_expression.cpp
+<span class="ex">g++</span> -o main main.o test.o math_expression.o
+===============================================================================
+<span class="ex">All</span> tests passed (172 assertions in 11 test cases)</code></pre></div>
+<p>The magic <code>--arg stdenv &quot;with (import &lt;nixpkgs&gt; {}); gccStdenv&quot;</code> line pushed a GCC build environment into the <code>stdenv</code> variable. The <code>$CXX --version</code> command in the <code>--command</code> part of the command line shows that it’s really GCC 6.4.0 now (instead of clang).</p>
+<p>We can do the same with GCC 7:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> \
+  --command <span class="st">&quot;</span><span class="dt">\$</span><span class="st">CXX --version &amp;&amp; cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span> \
+  --arg stdenv <span class="st">&quot;with (import &lt;nixpkgs&gt; {}); overrideCC gccStdenv gcc7&quot;</span>
+<span class="ex">these</span> derivations will be built:
+  <span class="ex">/nix/store/860fz8zccpxnia4ahzmxcvygms29nn1y-stdenv-darwin.drv</span>
+  <span class="ex">/nix/store/lnhid58mlkgcaqq6dg0mnaly7y2p1ap4-googlebench-1.3.0.drv</span>
+<span class="ex">these</span> paths will be fetched (37.09 MiB download, 154.89 MiB unpacked)<span class="bu">:</span>
+  <span class="ex">/nix/store/27mxffxnw9q070wqfzhpn3p32h0kafws-gcc-7.2.0-lib</span>
+  <span class="ex">/nix/store/nknfwhafb2cwlrrwxh5dcwbdznf1fzq1-gcc-7.2.0</span>
+  <span class="ex">/nix/store/xxb7a4i2y7mn6y0mkkzgy2cgnd78hahp-gcc-wrapper-7.2.0</span>
+<span class="co"># ...</span>
+<span class="ex">g++</span> (GCC) <span class="ex">7.2.0</span>
+<span class="ex">Copyright</span> (C) <span class="ex">2017</span> Free Software Foundation, Inc.
+<span class="ex">This</span> is free software<span class="kw">;</span> <span class="ex">see</span> the source for copying conditions.  There is NO
+<span class="ex">warranty</span><span class="kw">;</span> <span class="ex">not</span> even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+<span class="ex">g++</span> -O2 -std=c++14 -c main.cpp
+<span class="ex">g++</span> -O2 -std=c++14 -I../include -c test.cpp
+<span class="ex">g++</span> -O2 -std=c++14 -I../include -c math_expression.cpp
+<span class="ex">g++</span> -o main main.o test.o math_expression.o
+===============================================================================
+<span class="ex">All</span> tests passed (172 assertions in 11 test cases)</code></pre></div>
+<p>Easy. It downloads <em>another</em> GCC and uses that for building.</p>
+<p>Using the same strategy, we can also run our benchmarks with all these compilers. We could even write a Nix derivation that actually does this and generates a nice GNUPlot chart from all benchmark runs.</p>
+<h2 id="fallout">Fallout</h2>
+<p>While playing around, we installed at least 3 different compilers and recompiled the google benchmark library for each of them. A nice thing about this is that this all needs to be done only once. The resulting packages can then be used again on the next invocation of a <code>nix-shell</code> environment. Even better: if another project happens to need the same compiler/libraries, then they are in place already! These things are shared system wide now:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">find</span> /nix/store <span class="dt">\(</span> -name <span class="st">&quot;*googlebench*&quot;</span> -or -name <span class="st">&quot;*gcc*&quot;</span> -or -name <span class="st">&quot;*catch*&quot;</span> or -name <span class="st">&quot;*clang*&quot;</span> <span class="dt">\)</span> -type d -maxdepth 1
+<span class="ex">/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</span>
+<span class="ex">/nix/store/2bz86w853wz8q036armrqzds1wh41l2d-googlebench-1.3.0</span>
+<span class="ex">/nix/store/294rz6hxllqp5iqag01p2ymv37g25zhz-googlebench-1.3.0</span>
+<span class="ex">/nix/store/02hca1p50i735iimv28cj9l0lmdzwljn-googlebench-1.3.0</span>
+<span class="ex">/nix/store/5giskx5cy9q2qhv946svwmqw77vbr2iy-clang-4.0.1</span>
+<span class="ex">/nix/store/mx8870valpdhywaaq16sdiiajrpyj4q7-clang-wrapper-4.0.1</span>
+<span class="ex">/nix/store/1krs71lr68pvwjf21fq3f8wbw4c460sh-gcc-6.4.0</span>
+<span class="ex">/nix/store/1p5bg2c6pd2v1lgnf0823sxcilf73ydi-gcc-6.4.0-lib</span>
+<span class="ex">/nix/store/yn7m3qnp0m3kf1acpjyxwqxzf3b40jf8-gcc-wrapper-6.4.0</span>
+<span class="ex">/nix/store/nknfwhafb2cwlrrwxh5dcwbdznf1fzq1-gcc-7.2.0</span>
+<span class="ex">/nix/store/27mxffxnw9q070wqfzhpn3p32h0kafws-gcc-7.2.0-lib</span>
+<span class="ex">/nix/store/xxb7a4i2y7mn6y0mkkzgy2cgnd78hahp-gcc-wrapper-7.2.0</span></code></pre></div>
+<p>So we can see that we have one version of clang, two versions of GCC, just one version of catch and three versions of googlebench. There is of course only one version of catch becasue it is just a header that does not need to be recompiled for different compilers.</p>
+<p>But how does Nix know which googlebench installation belongs to which clang/GCC?</p>
+<p>The long cryptic prefix of every package folder is the <em>hash of its build configuration</em>! The compiler choice is part of the build configuration, of course.</p>
+<p>If another project has dependencies that overlap with ours in the sense that some dependency turns out to have the same configuraiton hash for the same package, then it will be shared. As soon as the configuration changes a little bit - another package is created.</p>
+<p>We can now delete everything with one command:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-collect-garbage</span> -d
+<span class="ex">removing</span> old generations of profile /nix/var/nix/profiles/per-user/tfc/profile
+<span class="ex">removing</span> old generations of profile /nix/var/nix/profiles/per-user/tfc/channels
+<span class="ex">finding</span> garbage collector roots...
+<span class="co"># ...</span>
+<span class="ex">deleting</span> unused links...
+<span class="ex">note</span>: currently hard linking saves 0.00 MiB
+<span class="ex">606</span> store paths deleted, 358.10 MiB freed</code></pre></div>
+<p>That’s it. Our system is free of everything what was installed just for this project.</p>
+<h2 id="purity">Purity</h2>
+<p>By running <code>nix-shell --pure</code>, it is possible to <em>hide</em> everything which was not explicitly declared to be available:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">nix-shell</span> --pure -p gcc7
+
+[<span class="ex">nix-shell</span>:~]$ clang++
+<span class="ex">bash</span>: clang++: command not found
+
+[<span class="ex">nix-shell</span>:~]$ exit
+
+$ <span class="ex">nix-shell</span> --pure -p clang
+
+[<span class="ex">nix-shell</span>:~]$ g++
+<span class="ex">bash</span>: g++: command not found</code></pre></div>
+<p>Using <code>--pure</code>, we can check if our <code>default.nix</code> <em>really</em> contains the complete list of dependencies. That feature is something most other dependency management tools don’t do for us.</p>
+<p>This way it cannot happen that a project builds on one computer, but not on the other, just because someone forgot to install something else that is implicitly needed.</p>
+<h2 id="summary">Summary</h2>
+<p>Nix just helped us with:</p>
+<ul>
+<li>fetching, compiling, and installing dependencies including compilers and libraries</li>
+<li>easily changing the compiler and version between builds</li>
+<li>managing all those dependencies without interference</li>
+<li>getting rid of it again</li>
+</ul>
+<p>Maybe Conan would also have been able to do that (apart from the <code>--pure</code> feature). Nix however does not only work for C/C++ projects: It can be used for Rust, Haskell, Python, Ruby, etc. etc. - because it is a <em>universal</em> dependency manager.</p>
+<p>Writing your own Nix derivations is only necessary if custom- or extremely new package versions are needed. It is also not hard to do. Existing packages can be rebuilt with different configurations, too.</p>
+<p>Being completely amazed, i also installed NixOS on my laptop. What’s great there is that i am now able to configure the whole system with just one <code>.nix</code> configuration file. When that file changes, Nix automatically restarts only the affected services. If it does not work, then it is possible to roll the system back to a previous configuration. (Remember all the stuff in <code>/nix/store/...</code>? It’s still there until it’s garbage-collected!) The same system configuration could be used to clone the system elsewhere, etc.</p>
+<p>This article is really just scratching the surface of Nix/NixOS’s possibilities.</p>]]></description>
+    <pubDate>Tue, 27 Feb 2018 00:00:00 UT</pubDate>
+    <guid>https://blog.galowicz.de/2018/02/27/managing_libraries_with_nix</guid>
+    <dc:creator>Jacek Galowicz</dc:creator>
+</item>
+<item>
     <title>Iterators are also part of the C++ zero cost abstractions</title>
     <link>https://blog.galowicz.de/2017/07/02/order2_iterator</link>
     <description><![CDATA[<p>This article picks up an example operating system kernel code snippet that is written in C++, but looks like “C with classes”. I think it is a great idea to implement Embedded projects/kernels in C++ instead of C and it’s nice to see that the number of embedded system developers that use C++ is rising. Unfortunately, I see stagnation in terms of modern programming in embedded/kernel projects in the industry. After diving through the context i demonstrate how to implement a nice iterator as a zero cost abstraction that helps tidy up the code.</p>
@@ -2119,265 +2550,6 @@ fib_nums.resize(<span class="dv">1000</span>);
 <p>Implementing a Brainfuck Interpreter which works at compile time, is more a toy than actually a useful program. But it combines several template meta-programming techniques, and therefore i regard it as a great <em>learning vehicle</em>. And this is a nice insight into the Turing completeness of the C++ template language.</p>]]></description>
     <pubDate>Thu, 16 Jun 2016 00:00:00 UT</pubDate>
     <guid>https://blog.galowicz.de/2016/06/16/cpp_template_compile_time_brainfuck_interpreter</guid>
-    <dc:creator>Jacek Galowicz</dc:creator>
-</item>
-<item>
-    <title>Implementing a Turing Tape for Use at Compile Time</title>
-    <link>https://blog.galowicz.de/2016/05/15/turing_tape_with_type_lists</link>
-    <description><![CDATA[<p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table. Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages. It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++. As a preparation for the next article, i will show how to implement a turing tape based on type lists, usable at compile time.</p>
-<!--more-->
-<blockquote>
-<p>The code in this article depends largely on the code in <a href="/2016/05/08/compile_time_type_lists%20%%7D">the article about type lists</a>, and <a href="/2016/05/14/converting_between_c_strings_and_type_lists">the article about character type list transformations</a>.</p>
-</blockquote>
-<p>The tape is implemented as a data structure containing two type lists and a cursor type. This structure embodies the idea that, when looking at a turing tape, there is a <em>current</em> cell, which is represented by the cursor type. Left and right of the current cell is the rest of the tape, which is represented by those two lists.</p>
-<p>Easy enough, this is the template type signature of the turing tape:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> LList, <span class="kw">class</span> Cursor, <span class="kw">class</span> RList&gt;
-<span class="kw">struct</span> tape;</code></pre></div>
-<p>Just as described previously, it contains a list representing the left part of the tape, a list representing the right part of the tape, and the cursor is located just between them. In theory, the turing tape is infinitely long. Representing it with lists, it is very easy to make it virtually infinitely long, because it is possible to attach new cells to it on demand, as soon as it seems to end.</p>
-<p>The operations which can be applied to a turing tape, are:</p>
-<ul>
-<li><strong>Get</strong>: Read the value from the cell at the cursor</li>
-<li><strong>Set</strong>: Assign a new value to the cell at the cursor</li>
-<li><strong>Shift Left</strong>: Move the cursor to the <em>left</em> neighbor of the current one</li>
-<li><strong>Shift Right</strong>: Move the cursor to the <em>right</em> neighbor of the current one</li>
-</ul>
-<p>In imperative programming, the data structure containing the turing tape state would just be modified in trivial ways. In purely functional programming, we would create a completely new data structure instance, which differs from the old one in so far that it contains the desired modification.</p>
-<p>Implementing the <code>tape</code> template class has a simple base case, and three special cases:</p>
-<ul>
-<li>Case 1: The tape consists of non-empty left and right lists</li>
-<li>Case 2: The tape only consists of the cursor item (Left and right list are empty)</li>
-<li>Case 3: The left list is empty, the right one is non-empty</li>
-<li>Case 4: The right list is empty, the left one is non-empty</li>
-</ul>
-<p>The most complicated part of the following code is the <em>pattern matching</em> part of the template type signature.</p>
-<h3 id="case-1-non-empty-leftright-lists">Case 1: Non-empty Left/Right Lists</h3>
-<div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> LHead, <span class="kw">class</span> LTail, 
-          <span class="kw">class</span> Cursor, 
-          <span class="kw">class</span> RHead, <span class="kw">class</span> RTail&gt;
-<span class="kw">struct</span> tape&lt;
-           tl&lt;LHead, LTail&gt;, <span class="co">// Non-Empty Left List</span>
-           Cursor,
-           tl&lt;RHead, RTail&gt;  <span class="co">// Non-Empty Right List</span>
-       &gt; {
-    <span class="kw">using</span> get = Cursor;
-
-    <span class="kw">template</span> &lt;<span class="kw">class</span> T&gt;
-    <span class="kw">using</span> set = tape&lt;
-                    tl&lt;LHead, LTail&gt;, 
-                    T, 
-                    tl&lt;RHead, RTail&gt;&gt;;
-
-    <span class="kw">using</span> move_left  = tape&lt;
-                           LTail, 
-                           LHead, 
-                           tl&lt;Cursor, tl&lt;RHead, RTail&gt;&gt;&gt;;
-    <span class="kw">using</span> move_right = tape&lt;
-                           tl&lt;Cursor, tl&lt;LHead, LTail&gt;&gt;, 
-                           RHead, 
-                           RTail&gt;;
-};</code></pre></td></tr></table></div>
-<p><br></p>
-<ul>
-<li><strong>Lines 5-7</strong> match only on turing tape instances, which do not consist of empty lists at the left or right. An empty list is a <code>null_t</code>, and will not match on <code>tl&lt;LHead, LTail&gt;</code>. After having successfully matched a non-empty list, the template variables <code>LHead</code> and <code>LTail</code> hold the head, and the rest (tail) of the left list. Same applies to the right list with its respective template variables <code>RHead</code> and <code>RTail</code>.</li>
-<li><strong>Line 9</strong> defines the <strong><em>get</em></strong> function. It just trivially returns the matched <code>Cursor</code> type.</li>
-<li><strong>Line 12</strong> defines the <strong><em>set</em></strong> function. This one looks a little more complicated, because it is a templated <code>using</code> clause within a template class, but of course it needs a type parameter,which shall be the new cursor type. That is <code>T</code>. It just constructs and returns a new tape instance, which consists of the same left and right list as before, but holds the new cursor value in the middle.</li>
-<li><strong>Line 17</strong> implements the <strong><em>shift left</em></strong>. When shifting to the left, the tip (head) of the left list moves to the cursor position, which makes the left list also shorter. At the same time, the right list grows, because the former cursor position cell becomes the new tip (head) of the right list. The newly constructed tape contains newly constructed lists following that rule.</li>
-<li><strong>Line 21</strong> implements the <strong><em>shift right</em></strong>, and works identically, but just in a mirrored sense.</li>
-</ul>
-<h3 id="case-2-the-tape-only-consists-of-the-cursor-item-left-and-right-list-are-empty">Case 2: The tape only consists of the cursor item (Left and right list are empty)</h3>
-<p>This case is very simple. The <strong>get</strong> and <strong>set</strong> functions work just equal to the one before.</p>
-<p>When moving the tape left or right, there are no list heads/tails in both directions.</p>
-<div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> Cursor&gt;
-<span class="kw">struct</span> tape&lt;
-           <span class="dt">null_t</span>, <span class="co">// Empty Left List</span>
-           Cursor, 
-           <span class="dt">null_t</span>  <span class="co">// Empty Right List</span>
-        &gt; {
-    <span class="kw">using</span> get = Cursor;
-    <span class="kw">template</span> &lt;<span class="kw">class</span> T&gt;
-    <span class="kw">using</span> set = tape&lt;<span class="dt">null_t</span>, T, <span class="dt">null_t</span>&gt;;
-
-    <span class="kw">using</span> move_left  = tape&lt;
-                           <span class="dt">null_t</span>,
-                           <span class="dt">null_t</span>, 
-                           tl&lt;Cursor, <span class="dt">null_t</span>&gt;&gt;;
-    <span class="kw">using</span> move_right = tape&lt;
-                           tl&lt;Cursor, <span class="dt">null_t</span>&gt;, 
-                           <span class="dt">null_t</span>, 
-                           <span class="dt">null_t</span>&gt;;
-};</code></pre></td></tr></table></div>
-<p>When shifting the tape to the <em>left</em>, the cursor becomes the tip. It is then the only element in the previously empty right list. There are no items coming from the left list, so it is still empty. The cursor is just set to <code>null_t</code>, representing an empty cell.</p>
-<p>When this list is later used with specific payload types, this situation needs to be fixed in the sense, that empty cells should be initialized to some <em>default type</em>.</p>
-<h3 id="case-3-the-left-list-is-empty-the-right-one-is-non-empty">Case 3: The left list is empty, the right one is non-empty</h3>
-<p>I leave case 3 and 4 mostly uncommented. They are kind of <em>hybrids</em> of case 1 and 2, because they match in cases where one list is empty, and the list on the other side is non-empty. That means that shift left or shift right are actually shifting the respective non-empty list like case 1 does, but then create a new empty item of the other empty list, just like case 2 does.</p>
-<div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> Cursor, 
-          <span class="kw">class</span> RHead, <span class="kw">class</span> RTail&gt;
-<span class="kw">struct</span> tape&lt;
-           <span class="dt">null_t</span>,          <span class="co">// Empty Left List</span>
-           Cursor, 
-           tl&lt;RHead, RTail&gt; <span class="co">// Non-Empty Right List</span>
-       &gt; {
-    <span class="kw">using</span> get = Cursor;
-    <span class="kw">template</span> &lt;<span class="kw">class</span> T&gt;
-    <span class="kw">using</span> set = tape&lt;<span class="dt">null_t</span>, T, tl&lt;RHead, RTail&gt;&gt;;
-
-    <span class="kw">using</span> move_left  = tape&lt;
-                           <span class="dt">null_t</span>, 
-                           <span class="dt">null_t</span>, 
-                           tl&lt;Cursor, tl&lt;RHead, RTail&gt;&gt;&gt;;
-    <span class="kw">using</span> move_right = tape&lt;
-                           tl&lt;Cursor, <span class="dt">null_t</span>&gt;, 
-                           RHead, 
-                           RTail&gt;;
-};</code></pre></td></tr></table></div>
-<h3 id="case-4-the-right-list-is-empty-the-left-one-is-non-empty">Case 4: The right list is empty, the left one is non-empty</h3>
-<p>Case 4 is just a mirrored version of case 3.</p>
-<div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> LHead, <span class="kw">class</span> LTail, 
-          <span class="kw">class</span> Cursor&gt;
-<span class="kw">struct</span> tape&lt;
-           tl&lt;LHead, LTail&gt;, <span class="co">// Non-Empty Left List</span>
-           Cursor, 
-           <span class="dt">null_t</span>            <span class="co">// Empty Right List</span>
-       &gt; {
-    <span class="kw">using</span> get = Cursor;
-    <span class="kw">template</span> &lt;<span class="kw">class</span> T&gt;
-    <span class="kw">using</span> set = tape&lt;
-                    tl&lt;LHead, LTail&gt;, 
-                    T, 
-                    <span class="dt">null_t</span>&gt;;
-
-    <span class="kw">using</span> move_left  = tape&lt;
-                           LTail, 
-                           LHead, 
-                           tl&lt;Cursor, <span class="dt">null_t</span>&gt;&gt;;
-    <span class="kw">using</span> move_right = tape&lt;
-                           tl&lt;Cursor, tl&lt;LHead, LTail&gt;&gt;, 
-                           <span class="dt">null_t</span>, 
-                           <span class="dt">null_t</span>&gt;;
-};</code></pre></td></tr></table></div>
-<h2 id="adding-convenient-using-clause-helpers">Adding Convenient <code>using</code> Clause Helpers</h2>
-<p>The <code>tape</code> class can already be easily accessed in order to perform all four defined actions on it. However, this would also be followed by the typical clumsy <code>typename</code> keywords.</p>
-<p>Therefore we define some <code>using</code> clause helpers:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> Tape&gt;
-<span class="kw">using</span> <span class="dt">get_t</span> = <span class="kw">typename</span> Tape::get;
-
-<span class="kw">template</span> &lt;<span class="kw">class</span> Tape, <span class="kw">class</span> T&gt;
-<span class="kw">using</span> <span class="dt">set_t</span> = <span class="kw">typename</span> Tape::<span class="kw">template</span> set&lt;T&gt;;
-
-<span class="kw">template</span> &lt;<span class="kw">class</span> Tape&gt;
-<span class="kw">using</span> <span class="dt">move_left_t</span>  = <span class="kw">typename</span> Tape::move_left;
-
-<span class="kw">template</span> &lt;<span class="kw">class</span> Tape&gt;
-<span class="kw">using</span> <span class="dt">move_right_t</span> = <span class="kw">typename</span> Tape::move_right;</code></pre></div>
-<p>Another useful helper is <code>make_t</code>, which creates a new, empty tape, which already contains a specific type at its cursor position:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> T&gt;
-<span class="kw">using</span> <span class="dt">make_t</span> = tape&lt;<span class="dt">null_t</span>, T, <span class="dt">null_t</span>&gt;;</code></pre></div>
-<p>Without those helpers, shifting and setting a newly created tape would look like this:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">using</span> foo_tape     = tape&lt;<span class="dt">null_t</span>, Foo, <span class="dt">null_t</span>&gt;;
-<span class="kw">using</span> shifted_left = <span class="kw">typename</span> foo_tape::move_left;
-<span class="kw">using</span> set_to_bar   = <span class="kw">typename</span> shifted_left::set&lt;Bar&gt;;
-
-<span class="co">// Or in just one line:</span>
-<span class="kw">using</span> foobar_tape = <span class="kw">typename</span> tape&lt;<span class="dt">null_t</span>, Foo, <span class="dt">null_t</span>&gt;::move_left::set&lt;Bar&gt;;</code></pre></div>
-<p>With those helpers, it becomes more readable:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">using</span> foo_tape     = <span class="dt">make_t</span>&lt;Foo&gt;;
-<span class="kw">using</span> shifted_left = <span class="dt">move_left_t</span>&lt;foo_tape&gt;;
-<span class="kw">using</span> set_to_bar   = <span class="dt">set_t</span>&lt;shifted_left, Bar&gt;;
-
-<span class="co">// Or in just one line:</span>
-<span class="kw">using</span> foobar_tape = <span class="dt">set_t</span>&lt;<span class="dt">move_left_t</span>&lt;<span class="dt">make_t</span>&lt;Foo&gt;&gt;, Bar&gt;;</code></pre></div>
-<h2 id="summary">Summary</h2>
-<p>What we’ve got now is a <code>tape</code> structure, which can be instantiated, shifted around and inbetween its empty cells can be filled with values. A turing machine or any other system for which it would be of use, would wrap around that type and add some more functionality.</p>
-<p>When implementing this, being in the role of a novice template meta programmer, i found this to be a nice exercise for <em>pattern matching</em>.</p>]]></description>
-    <pubDate>Sun, 15 May 2016 00:00:00 UT</pubDate>
-    <guid>https://blog.galowicz.de/2016/05/15/turing_tape_with_type_lists</guid>
     <dc:creator>Jacek Galowicz</dc:creator>
 </item>
 
