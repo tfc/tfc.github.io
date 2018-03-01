@@ -178,6 +178,10 @@ pre code {
   background-color: transparent;
 }
 
+div.sourceCode {
+  overflow: auto!important;
+}
+
 /* Pygments via Jekyll */
 .highlight {
   margin-bottom: 1rem;
