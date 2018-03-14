@@ -51,7 +51,7 @@ Nix can be installed on Linux, Mac, and other Unixes.
 Just as a side note: There is even a [Linux distribution called "NixOS"](https://nixos.org/).
 
 The installation of Nix is really simple.
-Just run the following command in the bash:
+Please first study the content of [`https://nixos.org/nix/install`](https://nixos.org/nix/install) and then run the following command in the bash (Or run the parts of the script you like. It is interesting how about 90% of the critisizm on Nix concentrate on this shell command.):
 
 ``` bash
 $ curl https://nixos.org/nix/install | sh
