@@ -58,11 +58,9 @@ $ curl https://nixos.org/nix/install | sh
 ```
 
 The installation script will download and extract a large tarball into the `/nix` folder on your system.
-In order to create that directory, `sudo` has to be used once.
+In addition to that, it will activate a build daemon and create some user accounts in order to isolate things while building packages.
 After the installation, there will never be any need to use `sudo` in combination with nix calls again.
 It is generally possible to install nix on systems where even creating `/nix` is not allowed (see the [installation guide](https://nixos.wiki/wiki/Nix_Installation_Guide) for more details).
-
-> Everything can be removed again by just deleting `/nix` and removing the bash profile changes that make the nix binaries visible.
 
 ## Installing project dependencies
 
