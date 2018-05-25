@@ -49,6 +49,12 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
             >>= relativizeUrls
 
+    match "impressum.md" $ do
+        route $ setExtension "html"
+        compile $ pandocCompiler
+            >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
+            >>= relativizeUrls
+
     createFeed "atom.xml" renderAtom
     createFeed "feed.xml" renderRss
 

@@ -28,6 +28,7 @@
             <a class="sidebar-nav-item active" href="/">Home
             <a class="sidebar-nav-item" href="/about.html">About
             <a class="sidebar-nav-item" href="https://galowicz.de">CV Info
+            <a class="sidebar-nav-item" href="/impressum.html">Impressum/Datenschutz
           <p>
             <a href="https://linkedin.com/in/jgalowicz">
               <i class="fa fa-linkedin-square">
@@ -51,4 +52,5 @@
 
         ga('create', 'UA-28506344-2', 'auto');
         ga('send', 'pageview');
+        gtag('config', 'UA-28506344-2', { 'anonymize_ip': true });
 
