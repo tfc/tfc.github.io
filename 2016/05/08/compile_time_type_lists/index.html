@@ -108,13 +108,13 @@
 <span class="kw">struct</span> prepend;
 
 <span class="kw">template</span> &lt;<span class="kw">typename</span> ... ListItems, <span class="kw">typename</span> T&gt;
-<span class="kw">struct</span> prepend&lt;tl&lt;ListItems...&gt;, T&gt;
+<span class="kw">struct</span> prepend&lt;T, tl&lt;ListItems...&gt;&gt;
 {
-    <span class="kw">using</span> type = <span class="kw">typename</span> prepend&lt;T, ListItems...&gt;::type;
+    <span class="kw">using</span> type = tl&lt;T, ListItems...&gt;;
 };
 
 <span class="kw">template</span> &lt;<span class="kw">typename</span> VariadicList, <span class="kw">typename</span> T&gt;
-<span class="kw">using</span> <span class="dt">prepend_t</span> = tl&lt;T, VariadicList&gt;;</code></pre></div>
+<span class="kw">using</span> <span class="dt">prepend_t</span> = <span class="kw">typename</span> prepend&lt;T, VariadicList&gt;::type;</code></pre></div>
 <p>Of course, one can implement <code>prepend_t</code>, <code>append_t</code>, etc. helpers, and be fine without such pattern matching tricks, but this is another indirection which can make template meta programs slow again. (Although the performance boost of variadic type lists might be good enough to allow for some indirection here and there).</p>
 <p>Another thing about nested type lists: The clumsyness of their creation can be overcome by creating actual variadic type lists first, and then transforming to recursive type lists:</p>
 <div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
