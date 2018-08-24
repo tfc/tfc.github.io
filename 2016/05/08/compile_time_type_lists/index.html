@@ -43,9 +43,10 @@
 <h2 id="all-roads-lead-to-rome">All Roads Lead to Rome</h2>
 <p>There are several possibilities to implement lists in template meta language. Different implemetations usually have different trade-offs, so i sketch two implementation variants and discuss their advantages and disadvantages.</p>
 <h3 id="way-1-variadic-template-type-lists">Way 1: Variadic template type lists</h3>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> ... Types&gt; <span class="kw">struct</span> type_list {};
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// tl for &quot;type list&quot;</span>
+<span class="kw">template</span> &lt;<span class="kw">typename</span> ... Types&gt; <span class="kw">struct</span> tl {};
 
-<span class="kw">using</span> my_list = type_list&lt;Type1, Type2, Type3&gt;;</code></pre></div>
+<span class="kw">using</span> my_list = tl&lt;Type1, Type2, Type3&gt;;</code></pre></div>
 <p>That’s basically it. Type items are just listed as variadic template parameters.</p>
 <h3 id="way-2-nested-template-type-lists">Way 2: Nested template type lists</h3>
 <div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> <span class="dt">null_t</span> {};
@@ -109,7 +110,7 @@
 <span class="kw">template</span> &lt;<span class="kw">typename</span> ... ListItems, <span class="kw">typename</span> T&gt;
 <span class="kw">struct</span> prepend&lt;tl&lt;ListItems...&gt;, T&gt;
 {
-    type = <span class="kw">typename</span> prepend&lt;T, ListItems...&gt;::type;
+    <span class="kw">using</span> type = <span class="kw">typename</span> prepend&lt;T, ListItems...&gt;::type;
 };
 
 <span class="kw">template</span> &lt;<span class="kw">typename</span> VariadicList, <span class="kw">typename</span> T&gt;
