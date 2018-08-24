@@ -22,9 +22,10 @@ Different implemetations usually have different trade-offs, so i sketch two impl
 ### Way 1: Variadic template type lists
 
 ``` cpp
-template <typename ... Types> struct type_list {};
+// tl for "type list"
+template <typename ... Types> struct tl {};
 
-using my_list = type_list<Type1, Type2, Type3>;
+using my_list = tl<Type1, Type2, Type3>;
 ```
 
 That's basically it.
@@ -123,7 +124,7 @@ struct prepend;
 template <typename ... ListItems, typename T>
 struct prepend<tl<ListItems...>, T>
 {
-    type = typename prepend<T, ListItems...>::type;
+    using type = typename prepend<T, ListItems...>::type;
 };
 
 template <typename VariadicList, typename T>
