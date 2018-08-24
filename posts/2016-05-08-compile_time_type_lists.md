@@ -122,13 +122,13 @@ template <typename VariadicList, typename T>
 struct prepend;
 
 template <typename ... ListItems, typename T>
-struct prepend<tl<ListItems...>, T>
+struct prepend<T, tl<ListItems...>>
 {
-    using type = typename prepend<T, ListItems...>::type;
+    using type = tl<T, ListItems...>;
 };
 
 template <typename VariadicList, typename T>
-using prepend_t = tl<T, VariadicList>;
+using prepend_t = typename prepend<T, VariadicList>::type;
 ```
 
 Of course, one can implement `prepend_t`, `append_t`, etc. helpers, and be fine without such pattern matching tricks, but this is another indirection which can make template meta programs slow again.
