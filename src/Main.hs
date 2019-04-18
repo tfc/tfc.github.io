@@ -2,7 +2,7 @@
 import           Control.Monad (liftM)
 import           Data.Monoid   ((<>))
 import           Hakyll
-import           Hamlet
+import           Hakyll.Web.Hamlet
 
 main :: IO ()
 main = hakyll $ do
