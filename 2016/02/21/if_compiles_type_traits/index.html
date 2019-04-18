@@ -46,36 +46,36 @@
 <p>I learned about this useful little trick, when i attended <a href="http://cppcon.org">CPPCON</a> in 2015. Fedor Pikus gave an extremely interesting talk about template meta programming (<a href="https://youtu.be/CZi6QqZSbFg">The recorded talk is on Youtube</a>). The presented macro was part of his talk.</p>
 <p>When using SFINAE the same way as presented and explained in the blog post which explains SFINAE, the type trait will pretty much look the same all the time. The only details which differ are of course the type traits <em>name</em>, and the <em>expression</em> which does the actual magic.</p>
 <p>The following macro does construct a type trait from two parameters: The later type name of the constructed type trait, and the expression which it shall check for compilability.</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#define DEFINE_IF_COMPILES(NAME, EXPR) </span>\
-<span class="pp">    template &lt;typename U1&gt; </span>\
-<span class="pp">    struct NAME </span>\
-<span class="pp">    { </span>\
-<span class="pp">        template &lt;typename U&gt; static U&amp; makeU(); </span>\
-<span class="pp">        using yes_t = char; </span>\
-<span class="pp">        using no_t  = char[2]; </span>\
-<span class="pp">        </span>\
-<span class="pp">        template &lt;typename T1&gt; </span>\
-<span class="pp">        static yes_t&amp; f1(T1 &amp;x1, char (*a)[sizeof( EXPR )] = nullptr); </span>\
-<span class="pp">        template &lt;typename T1&gt; </span>\
-<span class="pp">        static no_t&amp;  f1(...); </span>\
-<span class="pp">        </span>\
-<span class="pp">        static constexpr const bool value { </span>\
-<span class="pp">            sizeof(NAME::f1&lt;U1&gt;(NAME::makeU&lt;U1&gt;())) == sizeof(NAME::yes_t)}; </span>\
-<span class="pp">    }</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#define DEFINE_IF_COMPILES</span>(NAME,<span class="pp"> </span>EXPR)<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="pp">    </span><span class="kw">template</span><span class="pp"> </span>&lt;<span class="kw">typename</span><span class="pp"> </span>U1&gt;<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="pp">    </span><span class="kw">struct</span><span class="pp"> </span>NAME<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="pp">    </span>{<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="pp">        </span><span class="kw">template</span><span class="pp"> </span>&lt;<span class="kw">typename</span><span class="pp"> </span>U&gt;<span class="pp"> </span><span class="at">static</span><span class="pp"> </span>U&amp;<span class="pp"> </span>makeU();<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-6" title="6"><span class="pp">        </span><span class="kw">using</span><span class="pp"> </span><span class="dt">yes_t</span><span class="pp"> </span>=<span class="pp"> </span><span class="dt">char</span>;<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-7" title="7"><span class="pp">        </span><span class="kw">using</span><span class="pp"> </span><span class="dt">no_t</span><span class="pp">  </span>=<span class="pp"> </span><span class="dt">char</span>[<span class="dv">2</span>];<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-8" title="8"><span class="pp">        </span>\</a>
+<a class="sourceLine" id="cb1-9" title="9"><span class="pp">        </span><span class="kw">template</span><span class="pp"> </span>&lt;<span class="kw">typename</span><span class="pp"> </span>T1&gt;<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-10" title="10"><span class="pp">        </span><span class="at">static</span><span class="pp"> </span><span class="dt">yes_t</span>&amp;<span class="pp"> </span>f1(T1<span class="pp"> </span>&amp;x1,<span class="pp"> </span><span class="dt">char</span><span class="pp"> </span>(*a)[<span class="kw">sizeof</span>(<span class="pp"> </span>EXPR<span class="pp"> </span>)]<span class="pp"> </span>=<span class="pp"> </span><span class="kw">nullptr</span>);<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-11" title="11"><span class="pp">        </span><span class="kw">template</span><span class="pp"> </span>&lt;<span class="kw">typename</span><span class="pp"> </span>T1&gt;<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-12" title="12"><span class="pp">        </span><span class="at">static</span><span class="pp"> </span><span class="dt">no_t</span>&amp;<span class="pp">  </span>f1(...);<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-13" title="13"><span class="pp">        </span>\</a>
+<a class="sourceLine" id="cb1-14" title="14"><span class="pp">        </span><span class="at">static</span><span class="pp"> </span><span class="kw">constexpr</span><span class="pp"> </span><span class="at">const</span><span class="pp"> </span><span class="dt">bool</span><span class="pp"> </span>value<span class="pp"> </span>{<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-15" title="15"><span class="pp">            </span><span class="kw">sizeof</span>(NAME::f1&lt;U1&gt;(NAME::makeU&lt;U1&gt;()))<span class="pp"> </span>==<span class="pp"> </span><span class="kw">sizeof</span>(NAME::<span class="dt">yes_t</span>)};<span class="pp"> </span>\</a>
+<a class="sourceLine" id="cb1-16" title="16"><span class="pp">    </span>}</a></code></pre></div>
 <p>The macro assumes a specific convention: When checking an expression for compilability, the expression needs to be written in terms of an instance of the type on which the trait shall work. This means, when the user writes <code>my_trait&lt;FooType&gt;::value</code>, the type trait will apply the expression defined by <code>EXPR</code>, on an artificial instance of type <code>FooType</code>. In order to do that, <code>EXPR</code> needs access to such an instance, and the convention is, that such an instance is always provided with the name <code>x1</code>.</p>
 <p>The following example will use the macro to create a type trait which can check if the user provided type is dereferenceable:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">DEFINE_IF_COMPILES(is_dereferenceable, *x1);</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1">DEFINE_IF_COMPILES(is_dereferenceable, *x1);</a></code></pre></div>
 <p>The type trait’s name is <code>is_dereferenceable</code>, and its expression is <code>*x1</code>. It simply tries to dereference the artificial instance of the template type.</p>
 <p>Usage then looks like the following:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span>                  &gt;::value == <span class="kw">false</span>, <span class="st">&quot;&quot;</span>);
-<span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span>*                 &gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);
-<span class="kw">static_assert</span>(is_dereferenceable&lt;vector&lt;<span class="dt">int</span>&gt;::iterator&gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span>                  &gt;::value == <span class="kw">false</span>, <span class="st">&quot;&quot;</span>);</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span>*                 &gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</a>
+<a class="sourceLine" id="cb3-3" title="3"><span class="kw">static_assert</span>(is_dereferenceable&lt;vector&lt;<span class="dt">int</span>&gt;::iterator&gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</a></code></pre></div>
 <p>This is pretty cool and easy to use. It is not necessary to look for specific members, specialize any template structs/functions, etc., to see if some type is dereferenceable like an array, an iterator, or a smart pointer.</p>
 <p>Some more examples, which are hopefully self-explanatory enough:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">DEFINE_IF_COMPILES(has_begin_function,             x1.begin());
-DEFINE_IF_COMPILES(supports_addition_with_ints,    x1 + <span class="dv">123</span>);
-DEFINE_IF_COMPILES(supports_addition_with_strings, x1 + <span class="st">&quot;abc&quot;</span>);
-DEFINE_IF_COMPILES(is_serializable,                x1.serialize());</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1">DEFINE_IF_COMPILES(has_begin_function,             x1.begin());</a>
+<a class="sourceLine" id="cb4-2" title="2">DEFINE_IF_COMPILES(supports_addition_with_ints,    x1 + <span class="dv">123</span>);</a>
+<a class="sourceLine" id="cb4-3" title="3">DEFINE_IF_COMPILES(supports_addition_with_strings, x1 + <span class="st">&quot;abc&quot;</span>);</a>
+<a class="sourceLine" id="cb4-4" title="4">DEFINE_IF_COMPILES(is_serializable,                x1.serialize());</a></code></pre></div>
 <p>It is possible to complicate this further by providing a macro which enables for expressions like <code>two_type_trait&lt;T, U&gt;::value</code>, which provides instances <code>x1</code> and <code>x2</code> (Example: <code>supports_addition&lt;T, U&gt;::value</code>, which tries to add: <code>x1 + x2</code>). The macro is easily extensible to support that.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

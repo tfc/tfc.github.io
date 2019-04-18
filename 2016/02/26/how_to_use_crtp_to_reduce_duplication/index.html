@@ -42,62 +42,62 @@
 <h2 id="the-example">The Example</h2>
 <p>Let’s consider a class <code>Foo</code>, which enables its instances to be compared against each other. <code>Foo</code>s can be equal, different, smaller, smaller-equal, larger, larger-equal, etc.</p>
 <p>To keep the example very simple, class <code>Foo</code> does just contain a trivially comparable integer member. All function parameters are non-<code>const</code> and by value, to not bloat the example code for the eye.</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> Foo
-{
-    <span class="dt">int</span> x;
-
-<span class="kw">public</span>:
-    <span class="co">// Constructors, destructors, etc...</span>
-
-    <span class="dt">bool</span> <span class="kw">operator</span>==(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x == o; }
-    <span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x != o; }
-
-    <span class="dt">bool</span> <span class="kw">operator</span>&lt; (<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &lt;  o; }
-    <span class="dt">bool</span> <span class="kw">operator</span>&gt; (<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &gt;  o; }
-
-    <span class="dt">bool</span> <span class="kw">operator</span>&lt;=(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &lt;= o; }
-    <span class="dt">bool</span> <span class="kw">operator</span>&gt;=(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &gt;= o; }
-
-    <span class="co">// More repetitive lines of code</span>
-};</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">class</span> Foo</a>
+<a class="sourceLine" id="cb1-2" title="2">{</a>
+<a class="sourceLine" id="cb1-3" title="3">    <span class="dt">int</span> x;</a>
+<a class="sourceLine" id="cb1-4" title="4"></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb1-6" title="6">    <span class="co">// Constructors, destructors, etc...</span></a>
+<a class="sourceLine" id="cb1-7" title="7"></a>
+<a class="sourceLine" id="cb1-8" title="8">    <span class="dt">bool</span> <span class="kw">operator</span>==(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x == o; }</a>
+<a class="sourceLine" id="cb1-9" title="9">    <span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x != o; }</a>
+<a class="sourceLine" id="cb1-10" title="10"></a>
+<a class="sourceLine" id="cb1-11" title="11">    <span class="dt">bool</span> <span class="kw">operator</span>&lt; (<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &lt;  o; }</a>
+<a class="sourceLine" id="cb1-12" title="12">    <span class="dt">bool</span> <span class="kw">operator</span>&gt; (<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &gt;  o; }</a>
+<a class="sourceLine" id="cb1-13" title="13"></a>
+<a class="sourceLine" id="cb1-14" title="14">    <span class="dt">bool</span> <span class="kw">operator</span>&lt;=(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &lt;= o; }</a>
+<a class="sourceLine" id="cb1-15" title="15">    <span class="dt">bool</span> <span class="kw">operator</span>&gt;=(<span class="dt">int</span> o) <span class="at">const</span> { <span class="cf">return</span> x &gt;= o; }</a>
+<a class="sourceLine" id="cb1-16" title="16"></a>
+<a class="sourceLine" id="cb1-17" title="17">    <span class="co">// More repetitive lines of code</span></a>
+<a class="sourceLine" id="cb1-18" title="18">};</a></code></pre></div>
 <p>This is not really bad yet. It is now possible to compare <code>Foo</code> instances with integers, which is fine.</p>
 <h2 id="comparison-the-other-way-around">Comparison, The Other Way Around</h2>
 <p>But as soon as this code gets used, it becomes apparent, that the <code>Foo</code> instance must always be at the left side of the comparison, and the integer must always be at the right side of the comparison.</p>
 <p>To fix this, one has to implement more operators:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Just turn around the parameters and use the already existing operators</span>
-<span class="dt">bool</span> <span class="kw">operator</span>==(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo == x; }
-<span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo != x; }
-
-<span class="dt">bool</span> <span class="kw">operator</span>&lt; (<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &gt;  x; } <span class="co">// Don't mess up the order!</span>
-<span class="dt">bool</span> <span class="kw">operator</span>&gt; (<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &lt;  x; }
-
-<span class="dt">bool</span> <span class="kw">operator</span>&lt;=(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &gt;= x; }
-<span class="dt">bool</span> <span class="kw">operator</span>&gt;=(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &lt;= x; }</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="co">// Just turn around the parameters and use the already existing operators</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="dt">bool</span> <span class="kw">operator</span>==(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo == x; }</a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo != x; }</a>
+<a class="sourceLine" id="cb2-4" title="4"></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="dt">bool</span> <span class="kw">operator</span>&lt; (<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &gt;  x; } <span class="co">// Don't mess up the order!</span></a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="dt">bool</span> <span class="kw">operator</span>&gt; (<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &lt;  x; }</a>
+<a class="sourceLine" id="cb2-7" title="7"></a>
+<a class="sourceLine" id="cb2-8" title="8"><span class="dt">bool</span> <span class="kw">operator</span>&lt;=(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &gt;= x; }</a>
+<a class="sourceLine" id="cb2-9" title="9"><span class="dt">bool</span> <span class="kw">operator</span>&gt;=(<span class="dt">int</span> x, Foo foo) { <span class="cf">return</span> foo &lt;= x; }</a></code></pre></div>
 <p>At this stage, one maybe realized that <code>x &lt;= y</code> is the same as <code>!(x &gt; y)</code> (same applies to <code>&lt;</code> and <code>!(&gt;=)</code>), and there is already some code duplication by providing a special implementation for it…</p>
 <h2 id="the-fat-friend-who-likes-eating">The Fat Friend Who Likes Eating</h2>
 <p>Implementing such a ridiculous amount of operator definitions is tedious and error prone. (<em>Every single one</em> of them needs to be tested to be sure that they are correct)</p>
 <p>What if one could just inherit from some kind of <em>comparison helper</em> class, in order to additionally define a minimum amount of code, and the helper class would implement all the other bloaty operator lines in terms of this minimum of code?</p>
 <p>That is exactly where CRTP comes to the rescue. CRTP stands for <em><strong>C</strong>uriously <strong>R</strong>ecurring <strong>T</strong>emplate <strong>P</strong>attern</em>. There are multiple things which can be done with it, and they basically look like the following:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> INHERITOR_TYPE&gt;
-<span class="kw">class</span> bla_base_functionality
-{
-<span class="kw">public</span>:
-    <span class="dt">void</span> generic_function_bla() { 
-        generic_part_a();
-        <span class="kw">static_cast</span>&lt;INHERITOR_TYPE*&gt;(<span class="kw">this</span>)-&gt;specialized_bla_part();
-        generic_part_b();
-    }
-}; 
-
-<span class="kw">class</span> Foo : <span class="kw">public</span> bla_base_functionality&lt;Foo&gt;
-{
-    <span class="co">// Befriend it, it can call our private implementation</span>
-    <span class="kw">friend</span> <span class="kw">class</span> bla_base_functionality&lt;foo&gt;;
-
-    <span class="dt">void</span> specialized_bla_part() {
-        <span class="co">// some foo-specific code</span>
-    }
-};</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> INHERITOR_TYPE&gt;</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">class</span> bla_base_functionality</a>
+<a class="sourceLine" id="cb3-3" title="3">{</a>
+<a class="sourceLine" id="cb3-4" title="4"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb3-5" title="5">    <span class="dt">void</span> generic_function_bla() { </a>
+<a class="sourceLine" id="cb3-6" title="6">        generic_part_a();</a>
+<a class="sourceLine" id="cb3-7" title="7">        <span class="kw">static_cast</span>&lt;INHERITOR_TYPE*&gt;(<span class="kw">this</span>)-&gt;specialized_bla_part();</a>
+<a class="sourceLine" id="cb3-8" title="8">        generic_part_b();</a>
+<a class="sourceLine" id="cb3-9" title="9">    }</a>
+<a class="sourceLine" id="cb3-10" title="10">}; </a>
+<a class="sourceLine" id="cb3-11" title="11"></a>
+<a class="sourceLine" id="cb3-12" title="12"><span class="kw">class</span> Foo : <span class="kw">public</span> bla_base_functionality&lt;Foo&gt;</a>
+<a class="sourceLine" id="cb3-13" title="13">{</a>
+<a class="sourceLine" id="cb3-14" title="14">    <span class="co">// Befriend it, it can call our private implementation</span></a>
+<a class="sourceLine" id="cb3-15" title="15">    <span class="kw">friend</span> <span class="kw">class</span> bla_base_functionality&lt;foo&gt;;</a>
+<a class="sourceLine" id="cb3-16" title="16"></a>
+<a class="sourceLine" id="cb3-17" title="17">    <span class="dt">void</span> specialized_bla_part() {</a>
+<a class="sourceLine" id="cb3-18" title="18">        <span class="co">// some foo-specific code</span></a>
+<a class="sourceLine" id="cb3-19" title="19">    }</a>
+<a class="sourceLine" id="cb3-20" title="20">};</a></code></pre></div>
 <p>This is an example for <em>static polymorphy</em>!</p>
 <blockquote>
 <p>There is also an article <a href="../../../../2016/02/27/static_polymorphy">which explains static polymorphy using CRTP</a></p>
@@ -105,85 +105,85 @@
 <p>Class <code>Foo</code> just implements a specific part of some more generic function. The rest is implemented in class <code>bla_base_functionality</code>. This of course looks over-engineered, unless there are some more classes which derive from it and specialize its behaviour.</p>
 <p>This pattern is a little bit strange in the beginning, but as soon as one gets his head around it, it is a very useful tool.</p>
 <p>A specialized version of this is the <em>Barton-Nackman Trick</em>, and that is what helps out with the comparison operator mess. The whole lot of operator definitions can be defined <em>once</em> in a CRTP base class, and then one can inherit from that in order to just implement the really needed minimum of code:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;
-<span class="kw">class</span> comparison_impl
-{
-    <span class="at">const</span> T&amp; thisT() <span class="at">const</span> { <span class="cf">return</span> *<span class="kw">static_cast</span>&lt;<span class="at">const</span> T*&gt;(<span class="kw">this</span>); }
-<span class="kw">public</span>:
-    <span class="co">// operator== is implemented by T</span>
-
-    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt;
-    <span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="at">const</span> U&amp; o) <span class="at">const</span> { <span class="cf">return</span> !(thisT() == o); }
-
-    <span class="co">// operator&lt; is implemented by T</span>
-
-    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt;
-    <span class="dt">bool</span> <span class="kw">operator</span>&gt;=(<span class="at">const</span> U&amp; o) <span class="at">const</span> { <span class="cf">return</span> !(thisT() &lt;  o); }
-
-    <span class="co">// operator&gt; is implemented by T</span>
-
-    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt;
-    <span class="dt">bool</span> <span class="kw">operator</span>&lt;=(<span class="at">const</span> U&amp; o) <span class="at">const</span> { <span class="cf">return</span> !(thisT() &gt;  o); }
-};</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">class</span> comparison_impl</a>
+<a class="sourceLine" id="cb4-3" title="3">{</a>
+<a class="sourceLine" id="cb4-4" title="4">    <span class="at">const</span> T&amp; thisT() <span class="at">const</span> { <span class="cf">return</span> *<span class="kw">static_cast</span>&lt;<span class="at">const</span> T*&gt;(<span class="kw">this</span>); }</a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb4-6" title="6">    <span class="co">// operator== is implemented by T</span></a>
+<a class="sourceLine" id="cb4-7" title="7"></a>
+<a class="sourceLine" id="cb4-8" title="8">    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt;</a>
+<a class="sourceLine" id="cb4-9" title="9">    <span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="at">const</span> U&amp; o) <span class="at">const</span> { <span class="cf">return</span> !(thisT() == o); }</a>
+<a class="sourceLine" id="cb4-10" title="10"></a>
+<a class="sourceLine" id="cb4-11" title="11">    <span class="co">// operator&lt; is implemented by T</span></a>
+<a class="sourceLine" id="cb4-12" title="12"></a>
+<a class="sourceLine" id="cb4-13" title="13">    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt;</a>
+<a class="sourceLine" id="cb4-14" title="14">    <span class="dt">bool</span> <span class="kw">operator</span>&gt;=(<span class="at">const</span> U&amp; o) <span class="at">const</span> { <span class="cf">return</span> !(thisT() &lt;  o); }</a>
+<a class="sourceLine" id="cb4-15" title="15"></a>
+<a class="sourceLine" id="cb4-16" title="16">    <span class="co">// operator&gt; is implemented by T</span></a>
+<a class="sourceLine" id="cb4-17" title="17"></a>
+<a class="sourceLine" id="cb4-18" title="18">    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt;</a>
+<a class="sourceLine" id="cb4-19" title="19">    <span class="dt">bool</span> <span class="kw">operator</span>&lt;=(<span class="at">const</span> U&amp; o) <span class="at">const</span> { <span class="cf">return</span> !(thisT() &gt;  o); }</a>
+<a class="sourceLine" id="cb4-20" title="20">};</a></code></pre></div>
 <p>This is a super generic variant using a type <code>T</code> for the class which will inherit from this, and another type <code>U</code>. Type <code>U</code> could be hardcoded to <code>T</code>, but then it would only allow for comparing the class with instances of <em>same type</em>. Instead, it could also be another class-template parameter (<code>template &lt;typename T, typename U&gt; class comparison_impl {...};</code>), which would allow to compare with <em>any</em> type, but then it would still be a single type to which <code>T</code> could be compared.</p>
 <p>The current version allows to make <code>T</code> comparable with multiple types at the same time:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> Foo : <span class="kw">public</span> comparison_impl&lt;Foo&gt;
-{
-    <span class="dt">int</span> x;
-<span class="kw">public</span>:
-    <span class="co">// Ctors, Dtors, etc...</span>
-
-    <span class="dt">bool</span> <span class="kw">operator</span>==(<span class="at">const</span> Foo &amp;o) <span class="at">const</span> { <span class="cf">return</span> x == o.x; }
-    <span class="dt">bool</span> <span class="kw">operator</span>==(<span class="dt">int</span>        o) <span class="at">const</span> { <span class="cf">return</span> x == o; }
-};</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">class</span> Foo : <span class="kw">public</span> comparison_impl&lt;Foo&gt;</a>
+<a class="sourceLine" id="cb5-2" title="2">{</a>
+<a class="sourceLine" id="cb5-3" title="3">    <span class="dt">int</span> x;</a>
+<a class="sourceLine" id="cb5-4" title="4"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb5-5" title="5">    <span class="co">// Ctors, Dtors, etc...</span></a>
+<a class="sourceLine" id="cb5-6" title="6"></a>
+<a class="sourceLine" id="cb5-7" title="7">    <span class="dt">bool</span> <span class="kw">operator</span>==(<span class="at">const</span> Foo &amp;o) <span class="at">const</span> { <span class="cf">return</span> x == o.x; }</a>
+<a class="sourceLine" id="cb5-8" title="8">    <span class="dt">bool</span> <span class="kw">operator</span>==(<span class="dt">int</span>        o) <span class="at">const</span> { <span class="cf">return</span> x == o; }</a>
+<a class="sourceLine" id="cb5-9" title="9">};</a></code></pre></div>
 <p><code>Foo</code> is now comparable with other <code>Foo</code> instances and with integers directly, using the <code>==</code> and <code>!=</code> operators. In order to enable this, only the equality operator had to be implemented. The other one is inherited from class <code>comparison_impl</code>.</p>
 <p>The other operators are not implemented, but that is fine as long as anything which <code>comparison_impl</code> implements in terms of those remains unused.</p>
 <h2 id="comparison-the-other-way-around-reloaded">Comparison, The Other Way Around, Reloaded</h2>
 <p>There is again that limitation, that <code>Foo</code> must be at the left side of the comparison, and the other type must be at the right side of it. In order to solve that, there needs to be some more code accompanying the header file which defines <code>comparison_impl</code>:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;
-<span class="dt">bool</span> <span class="kw">operator</span>==(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs) 
-{
-    <span class="cf">return</span> <span class="kw">static_cast</span>&lt;T&amp;&gt;(rhs) == lhs;
-}
-
-<span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;
-<span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs) 
-{
-    <span class="cf">return</span> <span class="kw">static_cast</span>&lt;T&amp;&gt;(rhs) != lhs;
-}
-
-<span class="co">// same for the others...</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="dt">bool</span> <span class="kw">operator</span>==(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs) </a>
+<a class="sourceLine" id="cb6-3" title="3">{</a>
+<a class="sourceLine" id="cb6-4" title="4">    <span class="cf">return</span> <span class="kw">static_cast</span>&lt;T&amp;&gt;(rhs) == lhs;</a>
+<a class="sourceLine" id="cb6-5" title="5">}</a>
+<a class="sourceLine" id="cb6-6" title="6"></a>
+<a class="sourceLine" id="cb6-7" title="7"><span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb6-8" title="8"><span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs) </a>
+<a class="sourceLine" id="cb6-9" title="9">{</a>
+<a class="sourceLine" id="cb6-10" title="10">    <span class="cf">return</span> <span class="kw">static_cast</span>&lt;T&amp;&gt;(rhs) != lhs;</a>
+<a class="sourceLine" id="cb6-11" title="11">}</a>
+<a class="sourceLine" id="cb6-12" title="12"></a>
+<a class="sourceLine" id="cb6-13" title="13"><span class="co">// same for the others...</span></a></code></pre></div>
 <p>It is strange, that these operator signatures match with <code>comparison_impl&lt;T&gt;</code> at the right side, but then cast it to T. Why the hell is <em>that</em>? If that operator would just match with <code>T</code> and <code>U</code> types as left and right operands, it would match pretty much <em>everything</em>, which is bad. These operators shall only be used on types, which inherit from <code>comparison_impl</code>, so this is the right type for the right comparison operand. Then it is casted to the inheriting type <code>T</code>, because that is the one actually implementing the operator.</p>
 <p>One could now implement all the operators, and forever just always inherit from <code>comparison_impl</code> and save a lot of work and error potential. But we are not done, yet.</p>
 <p>This implementation has a major flaw: What if we compare an instance <code>Foo</code> with another instance <code>Foo</code>? The compiler will see <code>Foo::operator==(const Foo&amp;)</code>, and also the freestanding <code>operator==(const U &amp;lhs, const comparison_impl&lt;T&gt; &amp;rhs)</code>, and both match. It will error-out, telling us that these are two <em>ambiguous</em> implementations, which is true:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">tfc@graviton</span> comparison_impl $ clang++ -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span>
-<span class="ex">main.cpp</span>:80:8: error: use of overloaded operator <span class="st">'!='</span> is ambiguous (with operand types <span class="st">'Foo'</span> and <span class="st">'Foo'</span>)
-    <span class="kw">(</span><span class="ex">f</span> != Foo(1<span class="kw">)</span>);
-     <span class="ex">~</span> ^  <span class="ex">~~~~~~</span>
-<span class="ex">main.cpp</span>:36:10: note: candidate function [with U = Foo]
-    <span class="ex">bool</span> operator!=(const U<span class="kw">&amp;</span> <span class="ex">o</span>) <span class="ex">const</span> { return !(thisT() == <span class="ex">o</span>); }
-         ^
-<span class="ex">main.cpp</span>:56:6: note: candidate function [with U = Foo, T = Foo]
-<span class="ex">bool</span> operator!=(const U <span class="kw">&amp;</span><span class="ex">lhs</span>, const comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="kw">&amp;</span><span class="ex">rhs</span>)
-     ^</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb7-1" title="1"><span class="ex">tfc@graviton</span> comparison_impl $ clang++ -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="ex">main.cpp</span>:80:8: error: use of overloaded operator <span class="st">'!='</span> is ambiguous (with operand types <span class="st">'Foo'</span> and <span class="st">'Foo'</span>)</a>
+<a class="sourceLine" id="cb7-3" title="3">    <span class="kw">(</span><span class="ex">f</span> != Foo(1<span class="kw">)</span>);</a>
+<a class="sourceLine" id="cb7-4" title="4">     <span class="ex">~</span> ^  <span class="ex">~~~~~~</span></a>
+<a class="sourceLine" id="cb7-5" title="5"><span class="ex">main.cpp</span>:36:10: note: candidate function [with U = Foo]</a>
+<a class="sourceLine" id="cb7-6" title="6">    <span class="ex">bool</span> operator!=(const U<span class="kw">&amp;</span> <span class="ex">o</span>) <span class="ex">const</span> { return !(thisT() == <span class="ex">o</span>); }</a>
+<a class="sourceLine" id="cb7-7" title="7">         ^</a>
+<a class="sourceLine" id="cb7-8" title="8"><span class="ex">main.cpp</span>:56:6: note: candidate function [with U = Foo, T = Foo]</a>
+<a class="sourceLine" id="cb7-9" title="9"><span class="ex">bool</span> operator!=(const U <span class="kw">&amp;</span><span class="ex">lhs</span>, const comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="kw">&amp;</span><span class="ex">rhs</span>)</a>
+<a class="sourceLine" id="cb7-10" title="10">     ^</a></code></pre></div>
 <h2 id="sfinae-to-the-rescue">SFINAE to the Rescue</h2>
 <blockquote>
 <p>If you are not familiar with <em>SFINAE</em>, have a look at the article which <a href="../../../../2016/02/19/how_do_sfinae_traits_work">describes how SFINAE works</a>.</p>
 </blockquote>
 <p>In case class <code>Foo</code> already implements the operation, the right freestanding operator shall better not be <em>visible</em> for the compiler. This can be done using <em>SFINAE</em> magic, using <code>enable_if</code>:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;
-<span class="kw">typename</span> <span class="bu">std::</span>enable_if&lt;!<span class="bu">std::</span>is_same&lt;U, T&gt;::value, <span class="dt">bool</span>&gt;::type
-<span class="kw">operator</span>==(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs) 
-{
-    <span class="cf">return</span> <span class="kw">static_cast</span>&lt;T&amp;&gt;(rhs) == lhs;
-}
-
-<span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;
-<span class="kw">typename</span> <span class="bu">std::</span>enable_if&lt;!<span class="bu">std::</span>is_same&lt;U, T&gt;::value, <span class="dt">bool</span>&gt;::type
-<span class="kw">operator</span>!=(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs)
-{
-    <span class="cf">return</span> !(<span class="kw">static_cast</span>&lt;<span class="at">const</span> T&amp;&gt;(rhs) == lhs);
-}</code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb8-2" title="2"><span class="kw">typename</span> <span class="bu">std::</span>enable_if&lt;!<span class="bu">std::</span>is_same&lt;U, T&gt;::value, <span class="dt">bool</span>&gt;::type</a>
+<a class="sourceLine" id="cb8-3" title="3"><span class="kw">operator</span>==(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs) </a>
+<a class="sourceLine" id="cb8-4" title="4">{</a>
+<a class="sourceLine" id="cb8-5" title="5">    <span class="cf">return</span> <span class="kw">static_cast</span>&lt;T&amp;&gt;(rhs) == lhs;</a>
+<a class="sourceLine" id="cb8-6" title="6">}</a>
+<a class="sourceLine" id="cb8-7" title="7"></a>
+<a class="sourceLine" id="cb8-8" title="8"><span class="kw">template</span> &lt;<span class="kw">typename</span> U, <span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb8-9" title="9"><span class="kw">typename</span> <span class="bu">std::</span>enable_if&lt;!<span class="bu">std::</span>is_same&lt;U, T&gt;::value, <span class="dt">bool</span>&gt;::type</a>
+<a class="sourceLine" id="cb8-10" title="10"><span class="kw">operator</span>!=(<span class="at">const</span> U &amp;lhs, <span class="at">const</span> comparison_impl&lt;T&gt; &amp;rhs)</a>
+<a class="sourceLine" id="cb8-11" title="11">{</a>
+<a class="sourceLine" id="cb8-12" title="12">    <span class="cf">return</span> !(<span class="kw">static_cast</span>&lt;<span class="at">const</span> T&amp;&gt;(rhs) == lhs);</a>
+<a class="sourceLine" id="cb8-13" title="13">}</a></code></pre></div>
 <p>Maybe we just arrived at level “That’s <em>exactly</em> why i don’t get all this template bloat.”</p>
 <p>What happened, is that the return type <code>bool</code> of both functions was substituted by an SFINAE type trait. <code>typename std::enable_if&lt;condition, bool&gt;::type</code> is a template type, which contains a type definition <code>type</code> in case <code>condition</code> is <code>true</code>. If <code>condition</code> is <code>false</code>, then this type trait contains nothing, hence the return type of the whole function cannot be deduced. Following SFINAE principles, the compiler drops this operator implementation from the candidate list in the <code>false</code> case, and this is exactly the desired behaviour in the <em>ambiguous overload</em> problem.</p>
 <p>The condition is “<code>U</code> is not the same type as <code>some T&gt;</code>”, and can be expressed in template type trait language like this: <code>!std::is_same&lt;U, T&gt;::value</code>.</p>

@@ -47,12 +47,12 @@
 <h2 id="what-is-the-general-idea-behind-the-book">What is the general idea behind the book?</h2>
 <p>I made the general observation, that most C++ programmers write code that could rather be called <em>C with classes</em> than C++. Such programmers are happy to use data structures like <code>std::vector</code>, <code>std::list</code>, <code>std::map</code>, and so on, but when it comes to implementing standard tasks like for example <em>filtering</em>, <em>accumulating</em>, and so on, they fall back to handcrafted <code>for</code> loops.</p>
 <p>So in real life, people rather write code like this:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> sum = <span class="dv">0</span>;
-<span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; my_vector.length(); ++i) {
-    sum += my_vector[i];
-}</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="dt">int</span> sum = <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; my_vector.length(); ++i) {</a>
+<a class="sourceLine" id="cb1-3" title="3">    sum += my_vector[i];</a>
+<a class="sourceLine" id="cb1-4" title="4">}</a></code></pre></div>
 <p>… instead of this:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> sum = accumulate(begin(my_vector), end(my_vector), <span class="dv">0</span>);</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="dt">int</span> sum = accumulate(begin(my_vector), end(my_vector), <span class="dv">0</span>);</a></code></pre></div>
 <p>The <code>for</code> loop variant is <em>not faster</em> and <em>not shorter</em>, but it comes with the disadvantage that it is hardwired to arrays and vectors. If one wanted to do the same with lists, it would be necessary to <em>rewrite</em> this piece of code. The <code>accumulate</code> function has a data structure agnostic interface and just <em>“does the right thing”</em>. (Since C++17, there is also <code>reduce(begin(my_vector), end(my_vector))</code>, which does the same thing.) In contrast to the <code>for</code> loop, one does not have to “mentally execute it” in order to understand it.</p>
 <p>A very interesting perk of C++17 is that it adds <a href="http://en.cppreference.com/w/cpp/experimental/parallelism"><strong>execution policies</strong></a> to a lot of STL algorithms. That means that it is now possible to trivially parallelize code that already uses STL algorithms just with one extra parameter. It would, therefore, make sense if C++ programmers would finally get used to all the carefully crafted and already tested helpers the STL has already been providing for decades now.</p>
 <p>I regret that many C++ programmers ignore the vast possibilities that the STL provides. Especially in the embedded C++ area, people regularly fall back to “C with classes”.</p>
@@ -60,12 +60,12 @@
 <blockquote>
 <p>[…] programming […] must always start again at square one, writing “for i := …” and “for j := …” followed by assignment statements sprinkled with i’s and j’s.</p>
 </blockquote>
-<p>In 1977, he was talking about FORTRAN code, but his observation still applies to a lot of C++ code from today. Another very inspiring talk about the “C with classes” vs. “Modern C++” topic is <a href="https://channel9.msdn.com/Events/GoingNative/2013/Cpp-Seasoning">Sean Parent’s talk where he presents his <code>gather</code> algorithm which is only an STL two-liner</a>.</p>
+<p>In 1977, he was talking about FORTRAN code, but his observation still applies to a lot of C++ code from today. Another very inspiring talk about the “C with classes” vs. “Modern C++” topic is <a href="https://channel9.msdn.com/Events/GoingNative/2013/Cpp-Seasoning">Sean Parent’s talk where he presents his <code>gather</code> algorithm which is only an STL two-liner</a>.</p>
 <p>The <strong>C++17 STL Cookbook</strong> is obviously about <strong>C++17</strong> and the <strong>STL</strong>. While the first chapter concentrates solely on the most interesting new language features and syntax sugar that were introduced with the new C++17 standard, I aimed to spread a lot of <em>modern C++ philosophy</em> with the rest of the book:</p>
 <p>All recipes try to solve problems <em>the STL way</em>.</p>
 <h2 id="the-content">The content</h2>
 <p>In roughly 500 pages, the book covers the following topics:</p>
-<ol style="list-style-type: decimal">
+<ol type="1">
 <li><p><strong>The new C++17 features</strong></p>
 <p>An overview of the most interesting new C++17 <em>language</em> features: <code>constexpr if</code>, structured bindings, initializers in <code>if</code> statements, fold expressions, etc.</p></li>
 <li><p><strong>STL Containers</strong></p>
@@ -78,12 +78,12 @@
 <p>This chapter is a quick reintroduction to STL algorithms.</p></li>
 <li><p><strong>Advanced use of STL algorithms</strong></p>
 <p>After having reintroduced how standard algorithms work, this chapter demonstrates how to combine them in order to solve more complex tasks without reinventing the wheel (or <code>for</code> loop) all the time.</p></li>
-<li><strong>Strings, stream classes, and regular expressions</strong></li>
+<li><p><strong>Strings, stream classes, and regular expressions</strong></p></li>
 </ol>
 <ul>
 <li>The streaming library is an ancient and large, but very important part of the STL. This chapter shows how to solve the typical I/O tasks.</li>
 </ul>
-<ol start="8" style="list-style-type: decimal">
+<ol start="8" type="1">
 <li><p><strong>Utility classes</strong></p>
 <p>Time conversion, <code>std::optional</code>, <code>std::any</code>, <code>std::variant</code>, automatic memory management with smart pointers, and random number generation.</p></li>
 <li><p><strong>Parallelism and concurrency</strong></p>

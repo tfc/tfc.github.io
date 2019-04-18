@@ -44,25 +44,25 @@
 </blockquote>
 <h2 id="what-does-sfinae-stand-for">What Does SFINAE Stand for?</h2>
 <p><em>SFINAE</em> is an abbreviation for <em><strong>S</strong>ubstitution <strong>F</strong>ailure <strong>I</strong>s <strong>N</strong>ot <strong>A</strong>n <strong>E</strong>rror</em>, and describes a principle a C++ compiler adheres to while it substitutes template types by the type which it deduced from the program’s context.</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Little type deduction example:</span>
-<span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; f(T x) { <span class="co">/* do something with x */</span> }
-
-<span class="co">// ...</span>
-<span class="dt">int</span> a {<span class="dv">123</span>};
-f&lt;<span class="dt">int</span>&gt;(a); <span class="co">// The user already specified T. No deduction necessary.</span>
-f(a);      <span class="co">// Here, the compiler needs to deduce T from the type of &quot;a&quot;</span>
-<span class="co">// The next example will be more complex to point out SFINAE mechanics</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="co">// Little type deduction example:</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt; f(T x) { <span class="co">/* do something with x */</span> }</a>
+<a class="sourceLine" id="cb1-3" title="3"></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="co">// ...</span></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="dt">int</span> a {<span class="dv">123</span>};</a>
+<a class="sourceLine" id="cb1-6" title="6">f&lt;<span class="dt">int</span>&gt;(a); <span class="co">// The user already specified T. No deduction necessary.</span></a>
+<a class="sourceLine" id="cb1-7" title="7">f(a);      <span class="co">// Here, the compiler needs to deduce T from the type of &quot;a&quot;</span></a>
+<a class="sourceLine" id="cb1-8" title="8"><span class="co">// The next example will be more complex to point out SFINAE mechanics</span></a></code></pre></div>
 <p>The SFINAE principle works as follows: If the compiler detects an error while it tries to substitute a type during template type deduction, it will not emit a compilation error. Instead, it will stop considering the symbol it is currently looking at as a match, and try the next symbol, which looks like a suitable candidate. Of course, the compiler will error-out if there are no suitable candidates left.</p>
 <h2 id="simplest-example">Simplest Example</h2>
 <p>The in my opinion simplest example to demonstrate how this behaviour can be used, is one which i found on <a href="http://en.cppreference.com/w/cpp/language/sfinae">cppreference.com</a>:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span>&lt;<span class="dt">int</span> I&gt;
-<span class="dt">void</span> f(<span class="dt">char</span>(*)[I % <span class="dv">2</span> == <span class="dv">0</span>] = <span class="kw">nullptr</span>) {
-    <span class="co">// this overload is selected when I is even</span>
-}
-<span class="kw">template</span>&lt;<span class="dt">int</span> I&gt;
-<span class="dt">void</span> f(<span class="dt">char</span>(*)[I % <span class="dv">2</span> == <span class="dv">1</span>] = <span class="kw">nullptr</span>) {
-    <span class="co">// this overload is selected  when I is odd</span>
-}</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">template</span>&lt;<span class="dt">int</span> I&gt;</a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="dt">void</span> f(<span class="dt">char</span>(*)[I % <span class="dv">2</span> == <span class="dv">0</span>] = <span class="kw">nullptr</span>) {</a>
+<a class="sourceLine" id="cb2-3" title="3">    <span class="co">// this overload is selected when I is even</span></a>
+<a class="sourceLine" id="cb2-4" title="4">}</a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="kw">template</span>&lt;<span class="dt">int</span> I&gt;</a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="dt">void</span> f(<span class="dt">char</span>(*)[I % <span class="dv">2</span> == <span class="dv">1</span>] = <span class="kw">nullptr</span>) {</a>
+<a class="sourceLine" id="cb2-7" title="7">    <span class="co">// this overload is selected  when I is odd</span></a>
+<a class="sourceLine" id="cb2-8" title="8">}</a></code></pre></div>
 <p>Both functions have the same signature, when they are selected: <code>void f(char (*)[1])</code> (They take a pointer to a character array of length 1, and return nothing). Although the signature is not fixed, as it depends on a variable template parameter, no other signatures can be generated from this. We will immediately see, why.</p>
 <p>The parameter is not meant to be actually provided by the user, which is why it is initialized to <code>nullptr</code> in the default case. This value is completely uninteresting, which is also why the parameter is not even named.</p>
 <p>Code which will actually use the function, will look like <code>f&lt;NUM&gt;();</code>, where <code>NUM</code> is any integer. When the compiler attempts to deduce which of those two implementations is the right one (They both initially appear as candidates), it will look at the first one, and try to deduce the parameter’s type, as it is not specified, yet. The expression <code>I % 2 == 0</code> is depending on the template parameter <code>I</code>, and as soon as that is defined by the user, the size of the array can be calculated.</p>
@@ -72,22 +72,22 @@ f(a);      <span class="co">// Here, the compiler needs to deduce T from the typ
 <h2 id="the-more-complex-but-also-more-useful-example">The More Complex, But Also More Useful Example</h2>
 <p>The following type trait is able to tell, if a type <code>T</code> is dereferenceable.</p>
 <p>Pointers to any type are dereferenceable, iterators are dereferenceable, and types as <code>std::shared_ptr&lt;T&gt;</code>, but also <code>std::optional&lt;T&gt;</code> are dereferenceable, although they may not have anything else in common. If the dereferenceability is the only thing some functionality must know about the type in use, this is the right type trait for that job:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> U1&gt;
-<span class="kw">struct</span> i<span class="va">s_dereferenceable</span>
-{
-    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt; <span class="at">static</span> U&amp; makeU();
-
-    <span class="kw">using</span> <span class="dt">yes_t</span> = <span class="dt">char</span>;
-    <span class="kw">using</span> <span class="dt">no_t</span>  = <span class="dt">char</span>[<span class="dv">2</span>];
-
-    <span class="kw">template</span> &lt;<span class="kw">typename</span> T1&gt;
-    <span class="at">static</span> <span class="dt">yes_t</span>&amp; f(T1 &amp;x, <span class="dt">char</span> (*)[<span class="kw">sizeof</span>( *x )] = <span class="kw">nullptr</span>);
-    <span class="kw">template</span> &lt;<span class="kw">typename</span> T1&gt;
-    <span class="at">static</span> <span class="dt">no_t</span>&amp;  f(...);
-
-    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {
-        <span class="kw">sizeof</span>(f&lt;U1&gt;(makeU&lt;U1&gt;())) == <span class="kw">sizeof</span>(<span class="dt">yes_t</span>)};
-};</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> U1&gt;</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">struct</span> i<span class="va">s_dereferenceable</span></a>
+<a class="sourceLine" id="cb3-3" title="3">{</a>
+<a class="sourceLine" id="cb3-4" title="4">    <span class="kw">template</span> &lt;<span class="kw">typename</span> U&gt; <span class="at">static</span> U&amp; makeU();</a>
+<a class="sourceLine" id="cb3-5" title="5"></a>
+<a class="sourceLine" id="cb3-6" title="6">    <span class="kw">using</span> <span class="dt">yes_t</span> = <span class="dt">char</span>;</a>
+<a class="sourceLine" id="cb3-7" title="7">    <span class="kw">using</span> <span class="dt">no_t</span>  = <span class="dt">char</span>[<span class="dv">2</span>];</a>
+<a class="sourceLine" id="cb3-8" title="8"></a>
+<a class="sourceLine" id="cb3-9" title="9">    <span class="kw">template</span> &lt;<span class="kw">typename</span> T1&gt;</a>
+<a class="sourceLine" id="cb3-10" title="10">    <span class="at">static</span> <span class="dt">yes_t</span>&amp; f(T1 &amp;x, <span class="dt">char</span> (*)[<span class="kw">sizeof</span>( *x )] = <span class="kw">nullptr</span>);</a>
+<a class="sourceLine" id="cb3-11" title="11">    <span class="kw">template</span> &lt;<span class="kw">typename</span> T1&gt;</a>
+<a class="sourceLine" id="cb3-12" title="12">    <span class="at">static</span> <span class="dt">no_t</span>&amp;  f(...);</a>
+<a class="sourceLine" id="cb3-13" title="13"></a>
+<a class="sourceLine" id="cb3-14" title="14">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {</a>
+<a class="sourceLine" id="cb3-15" title="15">        <span class="kw">sizeof</span>(f&lt;U1&gt;(makeU&lt;U1&gt;())) == <span class="kw">sizeof</span>(<span class="dt">yes_t</span>)};</a>
+<a class="sourceLine" id="cb3-16" title="16">};</a></code></pre></div>
 <p>Let’s have a look at the peripheral details first, which are necessary, but do not contain the interesting mechanism, yet.</p>
 <p>The static function <code>makeU()</code> is a little helper to create an rvalue reference of type <code>U</code>. This way, a function can be called using <code>f(makeU&lt;X&gt;())</code>, which would put an <code>X</code> reference into <code>f</code>. At first it appears that just writing <code>f(X{})</code> would do the same job, but what if there is no default constructor, or if the default constructor is protected/private? We will use this helper function only in a context where the compiler needs to deduce all types, but it will not actually be called and executed, hence needs no definition.</p>
 <p>The types <code>yes_t</code> and <code>no_t</code> are created as helper types. They are distinguishable from each other using <code>sizeof</code>, because <code>no_t</code> is twice as large as <code>yes_t</code> (indepentent from what size <code>char</code> has on the architecture in use).</p>
@@ -96,8 +96,8 @@ f(a);      <span class="co">// Here, the compiler needs to deduce T from the typ
 <p>If the parameter <code>x</code> was of some type which is not dereferenceable, like <code>int</code> for example, then the compiler will not be able to evaluate the expression inside of <code>sizeof</code>, and there will be no array size. If there is no array size, then it is impossible to deduce the signature of the whole function, which is an error in general. Since the compiler follows the SFINAE principle, it will waive this candidate and choose the other, which matches any set of parameters. In this case, the return type is <code>no_t</code>. That is already the whole magic of this complicated trait structure.</p>
 <p>The static constexpr member variable <code>value</code> lines it all up and provides the actual functionality to the user: It lets the compiler select one of the two <code>f</code> function implementations. If the template parameter of the structure (<code>U1</code>) is dereferenceable, then the first implementation is chosen, which lets the left <code>sizeof</code> expression in the initialization of <code>value</code> evaluate to <code>sizeof(yes_t)</code>. The comparison will then evaluate to <code>true</code>, and then <code>is_dereferenceable&lt;FooType&gt;::value</code> tells us that our type <code>FooType</code> is dereferenceable.</p>
 <p>Usage:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span> &gt;::value == <span class="kw">false</span>, <span class="st">&quot;&quot;</span>);
-<span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span>*&gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span> &gt;::value == <span class="kw">false</span>, <span class="st">&quot;&quot;</span>);</a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">static_assert</span>(is_dereferenceable&lt;<span class="dt">int</span>*&gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</a></code></pre></div>
 <p>That was (just as the simpler SFINAE type trait before) an awfully awkward way to answer the fundamential question “Is T dereferenceable?”, but it is perfectly simple to use in the end.</p>
 <p>Combined with the <code>enable_if</code> type trait for example (which i will explain in another blog post), this can be used to show/hide functions for specific types, based on their characteristics.</p></div>
 <div id="disqus_thread"></div>

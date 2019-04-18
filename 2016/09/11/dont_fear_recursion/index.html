@@ -47,88 +47,88 @@
 <p>First: What <em>is</em> tail recursion?</p>
 <p>Tail recursion occurs, when the result of a recursive function call completely depends on the same function call, just with other parameters.</p>
 <p>Example:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b)
-{
-    <span class="co">// Some nonsense-algorithm which shows tail recursion</span>
-    <span class="cf">if</span> (a == <span class="dv">0</span>) {
-        <span class="cf">return</span> b;
-    }
-    <span class="cf">return</span> f(a * b, b - <span class="dv">1</span>);
-}</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b)</a>
+<a class="sourceLine" id="cb1-2" title="2">{</a>
+<a class="sourceLine" id="cb1-3" title="3">    <span class="co">// Some nonsense-algorithm which shows tail recursion</span></a>
+<a class="sourceLine" id="cb1-4" title="4">    <span class="cf">if</span> (a == <span class="dv">0</span>) {</a>
+<a class="sourceLine" id="cb1-5" title="5">        <span class="cf">return</span> b;</a>
+<a class="sourceLine" id="cb1-6" title="6">    }</a>
+<a class="sourceLine" id="cb1-7" title="7">    <span class="cf">return</span> f(a * b, b - <span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb1-8" title="8">}</a></code></pre></div>
 <p>In this case, only the parameters need to be refreshed with the values the next recursion call shall get. Then, instead of <code>call</code>ing the function (which jumps to the function beginning again, but also adds the return address on the stack), it can just be <code>jmp</code>ed at, which completely preserves the stack. (At this point I am talking about the <em>assembler</em> instructions <code>call</code> and <code>jmp</code>, which work similarly for most processor architectures, but may have slightly different names.)</p>
 <p>An example case in which this would not work:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b)
-{
-    <span class="cf">if</span> (a == <span class="dv">0</span>) {
-        <span class="cf">return</span> b;
-    }
-    <span class="cf">return</span> <span class="dv">1</span> + f(a * b, b - <span class="dv">1</span>);
-}</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b)</a>
+<a class="sourceLine" id="cb2-2" title="2">{</a>
+<a class="sourceLine" id="cb2-3" title="3">    <span class="cf">if</span> (a == <span class="dv">0</span>) {</a>
+<a class="sourceLine" id="cb2-4" title="4">        <span class="cf">return</span> b;</a>
+<a class="sourceLine" id="cb2-5" title="5">    }</a>
+<a class="sourceLine" id="cb2-6" title="6">    <span class="cf">return</span> <span class="dv">1</span> + f(a * b, b - <span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb2-7" title="7">}</a></code></pre></div>
 <p>In this case, the <code>1 +</code> part needs to be executed for <em>every</em> recursive call, which happens <strong>after</strong> the recursive call. And for that, real function calls instead of tail jumps are assembled by the compiler. That can be fixed, however:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b, <span class="dt">int</span> sum = <span class="dv">0</span>)
-{
-    <span class="cf">if</span> (a == <span class="dv">0</span>) {
-        <span class="cf">return</span> b + sum;
-    }
-    <span class="cf">return</span> f(a * b, b - <span class="dv">1</span>, sum + <span class="dv">1</span>);
-}</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">int</span> f(<span class="dt">int</span> a, <span class="dt">int</span> b, <span class="dt">int</span> sum = <span class="dv">0</span>)</a>
+<a class="sourceLine" id="cb3-2" title="2">{</a>
+<a class="sourceLine" id="cb3-3" title="3">    <span class="cf">if</span> (a == <span class="dv">0</span>) {</a>
+<a class="sourceLine" id="cb3-4" title="4">        <span class="cf">return</span> b + sum;</a>
+<a class="sourceLine" id="cb3-5" title="5">    }</a>
+<a class="sourceLine" id="cb3-6" title="6">    <span class="cf">return</span> f(a * b, b - <span class="dv">1</span>, sum + <span class="dv">1</span>);</a>
+<a class="sourceLine" id="cb3-7" title="7">}</a></code></pre></div>
 <p>This way, we pushed the information of that “post-adding 1” into the parameter variables and transformed the nonoptimal recursion into a tail recursion. (At this point, this algorithm does not look nicer than an iterative implementation using a loop. However, other algorithms do.)</p>
 <p>That was just a cheap example. There are actually nice and very generic rules in literature, which describe how to transform between the different coding styles. (See also the Wikipedia article about tail recursion)</p>
 <h2 id="gcd-example">GCD Example</h2>
 <p>In order to proof the point of tail recursion, and to motivate people to use more recursion for tidy, but still fast code, I chose the <a href="https://en.wikipedia.org/wiki/Greatest_common_divisor">GCD (<em>Greatest Common Divisor</em>)</a> algorithm, and the two typical different implementations of it:</p>
 <p>The recursive version, which looks very similar to a math formula (at least in terms of C syntax):</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">unsigned</span> gcd_rec(<span class="dt">unsigned</span> a, <span class="dt">unsigned</span> b)
-{
-    <span class="cf">return</span> b ? gcd_rec(b, a % b) : a;
-}</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="dt">unsigned</span> gcd_rec(<span class="dt">unsigned</span> a, <span class="dt">unsigned</span> b)</a>
+<a class="sourceLine" id="cb4-2" title="2">{</a>
+<a class="sourceLine" id="cb4-3" title="3">    <span class="cf">return</span> b ? gcd_rec(b, a % b) : a;</a>
+<a class="sourceLine" id="cb4-4" title="4">}</a></code></pre></div>
 <p>… and the iterative version, which would have a better performance, if the compiler did not know about tail recursion:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">unsigned</span> gcd_itr(<span class="dt">unsigned</span> a, <span class="dt">unsigned</span> b)
-{
-    <span class="cf">while</span> (b) {
-        <span class="dt">unsigned</span> tmp {b};
-        b = a % b;
-        a = tmp;
-    }
-    <span class="cf">return</span> a;
-}</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="dt">unsigned</span> gcd_itr(<span class="dt">unsigned</span> a, <span class="dt">unsigned</span> b)</a>
+<a class="sourceLine" id="cb5-2" title="2">{</a>
+<a class="sourceLine" id="cb5-3" title="3">    <span class="cf">while</span> (b) {</a>
+<a class="sourceLine" id="cb5-4" title="4">        <span class="dt">unsigned</span> tmp {b};</a>
+<a class="sourceLine" id="cb5-5" title="5">        b = a % b;</a>
+<a class="sourceLine" id="cb5-6" title="6">        a = tmp;</a>
+<a class="sourceLine" id="cb5-7" title="7">    }</a>
+<a class="sourceLine" id="cb5-8" title="8">    <span class="cf">return</span> a;</a>
+<a class="sourceLine" id="cb5-9" title="9">}</a></code></pre></div>
 <p>In my opinion, the recursive version looks much cleaner. What I particularly dislike when regarding the iterative version, is the fact that it is telling the compiler how exactly to temporarily save the value of <code>b</code>, in order to refresh <code>a</code> with it after the modulo operation. This is as primitive as “Well, do <code>a % b</code>, but I want <code>b</code> saved <strong>here</strong> and then written back <strong>there</strong>”, which is something which has nothing to do with the <em>actual</em> problem (calculating a GCD).</p>
 <h2 id="comparing-compiler-output">Comparing compiler output</h2>
 <p>Putting those two functions into a <code>.cpp</code> file and compiling it with <code>clang++ -c main.cpp -O2</code> reveals something interesting:</p>
 <p>First, having a look at the recursive version shows, that it does indeed not contain any <code>call</code> instructions because it is implemented using solely jumps (conditional <code>je</code> and <code>jne</code> instructions). This shows, that this recursive version of the GCD algorithm can never lead to steep stack growth.</p>
-<div class="sourceCode"><pre class="sourceCode asm"><code class="sourceCode fasm"><span class="dv">0000000000000000</span> &lt;_Z7gcd_recjj&gt;:
-<span class="fu">   0:</span>	<span class="dv">89</span> f2                	<span class="bu">mov</span>    %<span class="kw">esi</span>,%<span class="kw">edx</span>
-<span class="fu">   2:</span>	<span class="dv">89</span> f8                	<span class="bu">mov</span>    %<span class="kw">edi</span>,%<span class="kw">eax</span>
-<span class="fu">   4:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
-<span class="fu">   6:</span>	<span class="dv">74</span> <span class="dv">17</span>                	<span class="bu">je</span>     1f &lt;_Z7gcd_recjj+<span class="bn">0x1f</span>&gt;
-<span class="fu">   8:</span>	0f 1f <span class="dv">84</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> 	nopl   <span class="bn">0x0</span>(%<span class="kw">rax</span>,%<span class="kw">rax</span>,<span class="dv">1</span>)
-<span class="fu">   f:</span>	<span class="dv">00</span> 
-<span class="fu">  10:</span>	<span class="dv">89</span> d1                	<span class="bu">mov</span>    %<span class="kw">edx</span>,%<span class="kw">ecx</span>
-<span class="fu">  12:</span>	<span class="dv">31</span> d2                	<span class="bu">xor</span>    %<span class="kw">edx</span>,%<span class="kw">edx</span>
-<span class="fu">  14:</span>	f7 f1                	<span class="bu">div</span>    %<span class="kw">ecx</span>
-<span class="fu">  16:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
-<span class="fu">  18:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
-<span class="fu">  1a:</span>	<span class="dv">75</span> f4                	<span class="bu">jne</span>    <span class="dv">10</span> &lt;_Z7gcd_recjj+<span class="bn">0x10</span>&gt;
-<span class="fu">  1c:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
-<span class="fu">  1e:</span>	c3                   	retq   
-<span class="fu">  1f:</span>	c3                   	retq   </code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode asm"><code class="sourceCode fasm"><a class="sourceLine" id="cb6-1" title="1"><span class="dv">0000000000000000</span> &lt;_Z7gcd_recjj&gt;:</a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="fu">   0:</span>	<span class="dv">89</span> f2                	<span class="bu">mov</span>    %<span class="kw">esi</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="fu">   2:</span>	<span class="dv">89</span> f8                	<span class="bu">mov</span>    %<span class="kw">edi</span>,%<span class="kw">eax</span></a>
+<a class="sourceLine" id="cb6-4" title="4"><span class="fu">   4:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb6-5" title="5"><span class="fu">   6:</span>	<span class="dv">74</span> <span class="dv">17</span>                	<span class="bu">je</span>     1f &lt;_Z7gcd_recjj+<span class="bn">0x1f</span>&gt;</a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="fu">   8:</span>	0f 1f <span class="dv">84</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> 	nopl   <span class="bn">0x0</span>(%<span class="kw">rax</span>,%<span class="kw">rax</span>,<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb6-7" title="7"><span class="fu">   f:</span>	<span class="dv">00</span> </a>
+<a class="sourceLine" id="cb6-8" title="8"><span class="fu">  10:</span>	<span class="dv">89</span> d1                	<span class="bu">mov</span>    %<span class="kw">edx</span>,%<span class="kw">ecx</span></a>
+<a class="sourceLine" id="cb6-9" title="9"><span class="fu">  12:</span>	<span class="dv">31</span> d2                	<span class="bu">xor</span>    %<span class="kw">edx</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb6-10" title="10"><span class="fu">  14:</span>	f7 f1                	<span class="bu">div</span>    %<span class="kw">ecx</span></a>
+<a class="sourceLine" id="cb6-11" title="11"><span class="fu">  16:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb6-12" title="12"><span class="fu">  18:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span></a>
+<a class="sourceLine" id="cb6-13" title="13"><span class="fu">  1a:</span>	<span class="dv">75</span> f4                	<span class="bu">jne</span>    <span class="dv">10</span> &lt;_Z7gcd_recjj+<span class="bn">0x10</span>&gt;</a>
+<a class="sourceLine" id="cb6-14" title="14"><span class="fu">  1c:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span></a>
+<a class="sourceLine" id="cb6-15" title="15"><span class="fu">  1e:</span>	c3                   	retq   </a>
+<a class="sourceLine" id="cb6-16" title="16"><span class="fu">  1f:</span>	c3                   	retq   </a></code></pre></div>
 <p>However, looking at the iterative version shows, that both versions are completely <strong>identical</strong>. This is pretty cool, because this way we can profit from the performance of iterative code, although our C++ code is a slick and tidy recursive implementation!</p>
-<div class="sourceCode"><pre class="sourceCode asm"><code class="sourceCode fasm"><span class="dv">0000000000000020</span> &lt;_Z7gcd_itrjj&gt;:
-<span class="fu">  20:</span>	<span class="dv">89</span> f2                	<span class="bu">mov</span>    %<span class="kw">esi</span>,%<span class="kw">edx</span>
-<span class="fu">  22:</span>	<span class="dv">89</span> f8                	<span class="bu">mov</span>    %<span class="kw">edi</span>,%<span class="kw">eax</span>
-<span class="fu">  24:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
-<span class="fu">  26:</span>	<span class="dv">74</span> <span class="dv">17</span>                	<span class="bu">je</span>     3f &lt;_Z7gcd_itrjj+<span class="bn">0x1f</span>&gt;
-<span class="fu">  28:</span>	0f 1f <span class="dv">84</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> 	nopl   <span class="bn">0x0</span>(%<span class="kw">rax</span>,%<span class="kw">rax</span>,<span class="dv">1</span>)
-<span class="fu">  2f:</span>	<span class="dv">00</span> 
-<span class="fu">  30:</span>	<span class="dv">89</span> d1                	<span class="bu">mov</span>    %<span class="kw">edx</span>,%<span class="kw">ecx</span>
-<span class="fu">  32:</span>	<span class="dv">31</span> d2                	<span class="bu">xor</span>    %<span class="kw">edx</span>,%<span class="kw">edx</span>
-<span class="fu">  34:</span>	f7 f1                	<span class="bu">div</span>    %<span class="kw">ecx</span>
-<span class="fu">  36:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span>
-<span class="fu">  38:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
-<span class="fu">  3a:</span>	<span class="dv">75</span> f4                	<span class="bu">jne</span>    <span class="dv">30</span> &lt;_Z7gcd_itrjj+<span class="bn">0x10</span>&gt;
-<span class="fu">  3c:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span>
-<span class="fu">  3e:</span>	c3                   	retq   
-<span class="fu">  3f:</span>	c3                   	retq   
-</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode asm"><code class="sourceCode fasm"><a class="sourceLine" id="cb7-1" title="1"><span class="dv">0000000000000020</span> &lt;_Z7gcd_itrjj&gt;:</a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="fu">  20:</span>	<span class="dv">89</span> f2                	<span class="bu">mov</span>    %<span class="kw">esi</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb7-3" title="3"><span class="fu">  22:</span>	<span class="dv">89</span> f8                	<span class="bu">mov</span>    %<span class="kw">edi</span>,%<span class="kw">eax</span></a>
+<a class="sourceLine" id="cb7-4" title="4"><span class="fu">  24:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb7-5" title="5"><span class="fu">  26:</span>	<span class="dv">74</span> <span class="dv">17</span>                	<span class="bu">je</span>     3f &lt;_Z7gcd_itrjj+<span class="bn">0x1f</span>&gt;</a>
+<a class="sourceLine" id="cb7-6" title="6"><span class="fu">  28:</span>	0f 1f <span class="dv">84</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> <span class="dv">00</span> 	nopl   <span class="bn">0x0</span>(%<span class="kw">rax</span>,%<span class="kw">rax</span>,<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb7-7" title="7"><span class="fu">  2f:</span>	<span class="dv">00</span> </a>
+<a class="sourceLine" id="cb7-8" title="8"><span class="fu">  30:</span>	<span class="dv">89</span> d1                	<span class="bu">mov</span>    %<span class="kw">edx</span>,%<span class="kw">ecx</span></a>
+<a class="sourceLine" id="cb7-9" title="9"><span class="fu">  32:</span>	<span class="dv">31</span> d2                	<span class="bu">xor</span>    %<span class="kw">edx</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb7-10" title="10"><span class="fu">  34:</span>	f7 f1                	<span class="bu">div</span>    %<span class="kw">ecx</span></a>
+<a class="sourceLine" id="cb7-11" title="11"><span class="fu">  36:</span>	<span class="dv">85</span> d2                	<span class="bu">test</span>   %<span class="kw">edx</span>,%<span class="kw">edx</span></a>
+<a class="sourceLine" id="cb7-12" title="12"><span class="fu">  38:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span></a>
+<a class="sourceLine" id="cb7-13" title="13"><span class="fu">  3a:</span>	<span class="dv">75</span> f4                	<span class="bu">jne</span>    <span class="dv">30</span> &lt;_Z7gcd_itrjj+<span class="bn">0x10</span>&gt;</a>
+<a class="sourceLine" id="cb7-14" title="14"><span class="fu">  3c:</span>	<span class="dv">89</span> c8                	<span class="bu">mov</span>    %<span class="kw">ecx</span>,%<span class="kw">eax</span></a>
+<a class="sourceLine" id="cb7-15" title="15"><span class="fu">  3e:</span>	c3                   	retq   </a>
+<a class="sourceLine" id="cb7-16" title="16"><span class="fu">  3f:</span>	c3                   	retq   </a>
+<a class="sourceLine" id="cb7-17" title="17"></a></code></pre></div>
 <h2 id="summary">Summary</h2>
 <p>The GCD algorithm is a very short example for the behaviour of telling the compiler much more than needed to solve the actual problem, because imperative programming is all about telling the computer <em>what</em> to do, and <em>how</em> to do it. On the level of writing assembler code, it is pretty normal that the question “<em>what</em> data?” is pretty much the same as “which memory <em>address</em>/register and size?”, because there is no abstraction from the hardware implementation nature (a <em>von Neumann</em> machine with untyped memory).</p>
 <p>When using languages like C++, a lot of abstraction can be gained with <em>no cost</em>, which is a favorable thing. <em>Tail recursion</em> is a nice step towards such simplifying abstractions, and can be used for free, which is pretty much worth knowing about it.</p></div>

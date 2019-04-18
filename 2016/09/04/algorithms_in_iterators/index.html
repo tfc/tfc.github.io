@@ -41,38 +41,38 @@
 <!--more-->
 <h1 id="fibonacci-numbers">Fibonacci Numbers</h1>
 <p>The fibonacci number sequence is widely known. Generating those numbers is often used as a typical example for recursions, but at least in standard imperative programming languages, the iterative version is more performant:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">size_t</span> fib(<span class="dt">size_t</span> n)
-{
-    <span class="dt">size_t</span> a {<span class="dv">0</span>};
-    <span class="dt">size_t</span> b {<span class="dv">1</span>};
-
-    <span class="cf">for</span> (<span class="dt">size_t</span> i {<span class="dv">0</span>}; i &lt; n; ++i) {
-        <span class="at">const</span> <span class="dt">size_t</span> old_b {b};
-        b += a;
-        a  = old_b;
-    }
-
-    <span class="cf">return</span> b;
-}</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="dt">size_t</span> fib(<span class="dt">size_t</span> n)</a>
+<a class="sourceLine" id="cb1-2" title="2">{</a>
+<a class="sourceLine" id="cb1-3" title="3">    <span class="dt">size_t</span> a {<span class="dv">0</span>};</a>
+<a class="sourceLine" id="cb1-4" title="4">    <span class="dt">size_t</span> b {<span class="dv">1</span>};</a>
+<a class="sourceLine" id="cb1-5" title="5"></a>
+<a class="sourceLine" id="cb1-6" title="6">    <span class="cf">for</span> (<span class="dt">size_t</span> i {<span class="dv">0</span>}; i &lt; n; ++i) {</a>
+<a class="sourceLine" id="cb1-7" title="7">        <span class="at">const</span> <span class="dt">size_t</span> old_b {b};</a>
+<a class="sourceLine" id="cb1-8" title="8">        b += a;</a>
+<a class="sourceLine" id="cb1-9" title="9">        a  = old_b;</a>
+<a class="sourceLine" id="cb1-10" title="10">    }</a>
+<a class="sourceLine" id="cb1-11" title="11"></a>
+<a class="sourceLine" id="cb1-12" title="12">    <span class="cf">return</span> b;</a>
+<a class="sourceLine" id="cb1-13" title="13">}</a></code></pre></div>
 <p>This way it is easy to generate any fibonacci number. But if all fibonacci numbers up to a certain limit need to be generated for some purpose, this implementation is not too handy any longer. When counting fibonacci number <code>N</code>, and then <code>N+1</code>, the content of the variables <code>a</code> and <code>b</code> could be reused, because the next fibonacci number is just the sum of the last two fibonacci numbers.</p>
 <p>In this sense, it would be useful to have a class, which manages some <em>fibonacci state</em> in order to be able to quickly calculate just the next number.</p>
 <p>A lot of people would just implement a class <code>fibonacci_number</code> which has some <code>next()</code> method and a <code>current()</code> method and use that. This is fine, but i propose to go a step further by realizing that this is how <strong><em>iterators</em></strong> work. By implementing this functionality in terms of iterators, it can be used in combination with the STL, boosting up the code readability.</p>
 <h1 id="iterators">Iterators</h1>
 <p>What do we need in order to implement the simplest possible iterator?</p>
 <p>Let us have a look at what the C++ compiler asks for if we want to iterate over a container class:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="cf">for</span> (<span class="at">const</span> <span class="kw">auto</span> &amp;item : vector) {
-    <span class="co">/* loop body */</span>
-}</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="cf">for</span> (<span class="at">const</span> <span class="kw">auto</span> &amp;item : vector) {</a>
+<a class="sourceLine" id="cb2-2" title="2">    <span class="co">/* loop body */</span></a>
+<a class="sourceLine" id="cb2-3" title="3">}</a></code></pre></div>
 <p>This kind of loop declaration exists since C++11. The compiler will expand this to the following equivalent code:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">{
-    <span class="kw">auto</span> it  (<span class="bu">std::</span>begin(vector));
-    <span class="kw">auto</span> end (<span class="bu">std::</span>end(vector));
-
-    <span class="cf">for</span> (; it != end; ++it) {
-        <span class="at">const</span> <span class="kw">auto</span> &amp;item (*it);
-        <span class="co">/* loop body */</span>
-    }
-}</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">{</a>
+<a class="sourceLine" id="cb3-2" title="2">    <span class="kw">auto</span> it  (<span class="bu">std::</span>begin(vector));</a>
+<a class="sourceLine" id="cb3-3" title="3">    <span class="kw">auto</span> end (<span class="bu">std::</span>end(vector));</a>
+<a class="sourceLine" id="cb3-4" title="4"></a>
+<a class="sourceLine" id="cb3-5" title="5">    <span class="cf">for</span> (; it != end; ++it) {</a>
+<a class="sourceLine" id="cb3-6" title="6">        <span class="at">const</span> <span class="kw">auto</span> &amp;item (*it);</a>
+<a class="sourceLine" id="cb3-7" title="7">        <span class="co">/* loop body */</span></a>
+<a class="sourceLine" id="cb3-8" title="8">    }</a>
+<a class="sourceLine" id="cb3-9" title="9">}</a></code></pre></div>
 <p>Looking at the expanded loop, it is pretty obvious what needs to be implemented. First, we need to distinguish between two kinds of objects: <code>vector</code> is the <strong>iterable range</strong>, and <code>it</code> is the <strong>iterator</strong>.</p>
 <p>The <strong>iterable range</strong> needs to implement a <code>begin()</code> and an <code>end()</code> function. These functions return iterator objects.</p>
 <blockquote>
@@ -85,107 +85,107 @@
 <li>operator <code>!=</code>, which is necessary in order to check if the loop shall terminate because <code>it</code> reached the same position as <code>end</code> denotes.</li>
 </ul>
 <p>In order to implement any kind of algorithm-generated range, we would first implement an iterator which basically hides variables and the algorithm itself in the <code>operator++</code> implementation. An iterable class would then just provide a begin and end iterator as needed, in order to enable for C++11 style <code>for</code> loops.</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> iterator
-{
-    <span class="co">// ... state variables ...</span>
-
-<span class="kw">public</span>:
-    <span class="co">// Constructor</span>
-
-    iterator&amp; <span class="kw">operator</span>++() { <span class="co">/* increment */</span> <span class="cf">return</span> *<span class="kw">this</span>; }
-
-    T <span class="kw">operator</span>*() <span class="at">const</span> { <span class="co">/* return some value or reference */</span> }
-
-    <span class="dt">bool</span> <span class="kw">operator</span>!= <span class="at">const</span> (<span class="at">const</span> iterator&amp; o) { <span class="co">/* compare states */</span> }
-}</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">class</span> iterator</a>
+<a class="sourceLine" id="cb4-2" title="2">{</a>
+<a class="sourceLine" id="cb4-3" title="3">    <span class="co">// ... state variables ...</span></a>
+<a class="sourceLine" id="cb4-4" title="4"></a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb4-6" title="6">    <span class="co">// Constructor</span></a>
+<a class="sourceLine" id="cb4-7" title="7"></a>
+<a class="sourceLine" id="cb4-8" title="8">    iterator&amp; <span class="kw">operator</span>++() { <span class="co">/* increment */</span> <span class="cf">return</span> *<span class="kw">this</span>; }</a>
+<a class="sourceLine" id="cb4-9" title="9"></a>
+<a class="sourceLine" id="cb4-10" title="10">    T <span class="kw">operator</span>*() <span class="at">const</span> { <span class="co">/* return some value or reference */</span> }</a>
+<a class="sourceLine" id="cb4-11" title="11"></a>
+<a class="sourceLine" id="cb4-12" title="12">    <span class="dt">bool</span> <span class="kw">operator</span>!= <span class="at">const</span> (<span class="at">const</span> iterator&amp; o) { <span class="co">/* compare states */</span> }</a>
+<a class="sourceLine" id="cb4-13" title="13">}</a></code></pre></div>
 <p>The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in <code>operator++</code> and return the integer in <code>operator*</code>. <code>operator!=</code> would then just compare this number with the number of another iterator.</p>
 <p>But now let us continue with the fibonacci iterator.</p>
 <h1 id="fibonacci-iterator">Fibonacci Iterator</h1>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> fibit
-{
-    <span class="dt">size_t</span> i {<span class="dv">0</span>};
-    <span class="dt">size_t</span> a {<span class="dv">0</span>};
-    <span class="dt">size_t</span> b {<span class="dv">1</span>};
-
-<span class="kw">public</span>:
-    <span class="kw">constexpr</span> fibit() = <span class="cf">default</span>;
-
-    <span class="kw">constexpr</span> fibit(<span class="dt">size_t</span> <span class="va">b_</span>, <span class="dt">size_t</span> <span class="va">a_</span>, <span class="dt">size_t</span> <span class="va">i_</span>)
-        : i{<span class="va">i_</span>}, a{<span class="va">a_</span>}, b{<span class="va">b_</span>}
-    {}
-
-    <span class="dt">size_t</span> <span class="kw">operator</span>*() <span class="at">const</span> { <span class="cf">return</span> b; }
-
-    <span class="kw">constexpr</span> fibit&amp; <span class="kw">operator</span>++() {
-        <span class="at">const</span> <span class="dt">size_t</span> old_b {b};
-        b += a;
-        a  = old_b;
-        ++i;
-        <span class="cf">return</span> *<span class="kw">this</span>;
-    }
-
-    <span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="at">const</span> fibit &amp;o) <span class="at">const</span> { <span class="cf">return</span> i != o.i; }
-};</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">class</span> fibit</a>
+<a class="sourceLine" id="cb5-2" title="2">{</a>
+<a class="sourceLine" id="cb5-3" title="3">    <span class="dt">size_t</span> i {<span class="dv">0</span>};</a>
+<a class="sourceLine" id="cb5-4" title="4">    <span class="dt">size_t</span> a {<span class="dv">0</span>};</a>
+<a class="sourceLine" id="cb5-5" title="5">    <span class="dt">size_t</span> b {<span class="dv">1</span>};</a>
+<a class="sourceLine" id="cb5-6" title="6"></a>
+<a class="sourceLine" id="cb5-7" title="7"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb5-8" title="8">    <span class="kw">constexpr</span> fibit() = <span class="cf">default</span>;</a>
+<a class="sourceLine" id="cb5-9" title="9"></a>
+<a class="sourceLine" id="cb5-10" title="10">    <span class="kw">constexpr</span> fibit(<span class="dt">size_t</span> <span class="va">b_</span>, <span class="dt">size_t</span> <span class="va">a_</span>, <span class="dt">size_t</span> <span class="va">i_</span>)</a>
+<a class="sourceLine" id="cb5-11" title="11">        : i{<span class="va">i_</span>}, a{<span class="va">a_</span>}, b{<span class="va">b_</span>}</a>
+<a class="sourceLine" id="cb5-12" title="12">    {}</a>
+<a class="sourceLine" id="cb5-13" title="13"></a>
+<a class="sourceLine" id="cb5-14" title="14">    <span class="dt">size_t</span> <span class="kw">operator</span>*() <span class="at">const</span> { <span class="cf">return</span> b; }</a>
+<a class="sourceLine" id="cb5-15" title="15"></a>
+<a class="sourceLine" id="cb5-16" title="16">    <span class="kw">constexpr</span> fibit&amp; <span class="kw">operator</span>++() {</a>
+<a class="sourceLine" id="cb5-17" title="17">        <span class="at">const</span> <span class="dt">size_t</span> old_b {b};</a>
+<a class="sourceLine" id="cb5-18" title="18">        b += a;</a>
+<a class="sourceLine" id="cb5-19" title="19">        a  = old_b;</a>
+<a class="sourceLine" id="cb5-20" title="20">        ++i;</a>
+<a class="sourceLine" id="cb5-21" title="21">        <span class="cf">return</span> *<span class="kw">this</span>;</a>
+<a class="sourceLine" id="cb5-22" title="22">    }</a>
+<a class="sourceLine" id="cb5-23" title="23"></a>
+<a class="sourceLine" id="cb5-24" title="24">    <span class="dt">bool</span> <span class="kw">operator</span>!=(<span class="at">const</span> fibit &amp;o) <span class="at">const</span> { <span class="cf">return</span> i != o.i; }</a>
+<a class="sourceLine" id="cb5-25" title="25">};</a></code></pre></div>
 <p>Using this iterator, it is already possible to iterate over fibonacci numbers:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">fibit it;
-
-<span class="co">// As the comparison operator only compares the &quot;i&quot; variable,</span>
-<span class="co">// define an iterator with everything zeroed, but &quot;i&quot; set</span>
-<span class="co">// to 20, in order to have an iteration terminator</span>
-<span class="at">const</span> fibit end {<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>};
-
-<span class="cf">while</span> (it != end) {
-    <span class="bu">std::</span>cout &lt;&lt; *it &lt;&lt; <span class="bu">std::</span>endl;
-    ++it;
-}
-
-<span class="co">// Or do it the elegant STL way: (include &lt;iterator&gt; first)</span>
-<span class="bu">std::</span>copy(it, end, <span class="bu">std::</span>ostream_iterator&lt;<span class="dt">size_t</span>&gt;{<span class="bu">std::</span>cout,<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>});</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1">fibit it;</a>
+<a class="sourceLine" id="cb6-2" title="2"></a>
+<a class="sourceLine" id="cb6-3" title="3"><span class="co">// As the comparison operator only compares the &quot;i&quot; variable,</span></a>
+<a class="sourceLine" id="cb6-4" title="4"><span class="co">// define an iterator with everything zeroed, but &quot;i&quot; set</span></a>
+<a class="sourceLine" id="cb6-5" title="5"><span class="co">// to 20, in order to have an iteration terminator</span></a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="at">const</span> fibit end {<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>};</a>
+<a class="sourceLine" id="cb6-7" title="7"></a>
+<a class="sourceLine" id="cb6-8" title="8"><span class="cf">while</span> (it != end) {</a>
+<a class="sourceLine" id="cb6-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; *it &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb6-10" title="10">    ++it;</a>
+<a class="sourceLine" id="cb6-11" title="11">}</a>
+<a class="sourceLine" id="cb6-12" title="12"></a>
+<a class="sourceLine" id="cb6-13" title="13"><span class="co">// Or do it the elegant STL way: (include &lt;iterator&gt; first)</span></a>
+<a class="sourceLine" id="cb6-14" title="14"><span class="bu">std::</span>copy(it, end, <span class="bu">std::</span>ostream_iterator&lt;<span class="dt">size_t</span>&gt;{<span class="bu">std::</span>cout,<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>});</a></code></pre></div>
 <p>In order to do it the nice C++11 way, we need an iterable class:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> fib_range
-{
-    fibit  begin_it;
-    <span class="dt">size_t</span> end_n;
-
-<span class="kw">public</span>:
-    <span class="kw">constexpr</span> fib_range(<span class="dt">size_t</span> <span class="va">end_n_</span>, <span class="dt">size_t</span> begin_n = <span class="dv">0</span>)
-        : begin_it{fibit_at(begin_n)}, end_n{<span class="va">end_n_</span>}
-    {}
-
-    fibit begin() <span class="at">const</span> { <span class="cf">return</span> begin_it; }
-    fibit end()   <span class="at">const</span> { <span class="cf">return</span> {<span class="dv">0</span>, <span class="dv">0</span>, end_n}; }
-};</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">class</span> fib_range</a>
+<a class="sourceLine" id="cb7-2" title="2">{</a>
+<a class="sourceLine" id="cb7-3" title="3">    fibit  begin_it;</a>
+<a class="sourceLine" id="cb7-4" title="4">    <span class="dt">size_t</span> end_n;</a>
+<a class="sourceLine" id="cb7-5" title="5"></a>
+<a class="sourceLine" id="cb7-6" title="6"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb7-7" title="7">    <span class="kw">constexpr</span> fib_range(<span class="dt">size_t</span> <span class="va">end_n_</span>, <span class="dt">size_t</span> begin_n = <span class="dv">0</span>)</a>
+<a class="sourceLine" id="cb7-8" title="8">        : begin_it{fibit_at(begin_n)}, end_n{<span class="va">end_n_</span>}</a>
+<a class="sourceLine" id="cb7-9" title="9">    {}</a>
+<a class="sourceLine" id="cb7-10" title="10"></a>
+<a class="sourceLine" id="cb7-11" title="11">    fibit begin() <span class="at">const</span> { <span class="cf">return</span> begin_it; }</a>
+<a class="sourceLine" id="cb7-12" title="12">    fibit end()   <span class="at">const</span> { <span class="cf">return</span> {<span class="dv">0</span>, <span class="dv">0</span>, end_n}; }</a>
+<a class="sourceLine" id="cb7-13" title="13">};</a></code></pre></div>
 <p>We can now write…</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="cf">for</span> (<span class="at">const</span> <span class="dt">size_t</span> num : fib_range(<span class="dv">10</span>)) {
-    <span class="bu">std::</span>cout &lt;&lt; num &lt;&lt; <span class="bu">std::</span>endl;
-}</code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1"><span class="cf">for</span> (<span class="at">const</span> <span class="dt">size_t</span> num : fib_range(<span class="dv">10</span>)) {</a>
+<a class="sourceLine" id="cb8-2" title="2">    <span class="bu">std::</span>cout &lt;&lt; num &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb8-3" title="3">}</a></code></pre></div>
 <p>… which will print the first 10 fibonacci numbers.</p>
 <p>What does the function <code>fibit_at</code> do? This function is a <code>constexpr</code> function, which advances a fibonacci iterator at <em>compile time</em> if possible, in order to push the iterator towards the fibonacci number which the user wants:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">constexpr</span> fibit fibit_at(<span class="dt">size_t</span> n)
-{
-    fibit it;
-    <span class="cf">for</span> (<span class="dt">size_t</span> i {<span class="dv">0</span>}; i &lt; n; ++i) {
-        ++it;
-    }
-    <span class="cf">return</span> it;
-}</code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">constexpr</span> fibit fibit_at(<span class="dt">size_t</span> n)</a>
+<a class="sourceLine" id="cb9-2" title="2">{</a>
+<a class="sourceLine" id="cb9-3" title="3">    fibit it;</a>
+<a class="sourceLine" id="cb9-4" title="4">    <span class="cf">for</span> (<span class="dt">size_t</span> i {<span class="dv">0</span>}; i &lt; n; ++i) {</a>
+<a class="sourceLine" id="cb9-5" title="5">        ++it;</a>
+<a class="sourceLine" id="cb9-6" title="6">    }</a>
+<a class="sourceLine" id="cb9-7" title="7">    <span class="cf">return</span> it;</a>
+<a class="sourceLine" id="cb9-8" title="8">}</a></code></pre></div>
 <p>This function enables us to for example iterate from the 100th fibonacci number to the 105th, without having to calculate the first 100 fibonacci numbers at run time, because we can make the compiler prepare everything at compile time.</p>
 <blockquote>
 <p>When using C++17, <code>fibit_at</code> is useless, as it can be substituted by <code>std::next(fibit{}, n)</code>, because in the C++17 STL <code>std::next</code> is a <code>constexpr</code> function.</p>
 </blockquote>
 <p>In order to guarantee, that the 100th fibonacci number is already calculated, when the compiler writes the binary program to disk, we can just put the range into a <code>constexpr</code> variable:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">constexpr</span> <span class="at">const</span> fib_range hundred_to_hundredfive {<span class="dv">105</span>, <span class="dv">100</span>};
-
-<span class="cf">for</span> (<span class="dt">size_t</span> num : hundred_to_hundredfive) {
-    <span class="co">// Do whatever</span>
-}</code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">constexpr</span> <span class="at">const</span> fib_range hundred_to_hundredfive {<span class="dv">105</span>, <span class="dv">100</span>};</a>
+<a class="sourceLine" id="cb10-2" title="2"></a>
+<a class="sourceLine" id="cb10-3" title="3"><span class="cf">for</span> (<span class="dt">size_t</span> num : hundred_to_hundredfive) {</a>
+<a class="sourceLine" id="cb10-4" title="4">    <span class="co">// Do whatever</span></a>
+<a class="sourceLine" id="cb10-5" title="5">}</a></code></pre></div>
 <h1 id="combine-the-fibonacci-iterator-with-stl-algorithms">Combine the Fibonacci Iterator with STL algorithms</h1>
 <p>Imagine we need a vector with the first 1000 fibonacci numbers. Having the fibonacci algorithm already wrapped into a handy iterator class, we can now use it with any STL algorithm from namespace <code>std</code>:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="bu">std::</span>vector&lt;<span class="dt">size_t</span>&gt; fib_nums;
-fib_nums.resize(<span class="dv">1000</span>);
-
-<span class="kw">constexpr</span> <span class="at">const</span> fib_range first1000 {<span class="dv">1000</span>};
-<span class="bu">std::</span>copy(<span class="bu">std::</span>begin(first1000), <span class="bu">std::</span>end(first1000), <span class="bu">std::</span>begin(fib_nums));</code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb11-1" title="1"><span class="bu">std::</span>vector&lt;<span class="dt">size_t</span>&gt; fib_nums;</a>
+<a class="sourceLine" id="cb11-2" title="2">fib_nums.resize(<span class="dv">1000</span>);</a>
+<a class="sourceLine" id="cb11-3" title="3"></a>
+<a class="sourceLine" id="cb11-4" title="4"><span class="kw">constexpr</span> <span class="at">const</span> fib_range first1000 {<span class="dv">1000</span>};</a>
+<a class="sourceLine" id="cb11-5" title="5"><span class="bu">std::</span>copy(<span class="bu">std::</span>begin(first1000), <span class="bu">std::</span>end(first1000), <span class="bu">std::</span>begin(fib_nums));</a></code></pre></div>
 <p>This is pretty neat and useful. However, with the current example code provided as is, this will not compile (yet), because we did not provide an iterator tag. Providing it is simple: Just make <code>fibit</code> publicly inherit from <code>std::iterator&lt;std::forward_iterator_tag, size_t&gt;</code>.</p>
 <p><code>std::iterator</code> as a base class for our <code>fibit</code> class will only add some typedefs which help STL algorithms identify which kind of iterator this is. For certain iterator types in certain situations, the STL algorithms have different implementations which contain performance optimizations (Which is elegantly hidden from the user!).</p>
 <p>The <code>std::forward_iterator</code> tag states, that this is an iterator which can just be advanced step by step, and that it only advances forward, not backward.</p>

@@ -41,39 +41,39 @@
 <!--more-->
 <h2 id="making-strings-shorter-at-compile-time">Making Strings shorter at Compile Time</h2>
 <p>It is of course easy, to find the last slash in a string like <code>/home/user/src/project/src/file.cpp</code>, and return a pointer to the token <code>file.cpp</code>. This could be done at run time, and the overhead would most probably be neglibible in most thinkable situations, but it is no hassle to do it at compile time with C++11 using a <code>constexpr</code> function:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">using</span> cstr = <span class="at">const</span> <span class="dt">char</span> * <span class="at">const</span>;
-
-<span class="at">static</span> <span class="kw">constexpr</span> cstr past_last_slash(cstr str, cstr last_slash)
-{
-    <span class="cf">return</span>
-        *str == <span class="st">'</span><span class="sc">\0</span><span class="st">'</span> ? last_slash :
-        *str == <span class="st">'/'</span>  ? past_last_slash(str + <span class="dv">1</span>, str + <span class="dv">1</span>) :
-                       past_last_slash(str + <span class="dv">1</span>, last_slash);
-}
-
-<span class="at">static</span> <span class="kw">constexpr</span> cstr past_last_slash(cstr str) 
-{ 
-    <span class="cf">return</span> past_last_slash(str, str);
-}</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">using</span> cstr = <span class="at">const</span> <span class="dt">char</span> * <span class="at">const</span>;</a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="at">static</span> <span class="kw">constexpr</span> cstr past_last_slash(cstr str, cstr last_slash)</a>
+<a class="sourceLine" id="cb1-4" title="4">{</a>
+<a class="sourceLine" id="cb1-5" title="5">    <span class="cf">return</span></a>
+<a class="sourceLine" id="cb1-6" title="6">        *str == <span class="ch">'</span><span class="sc">\0</span><span class="ch">'</span> ? last_slash :</a>
+<a class="sourceLine" id="cb1-7" title="7">        *str == <span class="ch">'/'</span>  ? past_last_slash(str + <span class="dv">1</span>, str + <span class="dv">1</span>) :</a>
+<a class="sourceLine" id="cb1-8" title="8">                       past_last_slash(str + <span class="dv">1</span>, last_slash);</a>
+<a class="sourceLine" id="cb1-9" title="9">}</a>
+<a class="sourceLine" id="cb1-10" title="10"></a>
+<a class="sourceLine" id="cb1-11" title="11"><span class="at">static</span> <span class="kw">constexpr</span> cstr past_last_slash(cstr str) </a>
+<a class="sourceLine" id="cb1-12" title="12">{ </a>
+<a class="sourceLine" id="cb1-13" title="13">    <span class="cf">return</span> past_last_slash(str, str);</a>
+<a class="sourceLine" id="cb1-14" title="14">}</a></code></pre></div>
 <p>This is certainly not the most elegant way to express a substring search. A nicer way would be to search for the last slash in a loop, or simply use library functions. In this context, however, it would not be possible to execute such code at compile time. This function in the presented form can be executed by a C++11 compiler at compile time, and then it is possible to directly embed the returned substring in the binary. (With C++14, it is possible to express this the easier to read loop way)</p>
 <p>One could now write <code>printf</code> or <code>std::cout</code> (or whatever) to print just the file name via <code>past_last_slash(__FILE__)</code>, which is nice, but has two flaws:</p>
-<ol style="list-style-type: decimal">
-<li>It is still not as comfortable as a macro would be, i.e. <code>__SHORT_FILE__</code></li>
+<ol type="1">
+<li>It is still not as comfortable as a macro would be, i.e. <code>__SHORT_FILE__</code></li>
 <li>There is no guarantee, that the compiler would not call this function at runtime!</li>
 </ol>
 <p>#1 can be fixed just by wrapping the function call into a <code>#define</code>, but that doesn’t fix #2.</p>
 <p>I wrote a small program which just does a <code>puts(__SHORT_FILE__)</code> using this <em>bad</em> macro, and it produced the following assembly output:</p>
-<div class="sourceCode"><pre class="sourceCode asm"><code class="sourceCode fasm">callq	__ZL15past_last_slashPKc ## past_last_slash(char const*)
-<span class="bu">movq</span>	%<span class="kw">rax</span>, %<span class="kw">rdi</span>
-callq<span class="bn">	0x100000f58             </span>## symbol stub for: _puts</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode asm"><code class="sourceCode fasm"><a class="sourceLine" id="cb2-1" title="1">callq	__ZL15past_last_slashPKc ## past_last_slash(char const*)</a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="bu">movq</span>	%<span class="kw">rax</span>, %<span class="kw">rdi</span></a>
+<a class="sourceLine" id="cb2-3" title="3">callq<span class="bn">	0x100000f58             </span>## symbol stub for: _puts</a></code></pre></div>
 <p>In order to obtain the short version of <code>__FILE__</code>, a function is called. This function is also called without parameters, which means that the compiler generated a function which is hard coded to this specific string. When compiling with <code>-O2</code>, this code disappeared, but there is no guarantee for that.</p>
 <p>Important: <em>The return values of functions marked <code>constexpr</code> are only guaranteed to be calculated at compile time, if they are put into variables which are also marked <code>constexpr</code>.</em></p>
 <p>The following macro, which looks strange, fixes both:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#define __SHORT_FILE__ ({constexpr cstr sf__ {past_last_slash(</span><span class="ot">__FILE__</span><span class="pp">)}; sf__;})</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="pp">#define __SHORT_FILE__ </span>({<span class="kw">constexpr</span><span class="pp"> </span>cstr<span class="pp"> </span>sf__<span class="pp"> </span>{past_last_slash(<span class="ot">__FILE__</span>)};<span class="pp"> </span>sf__;})</a></code></pre></div>
 <p>This macro uses a <code>{}</code> scope, to instantiate a new helper variable on the fly, in order to force the return value of the helper function into a <code>constexpr</code> variable. At this point it is guaranteed, that the compiler will embed the return value into the binary, without generating a run time function call. The parentheses around that allow for transforming this scope block into an expression. <code>({int x = f(a, b); ...; x})</code> will just return the value of x, which was determined inbetween.</p>
 <p>It is now possible to put this macro into any expression which would also accept <code>__FILE__</code> for logging, or printing. The assembly of the example program also looks better:</p>
-<div class="sourceCode"><pre class="sourceCode asm"><code class="sourceCode fasm">leaq	<span class="bn">0x45</span>(%rip), %<span class="kw">rdi</span>        ## literal pool for: <span class="st">&quot;main.cpp&quot;</span>
-callq<span class="bn">	0x100000f54             </span>## symbol stub for: _puts</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode asm"><code class="sourceCode fasm"><a class="sourceLine" id="cb4-1" title="1">leaq	<span class="bn">0x45</span>(%rip), %<span class="kw">rdi</span>        ## literal pool for: <span class="st">&quot;main.cpp&quot;</span></a>
+<a class="sourceLine" id="cb4-2" title="2">callq<span class="bn">	0x100000f54             </span>## symbol stub for: _puts</a></code></pre></div>
 <p>I found this macro pretty cool, as it reduces binary- and code size. And it even does this if optimization flags are disabled, in order to have a close look at the assembly while debugging.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

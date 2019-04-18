@@ -40,75 +40,75 @@
 <p>What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it? The program gets terminated. That is fine in general, but what happens to all objects which need to be properly destructed?</p>
 <!--more-->
 <p>Let’s try it out:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span>
-<span class="pp">#include </span><span class="im">&lt;string&gt;</span>
-
-<span class="kw">class</span> Foo
-{
-    <span class="at">const</span> <span class="bu">std::</span>string str;
-<span class="kw">public</span>:
-    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}
-    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }
-};
-
-Foo gfoo {<span class="st">&quot;global&quot;</span>};
-<span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};
-
-<span class="dt">int</span> main(<span class="dt">int</span> argc, <span class="dt">char</span> **argv)
-{
-    Foo lfoo {<span class="st">&quot;local stack&quot;</span>};
-
-    <span class="cf">if</span> (argc &lt; <span class="dv">2</span>) {
-        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);
-    }
-
-    <span class="cf">return</span> <span class="dv">0</span>;
-}</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="pp">#include </span><span class="im">&lt;string&gt;</span></a>
+<a class="sourceLine" id="cb1-3" title="3"></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="kw">class</span> Foo</a>
+<a class="sourceLine" id="cb1-5" title="5">{</a>
+<a class="sourceLine" id="cb1-6" title="6">    <span class="at">const</span> <span class="bu">std::</span>string str;</a>
+<a class="sourceLine" id="cb1-7" title="7"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb1-8" title="8">    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}</a>
+<a class="sourceLine" id="cb1-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }</a>
+<a class="sourceLine" id="cb1-10" title="10">};</a>
+<a class="sourceLine" id="cb1-11" title="11"></a>
+<a class="sourceLine" id="cb1-12" title="12">Foo gfoo {<span class="st">&quot;global&quot;</span>};</a>
+<a class="sourceLine" id="cb1-13" title="13"><span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};</a>
+<a class="sourceLine" id="cb1-14" title="14"></a>
+<a class="sourceLine" id="cb1-15" title="15"><span class="dt">int</span> main(<span class="dt">int</span> argc, <span class="dt">char</span> **argv)</a>
+<a class="sourceLine" id="cb1-16" title="16">{</a>
+<a class="sourceLine" id="cb1-17" title="17">    Foo lfoo {<span class="st">&quot;local stack&quot;</span>};</a>
+<a class="sourceLine" id="cb1-18" title="18"></a>
+<a class="sourceLine" id="cb1-19" title="19">    <span class="cf">if</span> (argc &lt; <span class="dv">2</span>) {</a>
+<a class="sourceLine" id="cb1-20" title="20">        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);</a>
+<a class="sourceLine" id="cb1-21" title="21">    }</a>
+<a class="sourceLine" id="cb1-22" title="22"></a>
+<a class="sourceLine" id="cb1-23" title="23">    <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-24" title="24">}</a></code></pre></div>
 <p>This program instanciates three <code>Foo</code> objects: A global one, a static global one, and a local stack instance. <code>Foo</code>’s destructor just emits a message which tells which one of the three instances was just destructed.</p>
 <p>(I wrapped the <code>throw</code> clause into a conditional which the compiler cannot optimize away, as it cannot predict with how many parameters the executable will be called.)</p>
 <p>In the ideal case, the compiler should emit code which unrolls the stack as soon as the exception is thrown, destructs all objects which are in flight and then terminates the program:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="ex">clangg++</span> -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span> bla
-<span class="bu">local</span> <span class="va">stack</span> 1 <span class="va">Foo</span><span class="st">'s dtor called.</span>
-<span class="st">static global Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.
-<span class="ex">global</span> Foo<span class="st">'s dtor called.</span>
-
-<span class="st">$ ./main</span>
-<span class="st">terminate called after throwing an instance of '</span>int<span class="st">'</span>
-<span class="st">Aborted (core dumped)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" title="1">$ <span class="ex">clangg++</span> -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span> bla</a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="bu">local</span> <span class="va">stack</span> 1 <span class="va">Foo</span><span class="st">'s dtor called.</span></a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="st">static global Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.</a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="ex">global</span> Foo<span class="st">'s dtor called.</span></a>
+<a class="sourceLine" id="cb2-5" title="5"></a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="st">$ ./main</span></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="st">terminate called after throwing an instance of '</span>int<span class="st">'</span></a>
+<a class="sourceLine" id="cb2-8" title="8"><span class="st">Aborted (core dumped)</span></a></code></pre></div>
 <p><em>Ooops</em>, unfortunately, this is not the case: If those <code>Foo</code> objects held any unflushed buffers, they’d be gone now!</p>
 <p>Wrapping the exception into a <code>try</code>-<code>catch</code> clause fixes this behaviour.</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span>
-<span class="pp">#include </span><span class="im">&lt;string&gt;</span>
-
-<span class="kw">class</span> Foo
-{
-    <span class="at">const</span> <span class="bu">std::</span>string str;
-<span class="kw">public</span>:
-    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}
-    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }
-};
-
-Foo gfoo {<span class="st">&quot;global&quot;</span>};
-<span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};
-
-<span class="dt">int</span> main()
-{
-    Foo lfoo {<span class="st">&quot;local stack 1&quot;</span>};
-    <span class="cf">try</span> {
-        Foo lfoo2 {<span class="st">&quot;local stack 2&quot;</span>};
-        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);
-    } <span class="cf">catch</span> (<span class="dt">int</span>) {
-        <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Caught Exception.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl;
-    }
-    <span class="cf">return</span> <span class="dv">0</span>;
-}</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="pp">#include </span><span class="im">&lt;string&gt;</span></a>
+<a class="sourceLine" id="cb3-3" title="3"></a>
+<a class="sourceLine" id="cb3-4" title="4"><span class="kw">class</span> Foo</a>
+<a class="sourceLine" id="cb3-5" title="5">{</a>
+<a class="sourceLine" id="cb3-6" title="6">    <span class="at">const</span> <span class="bu">std::</span>string str;</a>
+<a class="sourceLine" id="cb3-7" title="7"><span class="kw">public</span>:</a>
+<a class="sourceLine" id="cb3-8" title="8">    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}</a>
+<a class="sourceLine" id="cb3-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }</a>
+<a class="sourceLine" id="cb3-10" title="10">};</a>
+<a class="sourceLine" id="cb3-11" title="11"></a>
+<a class="sourceLine" id="cb3-12" title="12">Foo gfoo {<span class="st">&quot;global&quot;</span>};</a>
+<a class="sourceLine" id="cb3-13" title="13"><span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};</a>
+<a class="sourceLine" id="cb3-14" title="14"></a>
+<a class="sourceLine" id="cb3-15" title="15"><span class="dt">int</span> main()</a>
+<a class="sourceLine" id="cb3-16" title="16">{</a>
+<a class="sourceLine" id="cb3-17" title="17">    Foo lfoo {<span class="st">&quot;local stack 1&quot;</span>};</a>
+<a class="sourceLine" id="cb3-18" title="18">    <span class="cf">try</span> {</a>
+<a class="sourceLine" id="cb3-19" title="19">        Foo lfoo2 {<span class="st">&quot;local stack 2&quot;</span>};</a>
+<a class="sourceLine" id="cb3-20" title="20">        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);</a>
+<a class="sourceLine" id="cb3-21" title="21">    } <span class="cf">catch</span> (<span class="dt">int</span>) {</a>
+<a class="sourceLine" id="cb3-22" title="22">        <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Caught Exception.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb3-23" title="23">    }</a>
+<a class="sourceLine" id="cb3-24" title="24">    <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb3-25" title="25">}</a></code></pre></div>
 <p>The output looks much better now. <em>All</em> objects are properly destructed:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="fu">clang</span>++ -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span>
-<span class="bu">local</span> <span class="va">stack</span> 2 <span class="va">Foo</span><span class="st">'s dtor called.</span>
-<span class="st">Caught Exception.</span>
-<span class="st">local stack 1 Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.
-<span class="ex">static</span> global Foo<span class="st">'s dtor called.</span>
-<span class="st">global Foo'</span>s dtor called.</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" title="1">$ <span class="fu">clang</span>++ -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="bu">local</span> <span class="va">stack</span> 2 <span class="va">Foo</span><span class="st">'s dtor called.</span></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="st">Caught Exception.</span></a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="st">local stack 1 Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.</a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="ex">static</span> global Foo<span class="st">'s dtor called.</span></a>
+<a class="sourceLine" id="cb4-6" title="6"><span class="st">global Foo'</span>s dtor called.</a></code></pre></div>
 <p>The C++11 standard says the following in section <code>15.3.9</code>:</p>
 <blockquote>
 <p>If no matching handler is found, the function std::terminate() is called; whether or not the stack is unwound before this call to std::terminate() is implementation-defined (15.5.1).</p>

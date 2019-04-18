@@ -40,105 +40,105 @@
 <p>Sometimes, casting is just inevitable. And then there’s even not much science behind it, at least it seems so. Once some address is provided in a variable of the right size, a typed pointer can be casted out of it, and then the object can be accessed via its members and methods as usual. In some situations it is really easy to get the casting wrong, leading to interesting bugs. This article describes an example situation and a proper fix.</p>
 <!--more-->
 <p>Imagine we have a base class <code>C</code>, which inherits from <code>B</code>, which inherits from <code>A</code>. They all have one <code>int</code> member (4 Bytes each):</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> A     { <span class="dt">int</span> a; };
-<span class="kw">struct</span> B : A { <span class="dt">int</span> b; };
-<span class="kw">struct</span> C : B { <span class="dt">int</span> c; };</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">struct</span> A     { <span class="dt">int</span> a; };</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">struct</span> B : A { <span class="dt">int</span> b; };</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="kw">struct</span> C : B { <span class="dt">int</span> c; };</a></code></pre></div>
 <p>Assuming that we have an instance of class <code>C</code> somewhere in memory at address <code>X</code>, we know that its member <code>a</code> which it inherited from struct <code>A</code> lies at exactly the same offset. Member <code>b</code> is located at <code>X + 4</code>, and <code>c</code> is located at <code>X + 8</code>.</p>
 <p>If we are just interested in one of those specific members, we could simply calculate the offset, and then <code>reinterpret_cast</code>, just like this:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Print c, assuming x is the address of an instance of struct C:</span>
-<span class="bu">std::</span>cout &lt;&lt; *<span class="kw">reinterpret_cast</span>&lt;<span class="dt">int</span>*&gt;(x + <span class="dv">8</span>) &lt;&lt; <span class="bu">std::</span>endl; </code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="co">// Print c, assuming x is the address of an instance of struct C:</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="bu">std::</span>cout &lt;&lt; *<span class="kw">reinterpret_cast</span>&lt;<span class="dt">int</span>*&gt;(x + <span class="dv">8</span>) &lt;&lt; <span class="bu">std::</span>endl; </a></code></pre></div>
 <p>Let’s assume we have some code, which <em>relies</em> on getting addresses of <code>struct A</code> typed addresses in integral form:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> A {
-    <span class="dt">int</span> a {<span class="bn">0xa</span>};
-};
-
-<span class="kw">struct</span> B : A {
-    <span class="dt">int</span> b {<span class="bn">0xb</span>};
-};
-
-<span class="co">// Simple inheritance: A -&gt; B1 -&gt; C</span>
-<span class="kw">struct</span> C : B {
-    <span class="dt">int</span> c {<span class="bn">0xc</span>};
-};
-
-<span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)
-{
-    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};
-    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;
-}
-
-<span class="dt">int</span> main()
-{
-    C c;
- 
-    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));
-
-    <span class="cf">return</span> <span class="dv">0</span>;
-}</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">struct</span> A {</a>
+<a class="sourceLine" id="cb3-2" title="2">    <span class="dt">int</span> a {<span class="bn">0xa</span>};</a>
+<a class="sourceLine" id="cb3-3" title="3">};</a>
+<a class="sourceLine" id="cb3-4" title="4"></a>
+<a class="sourceLine" id="cb3-5" title="5"><span class="kw">struct</span> B : A {</a>
+<a class="sourceLine" id="cb3-6" title="6">    <span class="dt">int</span> b {<span class="bn">0xb</span>};</a>
+<a class="sourceLine" id="cb3-7" title="7">};</a>
+<a class="sourceLine" id="cb3-8" title="8"></a>
+<a class="sourceLine" id="cb3-9" title="9"><span class="co">// Simple inheritance: A -&gt; B1 -&gt; C</span></a>
+<a class="sourceLine" id="cb3-10" title="10"><span class="kw">struct</span> C : B {</a>
+<a class="sourceLine" id="cb3-11" title="11">    <span class="dt">int</span> c {<span class="bn">0xc</span>};</a>
+<a class="sourceLine" id="cb3-12" title="12">};</a>
+<a class="sourceLine" id="cb3-13" title="13"></a>
+<a class="sourceLine" id="cb3-14" title="14"><span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)</a>
+<a class="sourceLine" id="cb3-15" title="15">{</a>
+<a class="sourceLine" id="cb3-16" title="16">    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};</a>
+<a class="sourceLine" id="cb3-17" title="17">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb3-18" title="18">}</a>
+<a class="sourceLine" id="cb3-19" title="19"></a>
+<a class="sourceLine" id="cb3-20" title="20"><span class="dt">int</span> main()</a>
+<a class="sourceLine" id="cb3-21" title="21">{</a>
+<a class="sourceLine" id="cb3-22" title="22">    C c;</a>
+<a class="sourceLine" id="cb3-23" title="23"> </a>
+<a class="sourceLine" id="cb3-24" title="24">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
+<a class="sourceLine" id="cb3-25" title="25"></a>
+<a class="sourceLine" id="cb3-26" title="26">    <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb3-27" title="27">}</a></code></pre></div>
 <p>That’s no good style, but this program works. The structures have standard definitions which initialize members <code>a</code>, <code>b</code>, and <code>c</code> to values <code>0xa</code>, <code>0xb</code>, and <code>0xc</code>.</p>
 <p>The program will print <code>a</code> at run time, which is what we expect.</p>
 <p>The inheritance chain wraps every inheriting member’s variables past the structure members in memory from which it is inheriting. So the memory layout of <code>c</code> looks like:</p>
 <p>|Relative offset|Value|Structure Type Origin| |0x0|0xa|A| |0x4|0xb|B| |0x8|0xc|C|</p>
 <p>(Every table row represents an integer in memory)</p>
 <p>This program stops to work so nicely when changing the inheritance chain a bit:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">struct</span> A     { <span class="dt">int</span> a {<span class="bn">0xa</span>}; };
-<span class="kw">struct</span> B : A { <span class="dt">int</span> b {<span class="bn">0xb</span>}; };
-
-<span class="kw">struct</span> Foo {
-    <span class="dt">int</span> f {<span class="bn">0xf</span>};
-};
-
-<span class="co">// Multiple inheritance: (Foo), (A, B) -&gt; C</span>
-<span class="kw">struct</span> C : Foo, B {
-    <span class="dt">int</span> c {<span class="bn">0xc</span>};
-};
-
-<span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)
-{
-    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};
-    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;
-}
-
-<span class="dt">int</span> main()
-{
-    C c;
- 
-    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));
-
-    <span class="cf">return</span> <span class="dv">0</span>;
-}</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">struct</span> A     { <span class="dt">int</span> a {<span class="bn">0xa</span>}; };</a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">struct</span> B : A { <span class="dt">int</span> b {<span class="bn">0xb</span>}; };</a>
+<a class="sourceLine" id="cb4-3" title="3"></a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="kw">struct</span> Foo {</a>
+<a class="sourceLine" id="cb4-5" title="5">    <span class="dt">int</span> f {<span class="bn">0xf</span>};</a>
+<a class="sourceLine" id="cb4-6" title="6">};</a>
+<a class="sourceLine" id="cb4-7" title="7"></a>
+<a class="sourceLine" id="cb4-8" title="8"><span class="co">// Multiple inheritance: (Foo), (A, B) -&gt; C</span></a>
+<a class="sourceLine" id="cb4-9" title="9"><span class="kw">struct</span> C : Foo, B {</a>
+<a class="sourceLine" id="cb4-10" title="10">    <span class="dt">int</span> c {<span class="bn">0xc</span>};</a>
+<a class="sourceLine" id="cb4-11" title="11">};</a>
+<a class="sourceLine" id="cb4-12" title="12"></a>
+<a class="sourceLine" id="cb4-13" title="13"><span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)</a>
+<a class="sourceLine" id="cb4-14" title="14">{</a>
+<a class="sourceLine" id="cb4-15" title="15">    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};</a>
+<a class="sourceLine" id="cb4-16" title="16">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb4-17" title="17">}</a>
+<a class="sourceLine" id="cb4-18" title="18"></a>
+<a class="sourceLine" id="cb4-19" title="19"><span class="dt">int</span> main()</a>
+<a class="sourceLine" id="cb4-20" title="20">{</a>
+<a class="sourceLine" id="cb4-21" title="21">    C c;</a>
+<a class="sourceLine" id="cb4-22" title="22"> </a>
+<a class="sourceLine" id="cb4-23" title="23">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
+<a class="sourceLine" id="cb4-24" title="24"></a>
+<a class="sourceLine" id="cb4-25" title="25">    <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb4-26" title="26">}</a></code></pre></div>
 <p>This program version will print <code>f</code>, and not <code>a</code>. This is, because we disturbed the memory layout by letting <code>C</code> first inherit from <code>Foo</code>, then from <code>B</code> (which still inherits from <code>A</code>).</p>
 <p>|Relative offset|Value|Structure Type Origin| |0x0|0xf|Foo| |0x4|0xa|A| |0x8|0xb|B| |0xc|0xc|C|</p>
 <p><code>reinterpret_cast</code> is just not the right tool for this, if we just assume that inheriting from <code>A</code> somehow shall do the magic. Before showing how to do it right, i first present another failing example:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">/* Unchanged definition of struct A and B... */</span>
-
-<span class="kw">struct</span> C : B {
-    <span class="dt">int</span> c {<span class="bn">0xd</span>};
-
-    <span class="kw">virtual</span> <span class="dt">void</span> f() {};
-};
-
-<span class="dt">int</span> main()
-{
-    C c;
- 
-    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));
-
-    <span class="cf">return</span> <span class="dv">0</span>;
-}</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="co">/* Unchanged definition of struct A and B... */</span></a>
+<a class="sourceLine" id="cb5-2" title="2"></a>
+<a class="sourceLine" id="cb5-3" title="3"><span class="kw">struct</span> C : B {</a>
+<a class="sourceLine" id="cb5-4" title="4">    <span class="dt">int</span> c {<span class="bn">0xd</span>};</a>
+<a class="sourceLine" id="cb5-5" title="5"></a>
+<a class="sourceLine" id="cb5-6" title="6">    <span class="kw">virtual</span> <span class="dt">void</span> f() {};</a>
+<a class="sourceLine" id="cb5-7" title="7">};</a>
+<a class="sourceLine" id="cb5-8" title="8"></a>
+<a class="sourceLine" id="cb5-9" title="9"><span class="dt">int</span> main()</a>
+<a class="sourceLine" id="cb5-10" title="10">{</a>
+<a class="sourceLine" id="cb5-11" title="11">    C c;</a>
+<a class="sourceLine" id="cb5-12" title="12"> </a>
+<a class="sourceLine" id="cb5-13" title="13">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
+<a class="sourceLine" id="cb5-14" title="14"></a>
+<a class="sourceLine" id="cb5-15" title="15">    <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb5-16" title="16">}</a></code></pre></div>
 <p>In this case, the program <em>might</em> print <code>a</code>, but in many cases it will print <em>something</em>.</p>
 <p>The only difference is, that we added a virtual function in struct <code>C</code>. This leads to this object containing another <em>pointer</em>. It points to a <strong>vtable</strong>. (That vtable itself is globally accessible at runtime and contains pointers to all virtual functions which that class contains. This is roughly how C++ implements polymorphy.) The vtable pointer can be located <em>somewhere</em> in the object. In the clang and GCC case, it is located at the beginning of the object, where we assumed the <code>a</code> member. And that is why it does not work.</p>
 <h2 id="casting-done-right">Casting done right</h2>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> main()
-{
-    C1 c1; <span class="co">// normal C B A inheritance</span>
-    C2 c2; <span class="co">// Foo C B A inheritance</span>
-    C3 c3; <span class="co">// virtual function added in class C</span>
-
-    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c1)));
-    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c2)));
-    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c3)));
-}</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1"><span class="dt">int</span> main()</a>
+<a class="sourceLine" id="cb6-2" title="2">{</a>
+<a class="sourceLine" id="cb6-3" title="3">    C1 c1; <span class="co">// normal C B A inheritance</span></a>
+<a class="sourceLine" id="cb6-4" title="4">    C2 c2; <span class="co">// Foo C B A inheritance</span></a>
+<a class="sourceLine" id="cb6-5" title="5">    C3 c3; <span class="co">// virtual function added in class C</span></a>
+<a class="sourceLine" id="cb6-6" title="6"></a>
+<a class="sourceLine" id="cb6-7" title="7">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c1)));</a>
+<a class="sourceLine" id="cb6-8" title="8">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c2)));</a>
+<a class="sourceLine" id="cb6-9" title="9">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(<span class="kw">static_cast</span>&lt;<span class="at">const</span> A*&gt;(&amp;c3)));</a>
+<a class="sourceLine" id="cb6-10" title="10">}</a></code></pre></div>
 <p>I renamed the 3 variants of struct <code>C</code> to <code>C1</code>, <code>C2</code>, and <code>C3</code>. This program will now correctly print <code>a</code> in all these cases.</p>
 <p>What is different here (But same in all cases!), is that the address of the objects are first <code>static_cast</code>ed to <code>const A*</code>, and <strong>then</strong> <code>reinterpret_cast</code>ed to <code>std::uintptr_t</code>.</p>
 <p><code>static_cast</code> applies some magic to the pointer: As it knows from what to what we are casting (from type <code>C</code> to <code>A</code>), it can <em>modify</em> the actual pointer address. And it must do that, because if we want an <code>A</code>-typed pointer from the <code>C2</code> object (which first inherits from <code>Foo</code>, and then from <code>B</code>), then we must add 4 bytes to the address, in order to have an actual <code>A</code> pointer. (Because the <code>A</code> part lies 4 bytes behind the <code>Foo</code> part)</p>

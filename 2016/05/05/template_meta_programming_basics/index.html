@@ -41,11 +41,11 @@
 <!--more-->
 <h2 id="getting-values-out-of-types">Getting Values Out of Types</h2>
 <p>C++ TMP programs work on types, not values. In some cases, it is useful to work with values, and for that, they need to be wrapped into types. This is very easy for any type which can be used as template parameters, just like integers, characters, etc.:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="dt">int</span> n&gt;
-<span class="kw">struct</span> <span class="dt">int_type</span>
-{
-    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">int</span> value {n};
-};</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">template</span> &lt;<span class="dt">int</span> n&gt;</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">struct</span> <span class="dt">int_type</span></a>
+<a class="sourceLine" id="cb1-3" title="3">{</a>
+<a class="sourceLine" id="cb1-4" title="4">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">int</span> value {n};</a>
+<a class="sourceLine" id="cb1-5" title="5">};</a></code></pre></div>
 <p>The <code>int_type</code> enables for bijective mappings between <code>int_type&lt;N&gt;</code> and integers <code>N</code>. This way integers can be put where only types are accepted, without losing the actual value information, as it is fixed in the type name.</p>
 <h2 id="function-calling">Function Calling</h2>
 <p>In C++ TMP, <strong>functions</strong> are implemented by <em>misusing</em> structures or classes. (There is no real difference between classes and structures - it is just convenient that everything in a struct is public by default)</p>
@@ -55,73 +55,58 @@
 <li>The function’s <strong>return value</strong> is an accessible member <code>using</code> clause. (In pre-C++11 TMP programs, these are usually <code>typedef</code>s)</li>
 </ul>
 <p>The typical convention is, that a structure, which represents a TMP function, will provide a member type called <code>type</code>, which contains the result of the parameter mapping.</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;
-<span class="kw">struct</span> to_pointer
-{
-    <span class="kw">using</span> type = T*;
-};
-
-<span class="kw">using</span> int_pointer = <span class="kw">typename</span> to_pointer&lt;<span class="dt">int</span>&gt;::type; <span class="co">// Result: int *</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="kw">struct</span> to_pointer</a>
+<a class="sourceLine" id="cb2-3" title="3">{</a>
+<a class="sourceLine" id="cb2-4" title="4">    <span class="kw">using</span> type = T*;</a>
+<a class="sourceLine" id="cb2-5" title="5">};</a>
+<a class="sourceLine" id="cb2-6" title="6"></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="kw">using</span> int_pointer = <span class="kw">typename</span> to_pointer&lt;<span class="dt">int</span>&gt;::type; <span class="co">// Result: int *</span></a></code></pre></div>
 <p>This example presents the <code>to_pointer</code> <em>function</em>, which takes any parameter type <code>T</code> and returns <code>T*</code>. In the last line, it is used to transform <code>int</code> to an <code>int *</code> type.</p>
 <p>The function is <em>applied</em> by writing <code>typename function_name&lt;parameter&gt;::type</code>. <code>type</code> is just the convention that the function return type is provided by a <code>using</code> clause with that name, and <code>typename</code> is a necessary keyword which makes the compiler select a matching template and look into it.</p>
 <h2 id="function-call-using-clause-helpers">Function Call Using-Clause Helpers</h2>
 <p>Using <code>typename ...::type</code> quickly looks clumsy when applying TMP functions in a nested way. Since C++11, it is possible to wrap that clumsy part of function application into <code>using</code> clauses:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">typename</span> param&gt;
-<span class="kw">using</span> <span class="dt">function_t</span> = <span class="kw">typename</span> function&lt;param&gt;::type;</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> param&gt;</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">using</span> <span class="dt">function_t</span> = <span class="kw">typename</span> function&lt;param&gt;::type;</a></code></pre></div>
 <p>The naming typically follows the convention, that if the function name is <code>foo</code>, the helper name is <code>foo_t</code>.</p>
 <p>Example use:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// without using-clause helper</span>
-<span class="kw">using</span> result = <span class="kw">typename</span> function&lt;FooParam&gt;::type;
-
-<span class="co">// with using-clause helper</span>
-<span class="kw">using</span> result = <span class="dt">function_t</span>&lt;FooParam&gt;;</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="co">// without using-clause helper</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="kw">using</span> result = <span class="kw">typename</span> function&lt;FooParam&gt;::type;</a>
+<a class="sourceLine" id="cb4-3" title="3"></a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="co">// with using-clause helper</span></a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="kw">using</span> result = <span class="dt">function_t</span>&lt;FooParam&gt;;</a></code></pre></div>
 <h2 id="pattern-matching">Pattern Matching</h2>
 <p><em>Pattern matching</em> is a very important principle in purely functional programming, and so it is in C++ TMP programming.</p>
 <p>In the following example it is used to provide a completely different implementation for a TMP function which takes integers, in the case the integer is a <code>10</code>. It will return <code>false</code> in all cases, but <code>true</code> in case the integer is of the value <code>10</code>.</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="dt">int</span> n&gt;
-<span class="kw">struct</span> is_ten {
-    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">false</span>};
-};
-
-<span class="kw">template</span> &lt;&gt;
-<span class="kw">struct</span> is_ten&lt;<span class="dv">10</span>&gt; {
-    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">true</span>};
-};
-
-<span class="dt">bool</span> result1 {is_ten&lt;<span class="dv">12</span>&gt;::value}; <span class="co">// false</span>
-<span class="dt">bool</span> result2 {is_ten&lt;<span class="dv">10</span>&gt;::value}; <span class="co">// true</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">template</span> &lt;<span class="dt">int</span> n&gt;</a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="kw">struct</span> is_ten {</a>
+<a class="sourceLine" id="cb5-3" title="3">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">false</span>};</a>
+<a class="sourceLine" id="cb5-4" title="4">};</a>
+<a class="sourceLine" id="cb5-5" title="5"></a>
+<a class="sourceLine" id="cb5-6" title="6"><span class="kw">template</span> &lt;&gt;</a>
+<a class="sourceLine" id="cb5-7" title="7"><span class="kw">struct</span> is_ten&lt;<span class="dv">10</span>&gt; {</a>
+<a class="sourceLine" id="cb5-8" title="8">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">true</span>};</a>
+<a class="sourceLine" id="cb5-9" title="9">};</a>
+<a class="sourceLine" id="cb5-10" title="10"></a>
+<a class="sourceLine" id="cb5-11" title="11"><span class="dt">bool</span> result1 {is_ten&lt;<span class="dv">12</span>&gt;::value}; <span class="co">// false</span></a>
+<a class="sourceLine" id="cb5-12" title="12"><span class="dt">bool</span> result2 {is_ten&lt;<span class="dv">10</span>&gt;::value}; <span class="co">// true</span></a></code></pre></div>
 <p>It would have been possible to have only one implementation of <code>is_ten</code> which initializes its <code>value</code> field to <code>n == 10</code>, which would be a correct implementation, too. This example uses pattern matching on this <em>problem</em> just for the sake of simplicity.</p>
 <p>Pattern matching becomes extremely useful when used in more complicated cases, because it can be used to look <em>into</em> template types:</p>
-<div class="sourceCode"><table class="sourceCode cpp numberLines"><tr class="sourceCode"><td class="lineNumbers"><pre>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> <span class="dt">vector_type</span>&gt;
-<span class="kw">struct</span> is_pointer_vector {
-    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">false</span>};
-};
-
-<span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;
-<span class="kw">struct</span> is_pointer_vector&lt;<span class="bu">std::</span>vector&lt;T*&gt;&gt; {
-    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">true</span>};
-};
-
-<span class="co">// Vector of plain ints: false</span>
-<span class="dt">bool</span> result1 {is_pointer_vector&lt;<span class="bu">std::</span>vector&lt;<span class="dt">int</span> &gt;::value};
-
-<span class="co">// Vector of int pointers: true</span>
-<span class="dt">bool</span> result2 {is_pointer_vector&lt;<span class="bu">std::</span>vector&lt;<span class="dt">int</span>*&gt;::value};</code></pre></td></tr></table></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">template</span> &lt;<span class="kw">class</span> <span class="dt">vector_type</span>&gt;</a>
+<a class="sourceLine" id="cb6-2" title="2"><span class="kw">struct</span> is_pointer_vector {</a>
+<a class="sourceLine" id="cb6-3" title="3">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">false</span>};</a>
+<a class="sourceLine" id="cb6-4" title="4">};</a>
+<a class="sourceLine" id="cb6-5" title="5"></a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb6-7" title="7"><span class="kw">struct</span> is_pointer_vector&lt;<span class="bu">std::</span>vector&lt;T*&gt;&gt; {</a>
+<a class="sourceLine" id="cb6-8" title="8">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">true</span>};</a>
+<a class="sourceLine" id="cb6-9" title="9">};</a>
+<a class="sourceLine" id="cb6-10" title="10"></a>
+<a class="sourceLine" id="cb6-11" title="11"><span class="co">// Vector of plain ints: false</span></a>
+<a class="sourceLine" id="cb6-12" title="12"><span class="dt">bool</span> result1 {is_pointer_vector&lt;<span class="bu">std::</span>vector&lt;<span class="dt">int</span> &gt;::value};</a>
+<a class="sourceLine" id="cb6-13" title="13"></a>
+<a class="sourceLine" id="cb6-14" title="14"><span class="co">// Vector of int pointers: true</span></a>
+<a class="sourceLine" id="cb6-15" title="15"><span class="dt">bool</span> result2 {is_pointer_vector&lt;<span class="bu">std::</span>vector&lt;<span class="dt">int</span>*&gt;::value};</a></code></pre></div>
 <p><br></p>
 <ul>
 <li><strong>Line 2</strong> defines the generic matcher, which will always return <code>false</code>.</li>
@@ -129,25 +114,25 @@
 </ul>
 <p>Pattern matching is very flexible. It would have been possible to initialize the <code>value</code> field of the generic case depending on type traits accessing member type definitions of vector (Which could for example look like <code>is_pointer&lt;vector_type::container_type&gt;::value</code>), but that would not necessarily be more readable. Often, this would even be slower, as i experienced that the compiler will be a lot quicker matching the right types instead of unrolling nested conditional branches.</p>
 <h2 id="if-else-branches">If-Else Branches</h2>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="dt">bool</span> condition, <span class="kw">typename</span> <span class="dt">true_t</span>, <span class="kw">typename</span> <span class="dt">false_t</span>&gt;
-if_else 
-{
-    <span class="kw">using</span> type = <span class="dt">false_t</span>; 
-};
-
-<span class="kw">template</span> &lt;<span class="kw">typename</span> <span class="dt">true_t</span>, <span class="kw">typename</span> <span class="dt">false_t</span>&gt;
-if_else&lt;<span class="kw">true</span>, <span class="dt">true_t</span>, <span class="dt">false_t</span>&gt;
-{
-    <span class="kw">using</span> type = <span class="dt">true_t</span>;
-};
-
-<span class="kw">template</span> &lt;<span class="dt">bool</span> condition, <span class="kw">typename</span> <span class="dt">true_t</span>, <span class="kw">typename</span> <span class="dt">false_t</span>&gt;
-<span class="kw">using</span> <span class="dt">if_else_t</span> = <span class="kw">typename</span> if_else&lt;condition, <span class="dt">true_t</span>, <span class="dt">false_t</span>&gt;::type;
-
-<span class="kw">struct</span> <span class="dt">even_t</span>;
-<span class="kw">struct</span> <span class="dt">odd_t</span>;
-
-<span class="kw">using</span> result = if_else&lt;<span class="dv">5</span> % <span class="dv">2</span> == <span class="dv">0</span>, <span class="dt">even_t</span>, <span class="dt">odd_t</span>&gt;;</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">template</span> &lt;<span class="dt">bool</span> condition, <span class="kw">typename</span> <span class="dt">true_t</span>, <span class="kw">typename</span> <span class="dt">false_t</span>&gt;</a>
+<a class="sourceLine" id="cb7-2" title="2">if_else </a>
+<a class="sourceLine" id="cb7-3" title="3">{</a>
+<a class="sourceLine" id="cb7-4" title="4">    <span class="kw">using</span> type = <span class="dt">false_t</span>; </a>
+<a class="sourceLine" id="cb7-5" title="5">};</a>
+<a class="sourceLine" id="cb7-6" title="6"></a>
+<a class="sourceLine" id="cb7-7" title="7"><span class="kw">template</span> &lt;<span class="kw">typename</span> <span class="dt">true_t</span>, <span class="kw">typename</span> <span class="dt">false_t</span>&gt;</a>
+<a class="sourceLine" id="cb7-8" title="8">if_else&lt;<span class="kw">true</span>, <span class="dt">true_t</span>, <span class="dt">false_t</span>&gt;</a>
+<a class="sourceLine" id="cb7-9" title="9">{</a>
+<a class="sourceLine" id="cb7-10" title="10">    <span class="kw">using</span> type = <span class="dt">true_t</span>;</a>
+<a class="sourceLine" id="cb7-11" title="11">};</a>
+<a class="sourceLine" id="cb7-12" title="12"></a>
+<a class="sourceLine" id="cb7-13" title="13"><span class="kw">template</span> &lt;<span class="dt">bool</span> condition, <span class="kw">typename</span> <span class="dt">true_t</span>, <span class="kw">typename</span> <span class="dt">false_t</span>&gt;</a>
+<a class="sourceLine" id="cb7-14" title="14"><span class="kw">using</span> <span class="dt">if_else_t</span> = <span class="kw">typename</span> if_else&lt;condition, <span class="dt">true_t</span>, <span class="dt">false_t</span>&gt;::type;</a>
+<a class="sourceLine" id="cb7-15" title="15"></a>
+<a class="sourceLine" id="cb7-16" title="16"><span class="kw">struct</span> <span class="dt">even_t</span>;</a>
+<a class="sourceLine" id="cb7-17" title="17"><span class="kw">struct</span> <span class="dt">odd_t</span>;</a>
+<a class="sourceLine" id="cb7-18" title="18"></a>
+<a class="sourceLine" id="cb7-19" title="19"><span class="kw">using</span> result = if_else&lt;<span class="dv">5</span> % <span class="dv">2</span> == <span class="dv">0</span>, <span class="dt">even_t</span>, <span class="dt">odd_t</span>&gt;;</a></code></pre></div>
 <p>Especially when nesting a lot of <code>if_else_t</code> expressions, the code becomes quickly <strong>less readable</strong>. Pattern matching can help out a lot here, being both easier to read in most cases. Another noteworthy detail is, that the compiler will be <strong>faster</strong> matching patterns than unfolding a lot of nested <code>if_else_t</code>s.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

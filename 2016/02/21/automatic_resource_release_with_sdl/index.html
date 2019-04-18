@@ -40,99 +40,99 @@
 <p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL. SDL is easy to use and portable, but it is a C-style library. Because of that C nature, the library does not really help the user to write elegant, modern code. Acquiring and Releasing SDL resources often ends up in ugly old school resource management. It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases. The approach is easily extendable to other kinds of resources, too.</p>
 <!--more-->
 <h2 id="typical-c-style-sdl-code">Typical C-Style SDL Code</h2>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span>
-
-<span class="dt">int</span> main() {
-    <span class="cf">if</span> (SDL_Init(SDL_INIT_VIDEO) != <span class="dv">0</span>){
-        <span class="cf">return</span> <span class="dv">1</span>;
-    }
-
-    SDL_Window *win {SDL_CreateWindow(<span class="st">&quot;Window Title&quot;</span>,
-            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            width, height, SDL_WINDOW_SHOWN)};
-    <span class="cf">if</span> (win == <span class="kw">nullptr</span>){
-        SDL_Quit();
-        <span class="cf">return</span> <span class="dv">1</span>;
-    }
-
-    SDL_Renderer *ren {SDL_CreateRenderer(win, <span class="dv">-1</span>,
-            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)};
-    <span class="cf">if</span> (ren == <span class="kw">nullptr</span>){
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        <span class="cf">return</span> <span class="dv">1</span>;
-    }
-
-    SDL_Surface *bmp {SDL_LoadBMP(<span class="st">&quot;some_bitmap.bmp&quot;</span>)};
-    <span class="cf">if</span> (bmp == <span class="kw">nullptr</span>){
-        SDL_DestroyRenderer(ren);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        <span class="cf">return</span> <span class="dv">1</span>;
-    }
-
-    SDL_Texture *tex {SDL_CreateTextureFromSurface(ren, bmp)};
-    <span class="cf">if</span> (tex == <span class="kw">nullptr</span>) {
-        SDL_FreeSurface(bmp);
-        SDL_DestroyRenderer(ren);
-        SDL_DestroyWindow(win);
-        SDL_Quit();
-        <span class="cf">return</span> <span class="dv">1</span>;
-    }
-
-    <span class="co">// ...</span>
-
-    SDL_DestroyTexture(tex);
-    SDL_FreeSurface(bmp);
-    SDL_DestroyRenderer(ren);
-    SDL_DestroyWindow(win);
-    SDL_Quit();
-}</code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="dt">int</span> main() {</a>
+<a class="sourceLine" id="cb1-4" title="4">    <span class="cf">if</span> (SDL_Init(SDL_INIT_VIDEO) != <span class="dv">0</span>){</a>
+<a class="sourceLine" id="cb1-5" title="5">        <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb1-6" title="6">    }</a>
+<a class="sourceLine" id="cb1-7" title="7"></a>
+<a class="sourceLine" id="cb1-8" title="8">    SDL_Window *win {SDL_CreateWindow(<span class="st">&quot;Window Title&quot;</span>,</a>
+<a class="sourceLine" id="cb1-9" title="9">            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,</a>
+<a class="sourceLine" id="cb1-10" title="10">            width, height, SDL_WINDOW_SHOWN)};</a>
+<a class="sourceLine" id="cb1-11" title="11">    <span class="cf">if</span> (win == <span class="kw">nullptr</span>){</a>
+<a class="sourceLine" id="cb1-12" title="12">        SDL_Quit();</a>
+<a class="sourceLine" id="cb1-13" title="13">        <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb1-14" title="14">    }</a>
+<a class="sourceLine" id="cb1-15" title="15"></a>
+<a class="sourceLine" id="cb1-16" title="16">    SDL_Renderer *ren {SDL_CreateRenderer(win, -<span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb1-17" title="17">            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)};</a>
+<a class="sourceLine" id="cb1-18" title="18">    <span class="cf">if</span> (ren == <span class="kw">nullptr</span>){</a>
+<a class="sourceLine" id="cb1-19" title="19">        SDL_DestroyWindow(win);</a>
+<a class="sourceLine" id="cb1-20" title="20">        SDL_Quit();</a>
+<a class="sourceLine" id="cb1-21" title="21">        <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb1-22" title="22">    }</a>
+<a class="sourceLine" id="cb1-23" title="23"></a>
+<a class="sourceLine" id="cb1-24" title="24">    SDL_Surface *bmp {SDL_LoadBMP(<span class="st">&quot;some_bitmap.bmp&quot;</span>)};</a>
+<a class="sourceLine" id="cb1-25" title="25">    <span class="cf">if</span> (bmp == <span class="kw">nullptr</span>){</a>
+<a class="sourceLine" id="cb1-26" title="26">        SDL_DestroyRenderer(ren);</a>
+<a class="sourceLine" id="cb1-27" title="27">        SDL_DestroyWindow(win);</a>
+<a class="sourceLine" id="cb1-28" title="28">        SDL_Quit();</a>
+<a class="sourceLine" id="cb1-29" title="29">        <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb1-30" title="30">    }</a>
+<a class="sourceLine" id="cb1-31" title="31"></a>
+<a class="sourceLine" id="cb1-32" title="32">    SDL_Texture *tex {SDL_CreateTextureFromSurface(ren, bmp)};</a>
+<a class="sourceLine" id="cb1-33" title="33">    <span class="cf">if</span> (tex == <span class="kw">nullptr</span>) {</a>
+<a class="sourceLine" id="cb1-34" title="34">        SDL_FreeSurface(bmp);</a>
+<a class="sourceLine" id="cb1-35" title="35">        SDL_DestroyRenderer(ren);</a>
+<a class="sourceLine" id="cb1-36" title="36">        SDL_DestroyWindow(win);</a>
+<a class="sourceLine" id="cb1-37" title="37">        SDL_Quit();</a>
+<a class="sourceLine" id="cb1-38" title="38">        <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb1-39" title="39">    }</a>
+<a class="sourceLine" id="cb1-40" title="40"></a>
+<a class="sourceLine" id="cb1-41" title="41">    <span class="co">// ...</span></a>
+<a class="sourceLine" id="cb1-42" title="42"></a>
+<a class="sourceLine" id="cb1-43" title="43">    SDL_DestroyTexture(tex);</a>
+<a class="sourceLine" id="cb1-44" title="44">    SDL_FreeSurface(bmp);</a>
+<a class="sourceLine" id="cb1-45" title="45">    SDL_DestroyRenderer(ren);</a>
+<a class="sourceLine" id="cb1-46" title="46">    SDL_DestroyWindow(win);</a>
+<a class="sourceLine" id="cb1-47" title="47">    SDL_Quit();</a>
+<a class="sourceLine" id="cb1-48" title="48">}</a></code></pre></div>
 <p>This code contains a list of resource release code which is also quite error prone to write/maintain.</p>
 <h2 id="using-shared_ptr-to-automate-resource-handling">Using <code>shared_ptr</code> to Automate Resource Handling</h2>
 <p><code>shared_ptr</code> from the STL is a useful helper class, which wraps a pointer to some resource payload. As soon as a shared pointer is released, it automatically calls <code>delete</code> on the payload instance being pointed to.</p>
 <p>The resources which SDL gives us, cannot be release using <code>delete</code>, as the SDL provides specific functions for every resource type. In order to be able to use <code>shared_ptr</code>’s automatic resource management capability, it needs to be customized to call <em>different</em> code than the default <code>delete</code> call.</p>
 <p>This is indeed possible: <code>shared_ptr</code>’s constructor takes a second, optional parameter, which can be a lambda expression. This lambda expression will then be called (with the payload pointer as its only parameter) by the shared pointer class instead of its default <code>delete</code> call.</p>
 <p>The following code provides a function <code>sdl_shared</code>, which takes a pointer to an SDL resource, and wraps it into a <code>shared_ptr</code> instance which automatically calls the right SDL specific release function at its end of life cycle:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="pp">#include </span><span class="im">&lt;memory&gt;</span><span class="pp"> </span><span class="co">// shared_ptr</span>
-<span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span>
-
-<span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Window   *r) { SDL_DestroyWindow(r);   }
-<span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Renderer *r) { SDL_DestroyRenderer(r); }
-<span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Texture  *r) { SDL_DestroyTexture(r);  }
-<span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Surface  *r) { SDL_FreeSurface(r);     }
-
-<span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;
-<span class="bu">std::</span>shared_ptr&lt;T&gt; sdl_shared(T *t) {
-    <span class="cf">return</span> <span class="bu">std::</span>shared_ptr&lt;T&gt;(t, [](T *t) { SDL_DelRes(t); });
-}</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="pp">#include </span><span class="im">&lt;memory&gt;</span><span class="pp"> </span><span class="co">// shared_ptr</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></a>
+<a class="sourceLine" id="cb2-3" title="3"></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Window   *r) { SDL_DestroyWindow(r);   }</a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Renderer *r) { SDL_DestroyRenderer(r); }</a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Texture  *r) { SDL_DestroyTexture(r);  }</a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Surface  *r) { SDL_FreeSurface(r);     }</a>
+<a class="sourceLine" id="cb2-8" title="8"></a>
+<a class="sourceLine" id="cb2-9" title="9"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
+<a class="sourceLine" id="cb2-10" title="10"><span class="bu">std::</span>shared_ptr&lt;T&gt; sdl_shared(T *t) {</a>
+<a class="sourceLine" id="cb2-11" title="11">    <span class="cf">return</span> <span class="bu">std::</span>shared_ptr&lt;T&gt;(t, [](T *t) { SDL_DelRes(t); });</a>
+<a class="sourceLine" id="cb2-12" title="12">}</a></code></pre></div>
 <p><code>sdl_shared</code> is a template function which deduces the pointer type from the input parameter. This helper function can be wrapped around any SDL resource allocating function, as long as one <code>SDL_DelRes</code> overload is defined for the specific SDL resource type.</p>
 <p>Using this helper, the resource management can be implemented much cleaner:</p>
-<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> main() {
-    <span class="cf">if</span> (SDL_Init(SDL_INIT_VIDEO) != <span class="dv">0</span>) {
-        <span class="cf">return</span> <span class="dv">1</span>;
-    }
-
-    ON_EXIT { SDL_Quit(); };
-
-    <span class="kw">auto</span> win (sdl_shared(SDL_CreateWindow(<span class="st">&quot;Hello World!&quot;</span>,
-            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            width, height, SDL_WINDOW_SHOWN)));
-    <span class="cf">if</span> (win == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;
-
-    <span class="kw">auto</span> ren (sdl_shared(SDL_CreateRenderer(win.get(), <span class="dv">-1</span>,
-            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)));
-    <span class="cf">if</span> (ren == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;
-
-    <span class="kw">auto</span> bmp(sdl_shared(SDL_LoadBMP(<span class="st">&quot;hello.bmp&quot;</span>)));
-    <span class="cf">if</span> (bmp == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;
-
-    <span class="kw">auto</span> tex (sdl_shared(SDL_CreateTextureFromSurface(
-                                    ren.get(), bmp.get())));
-    <span class="cf">if</span> (tex == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;
-
-    <span class="co">// ...</span>
-}</code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">int</span> main() {</a>
+<a class="sourceLine" id="cb3-2" title="2">    <span class="cf">if</span> (SDL_Init(SDL_INIT_VIDEO) != <span class="dv">0</span>) {</a>
+<a class="sourceLine" id="cb3-3" title="3">        <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb3-4" title="4">    }</a>
+<a class="sourceLine" id="cb3-5" title="5"></a>
+<a class="sourceLine" id="cb3-6" title="6">    ON_EXIT { SDL_Quit(); };</a>
+<a class="sourceLine" id="cb3-7" title="7"></a>
+<a class="sourceLine" id="cb3-8" title="8">    <span class="kw">auto</span> win (sdl_shared(SDL_CreateWindow(<span class="st">&quot;Hello World!&quot;</span>,</a>
+<a class="sourceLine" id="cb3-9" title="9">            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,</a>
+<a class="sourceLine" id="cb3-10" title="10">            width, height, SDL_WINDOW_SHOWN)));</a>
+<a class="sourceLine" id="cb3-11" title="11">    <span class="cf">if</span> (win == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb3-12" title="12"></a>
+<a class="sourceLine" id="cb3-13" title="13">    <span class="kw">auto</span> ren (sdl_shared(SDL_CreateRenderer(win.get(), -<span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb3-14" title="14">            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)));</a>
+<a class="sourceLine" id="cb3-15" title="15">    <span class="cf">if</span> (ren == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb3-16" title="16"></a>
+<a class="sourceLine" id="cb3-17" title="17">    <span class="kw">auto</span> bmp(sdl_shared(SDL_LoadBMP(<span class="st">&quot;hello.bmp&quot;</span>)));</a>
+<a class="sourceLine" id="cb3-18" title="18">    <span class="cf">if</span> (bmp == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb3-19" title="19"></a>
+<a class="sourceLine" id="cb3-20" title="20">    <span class="kw">auto</span> tex (sdl_shared(SDL_CreateTextureFromSurface(</a>
+<a class="sourceLine" id="cb3-21" title="21">                                    ren.get(), bmp.get())));</a>
+<a class="sourceLine" id="cb3-22" title="22">    <span class="cf">if</span> (tex == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
+<a class="sourceLine" id="cb3-23" title="23"></a>
+<a class="sourceLine" id="cb3-24" title="24">    <span class="co">// ...</span></a>
+<a class="sourceLine" id="cb3-25" title="25">}</a></code></pre></div>
 <p><em>Also have a look at the other article, which <a href="../../../../2016/02/21/on_exit_macro">describes the <code>ON_EXIT</code> macro</a></em>.</p>
 <p>All resources are automatically released, and the programmer does not need to define which resource is to be released in which case and what order.</p></div>
 <div id="disqus_thread"></div>
