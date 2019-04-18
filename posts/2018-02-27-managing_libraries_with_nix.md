@@ -90,7 +90,7 @@ nixpkgs.catch               catch-1.9.6               A multi-paradigm automated
 
 So let's build it with catch installed:
 
-```
+``` bash
 $ nix-shell -p clang -p catch
 
 [nix-shell:~/project_dir]$ cd test && make
@@ -220,7 +220,7 @@ Yes, that went well!
 It is however pretty ugly to call `nix-shell` with all those arguments that are hard to memorize.
 For this purpose we can define a `default.nix` file that will be automatically sourced by Nix:
 
-```
+``` nix
 # file: default.nix
 { pkgs ? import <nixpkgs> {}, }:
 rec {
