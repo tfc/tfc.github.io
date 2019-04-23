@@ -505,9 +505,10 @@ let
     poco190 = pkgs.poco;
     poco191 = pkgs.poco.overrideAttrs (oldAttrs: {
       name = "poco-1.9.1";
-      src = pkgs.fetchzip {
-        url = "https://github.com/pocoproject/poco/archive/poco-1.9.1.zip";
-        sha256 = "0d5d6cxv5k0r0kcr2zjsxzjbpd8s1x8dmwzsjh04yq470i8jw9zz";
+      src = pkgs.fetchgit {
+        url = "https://github.com/pocoproject/poco.git";
+        rev = "196540ce34bf884921ff3f9ce338e38fc938acdd";
+        sha256 = "0q0xihkm2z8kndx40150inq7llcyny59cv016gxsx0vbzzbdkcnd";
       };
     });
   };
