@@ -11,6 +11,7 @@ git fetch --all
 git checkout -b master --track origin/master
 
 cp -r _site/* .
+rm result
 
 # Commit
 git add -A
