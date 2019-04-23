@@ -149,7 +149,7 @@
 <li>lib <code>poco</code> 1.9.0 &amp; 1.9.1</li>
 <li>lib <code>boost</code> 1.6.6 - 1.6.9</li>
 </ul>
-<p>…which results in <span class="math inline">2 * 2 * 2 * 4 = 32</span> different binaries.</p>
+<p>…which results in <span class="math inline">(2 + 2) * 2 * 4 = 32</span> different binaries.</p>
 <p>Quick spoiler: The result of the nix expression that we are going to write will allow us to build and execute these 32 binaries with a single <code>nix-build release.nix</code> command.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb7-1" title="1">$ <span class="kw">for</span> <span class="ex">path</span> in <span class="va">$(</span><span class="ex">nix-build</span> release.nix<span class="va">)</span><span class="kw">;</span> <span class="kw">do</span> <span class="kw">\</span></a>
 <a class="sourceLine" id="cb7-2" title="2"><span class="op">&gt;</span>   <span class="bu">echo</span> <span class="st">&quot;====&quot;</span><span class="kw">;</span> <span class="kw">\</span></a>
