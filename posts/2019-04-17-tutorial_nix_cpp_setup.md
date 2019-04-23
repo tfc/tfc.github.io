@@ -242,7 +242,7 @@ We will use the following variety of dependency versions:
 - lib `poco` 1.9.0 & 1.9.1
 - lib `boost` 1.6.6 - 1.6.9
 
-...which results in $2 * 2 * 2 * 4 = 32$ different binaries.
+...which results in $(2 + 2) * 2 * 4 = 32$ different binaries.
 
 Quick spoiler: The result of the nix expression that we are going to write
 will allow us to build and execute these 32 binaries with a single `nix-build
