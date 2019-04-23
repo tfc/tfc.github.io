@@ -387,36 +387,37 @@
 <a class="sourceLine" id="cb9-15" title="15">    <span class="ex">poco190</span> = pkgs.poco<span class="kw">;</span></a>
 <a class="sourceLine" id="cb9-16" title="16">    <span class="ex">poco191</span> = pkgs.poco.overrideAttrs (oldAttrs: {</a>
 <a class="sourceLine" id="cb9-17" title="17">      <span class="ex">name</span> = <span class="st">&quot;poco-1.9.1&quot;</span><span class="kw">;</span></a>
-<a class="sourceLine" id="cb9-18" title="18">      <span class="ex">src</span> = pkgs.fetchzip {</a>
-<a class="sourceLine" id="cb9-19" title="19">        <span class="ex">url</span> = <span class="st">&quot;https://github.com/pocoproject/poco/archive/poco-1.9.1.zip&quot;</span><span class="kw">;</span></a>
-<a class="sourceLine" id="cb9-20" title="20">        <span class="ex">sha256</span> = <span class="st">&quot;0d5d6cxv5k0r0kcr2zjsxzjbpd8s1x8dmwzsjh04yq470i8jw9zz&quot;</span><span class="kw">;</span></a>
-<a class="sourceLine" id="cb9-21" title="21">      };</a>
-<a class="sourceLine" id="cb9-22" title="22">    });</a>
-<a class="sourceLine" id="cb9-23" title="23">  };</a>
-<a class="sourceLine" id="cb9-24" title="24"></a>
-<a class="sourceLine" id="cb9-25" title="25">  <span class="ex">boostLibs</span> = {</a>
-<a class="sourceLine" id="cb9-26" title="26">    <span class="ex">inherit</span> (pkgs) <span class="ex">boost166</span> boost167 boost168 boost169<span class="kw">;</span></a>
-<a class="sourceLine" id="cb9-27" title="27">  };</a>
-<a class="sourceLine" id="cb9-28" title="28"></a>
-<a class="sourceLine" id="cb9-29" title="29">  <span class="ex">originalDerivation</span> = [ (pkgs.callPackage (import ./derivation.nix) {}) ];</a>
-<a class="sourceLine" id="cb9-30" title="30"></a>
-<a class="sourceLine" id="cb9-31" title="31">  <span class="ex">f</span> = libname: libs: derivs: with pkgs.lib<span class="kw">;</span></a>
-<a class="sourceLine" id="cb9-32" title="32">    <span class="ex">concatMap</span> (deriv:</a>
-<a class="sourceLine" id="cb9-33" title="33">      <span class="ex">mapAttrsToList</span> (libVers: lib:</a>
-<a class="sourceLine" id="cb9-34" title="34">        <span class="kw">(</span><span class="ex">deriv.override</span> { <span class="st">&quot;</span><span class="va">${libname}</span><span class="st">&quot;</span> = lib<span class="kw">;</span> }<span class="kw">)</span><span class="ex">.overrideAttrs</span></a>
-<a class="sourceLine" id="cb9-35" title="35">          <span class="kw">(</span><span class="ex">old</span>: { name = <span class="st">&quot;</span><span class="va">${old</span><span class="er">.name</span><span class="va">}</span><span class="st">-</span><span class="va">${libVers}</span><span class="st">&quot;</span><span class="kw">;</span> }<span class="kw">)</span></a>
-<a class="sourceLine" id="cb9-36" title="36">      ) <span class="ex">libs</span></a>
-<a class="sourceLine" id="cb9-37" title="37">    ) <span class="ex">derivs</span><span class="kw">;</span></a>
-<a class="sourceLine" id="cb9-38" title="38"></a>
-<a class="sourceLine" id="cb9-39" title="39">  <span class="ex">overrides</span> = [</a>
-<a class="sourceLine" id="cb9-40" title="40">    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;stdenv&quot;</span> compilers<span class="kw">)</span></a>
-<a class="sourceLine" id="cb9-41" title="41">    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;poco&quot;</span>   pocoLibs<span class="kw">)</span></a>
-<a class="sourceLine" id="cb9-42" title="42">    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;boost&quot;</span>  boostLibs<span class="kw">)</span></a>
-<a class="sourceLine" id="cb9-43" title="43">  ];</a>
-<a class="sourceLine" id="cb9-44" title="44"><span class="kw">in</span></a>
-<a class="sourceLine" id="cb9-45" title="45">  <span class="ex">pkgs.lib.foldl</span> (a: b: a // { <span class="st">&quot;</span><span class="va">${b</span><span class="er">.name</span><span class="va">}</span><span class="st">&quot;</span> = b<span class="kw">;</span> }) {} <span class="kw">(</span></a>
-<a class="sourceLine" id="cb9-46" title="46">    <span class="ex">pkgs.lib.foldl</span> (a: f: f a<span class="kw">)</span> <span class="ex">originalDerivation</span> overrides</a>
-<a class="sourceLine" id="cb9-47" title="47">  )</a></code></pre></div>
+<a class="sourceLine" id="cb9-18" title="18">      <span class="ex">src</span> = pkgs.fetchgit {</a>
+<a class="sourceLine" id="cb9-19" title="19">        <span class="ex">url</span> = <span class="st">&quot;https://github.com/pocoproject/poco.git&quot;</span><span class="kw">;</span></a>
+<a class="sourceLine" id="cb9-20" title="20">        <span class="fu">rev</span> = <span class="st">&quot;196540ce34bf884921ff3f9ce338e38fc938acdd&quot;</span><span class="kw">;</span></a>
+<a class="sourceLine" id="cb9-21" title="21">        <span class="ex">sha256</span> = <span class="st">&quot;0q0xihkm2z8kndx40150inq7llcyny59cv016gxsx0vbzzbdkcnd&quot;</span><span class="kw">;</span></a>
+<a class="sourceLine" id="cb9-22" title="22">      };</a>
+<a class="sourceLine" id="cb9-23" title="23">    });</a>
+<a class="sourceLine" id="cb9-24" title="24">  };</a>
+<a class="sourceLine" id="cb9-25" title="25"></a>
+<a class="sourceLine" id="cb9-26" title="26">  <span class="ex">boostLibs</span> = {</a>
+<a class="sourceLine" id="cb9-27" title="27">    <span class="ex">inherit</span> (pkgs) <span class="ex">boost166</span> boost167 boost168 boost169<span class="kw">;</span></a>
+<a class="sourceLine" id="cb9-28" title="28">  };</a>
+<a class="sourceLine" id="cb9-29" title="29"></a>
+<a class="sourceLine" id="cb9-30" title="30">  <span class="ex">originalDerivation</span> = [ (pkgs.callPackage (import ./derivation.nix) {}) ];</a>
+<a class="sourceLine" id="cb9-31" title="31"></a>
+<a class="sourceLine" id="cb9-32" title="32">  <span class="ex">f</span> = libname: libs: derivs: with pkgs.lib<span class="kw">;</span></a>
+<a class="sourceLine" id="cb9-33" title="33">    <span class="ex">concatMap</span> (deriv:</a>
+<a class="sourceLine" id="cb9-34" title="34">      <span class="ex">mapAttrsToList</span> (libVers: lib:</a>
+<a class="sourceLine" id="cb9-35" title="35">        <span class="kw">(</span><span class="ex">deriv.override</span> { <span class="st">&quot;</span><span class="va">${libname}</span><span class="st">&quot;</span> = lib<span class="kw">;</span> }<span class="kw">)</span><span class="ex">.overrideAttrs</span></a>
+<a class="sourceLine" id="cb9-36" title="36">          <span class="kw">(</span><span class="ex">old</span>: { name = <span class="st">&quot;</span><span class="va">${old</span><span class="er">.name</span><span class="va">}</span><span class="st">-</span><span class="va">${libVers}</span><span class="st">&quot;</span><span class="kw">;</span> }<span class="kw">)</span></a>
+<a class="sourceLine" id="cb9-37" title="37">      ) <span class="ex">libs</span></a>
+<a class="sourceLine" id="cb9-38" title="38">    ) <span class="ex">derivs</span><span class="kw">;</span></a>
+<a class="sourceLine" id="cb9-39" title="39"></a>
+<a class="sourceLine" id="cb9-40" title="40">  <span class="ex">overrides</span> = [</a>
+<a class="sourceLine" id="cb9-41" title="41">    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;stdenv&quot;</span> compilers<span class="kw">)</span></a>
+<a class="sourceLine" id="cb9-42" title="42">    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;poco&quot;</span>   pocoLibs<span class="kw">)</span></a>
+<a class="sourceLine" id="cb9-43" title="43">    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;boost&quot;</span>  boostLibs<span class="kw">)</span></a>
+<a class="sourceLine" id="cb9-44" title="44">  ];</a>
+<a class="sourceLine" id="cb9-45" title="45"><span class="kw">in</span></a>
+<a class="sourceLine" id="cb9-46" title="46">  <span class="ex">pkgs.lib.foldl</span> (a: b: a // { <span class="st">&quot;</span><span class="va">${b</span><span class="er">.name</span><span class="va">}</span><span class="st">&quot;</span> = b<span class="kw">;</span> }) {} <span class="kw">(</span></a>
+<a class="sourceLine" id="cb9-47" title="47">    <span class="ex">pkgs.lib.foldl</span> (a: f: f a<span class="kw">)</span> <span class="ex">originalDerivation</span> overrides</a>
+<a class="sourceLine" id="cb9-48" title="48">  )</a></code></pre></div>
 <p>This code looks a bit more complicated, but it does a lot of things:</p>
 <ul>
 <li>It defines the variety of compilers and libraries in the variables <code>compilers</code>, <code>pocoLibs</code>, and <code>boostLibs</code>.
