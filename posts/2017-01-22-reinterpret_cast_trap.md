@@ -27,7 +27,7 @@ If we are just interested in one of those specific members, we could simply calc
 
 ``` cpp
 // Print c, assuming x is the address of an instance of struct C:
-std::cout << *reinterpret_cast<int*>(x + 8) << std::endl; 
+std::cout << *reinterpret_cast<int*>(x + 8) << '\n';
 ```
 
 Let's assume we have some code, which *relies* on getting addresses of `struct A` typed addresses in integral form:
@@ -49,20 +49,20 @@ struct C : B {
 void print_a_from_address(std::uintptr_t addr)
 {
     const A *a {reinterpret_cast<const A*>(addr)};
-    std::cout << std::hex << a->a << std::endl;
+    std::cout << std::hex << a->a << '\n';
 }
 
 int main()
 {
     C c;
- 
+
     print_a_from_address(reinterpret_cast<std::uintptr_t>(&c));
 
     return 0;
 }
 ```
 
-That's no good style, but this program works. 
+That's no good style, but this program works.
 The structures have standard definitions which initialize members `a`, `b`, and `c` to values `0xa`, `0xb`, and `0xc`.
 
 The program will print `a` at run time, which is what we expect.
@@ -94,13 +94,13 @@ struct C : Foo, B {
 void print_a_from_address(std::uintptr_t addr)
 {
     const A *a {reinterpret_cast<const A*>(addr)};
-    std::cout << std::hex << a->a << std::endl;
+    std::cout << std::hex << a->a << '\n';
 }
 
 int main()
 {
     C c;
- 
+
     print_a_from_address(reinterpret_cast<std::uintptr_t>(&c));
 
     return 0;
@@ -131,7 +131,7 @@ struct C : B {
 int main()
 {
     C c;
- 
+
     print_a_from_address(reinterpret_cast<std::uintptr_t>(&c));
 
     return 0;
@@ -178,7 +178,7 @@ So in this case, clang's `static_cast` will add 8 bytes offset to the pointer, t
 Another nice feature is, that `static_cast` will refuse to compile, if the object is by no means related to type `A`.
 `reinterpret_cast` just ignores this and gives us no safety.
 
-However, it was not possible to completely avoid `reinterpret_cast`, because of the *type erasing* cast from `A*` to `std::uintptr_t`, which `static_cast` would refuse to do. 
+However, it was not possible to completely avoid `reinterpret_cast`, because of the *type erasing* cast from `A*` to `std::uintptr_t`, which `static_cast` would refuse to do.
 Although we could have used a union which overlays an `A` pointer with a `std::uintptr_t`.
 
 ## Summary

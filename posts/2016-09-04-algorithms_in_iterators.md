@@ -102,7 +102,7 @@ public:
 }
 ```
 
-The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in `operator++` and return the integer in `operator*`. 
+The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in `operator++` and return the integer in `operator*`.
 `operator!=` would then just compare this number with the number of another iterator.
 
 But now let us continue with the fibonacci iterator.
@@ -148,7 +148,7 @@ fibit it;
 const fibit end {0, 0, 20};
 
 while (it != end) {
-    std::cout << *it << std::endl;
+    std::cout << *it << '\n';
     ++it;
 }
 
@@ -178,7 +178,7 @@ We can now write...
 
 ``` cpp
 for (const size_t num : fib_range(10)) {
-    std::cout << num << std::endl;
+    std::cout << num << '\n';
 }
 ```
 

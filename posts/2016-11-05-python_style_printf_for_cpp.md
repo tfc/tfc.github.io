@@ -24,7 +24,7 @@ Consider the following simple program:
 
 int main()
 {
-    printf("%u, %x, %0.8f, %0.8lf, %s\n", 123u, 0x123u, 1.0f, 2.0, "Hello World"); 
+    printf("%u, %x, %0.8f, %0.8lf, %s\n", 123u, 0x123u, 1.0f, 2.0, "Hello World");
 }
 ```
 
@@ -40,20 +40,20 @@ Let's have a look how to get exactly the same output with C++ streams:
 
 int main()
 {
-    printf("%u, %x, %0.8f, %0.8lf, %s\n", 123u, 0x123u, 1.0f, 2.0, "Hello World"); 
+    printf("%u, %x, %0.8f, %0.8lf, %s\n", 123u, 0x123u, 1.0f, 2.0, "Hello World");
 
     std::cout << 123u << ", "
               << std::hex << 0x123u << ", "
               << std::fixed << std::setprecision(6) << 1.0f << ", "
               << 2.0 << ", "
-              << "Hello World" << std::endl
+              << "Hello World\n";
 
 }
 ```
 
 All type safety aside, at this point most likely everyone will agree that this is, from a readability and comfort perspective, *no* improvement over to `printf`.
 
-> Although I must say that I do not format floating point numbers every day and had to guess here and there while being too lazy to look at the documentation. 
+> Although I must say that I do not format floating point numbers every day and had to guess here and there while being too lazy to look at the documentation.
 > In order to see if the `printf` format works as I hoped, I had to run the program.
 > At the same time, the C++ iostream format just did not compile when I did it wrong!
 
@@ -62,7 +62,7 @@ All type safety aside, at this point most likely everyone will agree that this i
 When compiling the following program on a 64-bit machine, everything is fine:
 
 ``` cpp
-printf("%ld\n", static_cast<uint64_t>(123)); 
+printf("%ld\n", static_cast<uint64_t>(123));
 ```
 
 Compiling it on a 32-bit machine, the compiler quickly comes up with errors like:
@@ -79,7 +79,7 @@ The header file <cinttypes> brings a lot of PRI macros.
 Using this here looks like the following:
 
 ``` cpp
-printf("%" PRIu64 "\n", static_cast<uint64_t>(123)); 
+printf("%" PRIu64 "\n", static_cast<uint64_t>(123));
 ```
 
 All the `printf` fans who laughed at the ugliness of C++ streams, now again look a *little bit* like fools.
@@ -110,7 +110,7 @@ What if there are a lot of vectors?
 ``` cpp
 printf("(%0.3lf, %0.3lf, %0.3lf), "
        "(%0.3lf, %0.3lf, %0.3lf), "
-       "(%0.3lf, %0.3lf, %0.3lf)\n", 
+       "(%0.3lf, %0.3lf, %0.3lf)\n",
        v1.x, v1.y, v1.z,
        v2.x, v2.y, v2.z,
        v2.x, v3.y, v3.z);
@@ -125,9 +125,9 @@ C++ iostream users would just overload `operator<<` for `std::ostream` **once** 
 
 ``` cpp
 std::ostream& operator<<(std::ostream &os, const vec3d &v) {
-    return os << "(" 
-              << std::setprecision(4) 
-              << v.x << ", " << v.y << ", " << v.z 
+    return os << "("
+              << std::setprecision(4)
+              << v.x << ", " << v.y << ", " << v.z
               << ")";
 }
 ```
@@ -135,9 +135,9 @@ std::ostream& operator<<(std::ostream &os, const vec3d &v) {
 Printing multiple vectors now looks like this:
 
 ``` cpp
-std::cout << v1 << ", " << v2 << ", " << v3 << std::endl;
+std::cout << v1 << ", " << v2 << ", " << v3 << '\n';
 ```
-      
+
 `printf` users may start defining helpful macros:
 
 ``` cpp
@@ -148,7 +148,7 @@ std::cout << v1 << ", " << v2 << ", " << v3 << std::endl;
 ...and print their vectors like this:
 
 ``` cpp
-printf(PRIvec3d ", " PRIvec3d ", " PRIvec3d "\n", 
+printf(PRIvec3d ", " PRIvec3d ", " PRIvec3d "\n",
        UNPACKvec3d(v1), UNPACKvec3d(v2), UNPACKvec3d(v3));
 ```
 
@@ -188,8 +188,8 @@ python shell >>> "some {} with some var {}".format("string", 123)
 Being inspired from that, I hoped to be able to come up with something like...
 
 ``` cpp
-printf(metaprog_result("some {} with some var {}", 
-                       typelist<const char *, int>), 
+printf(metaprog_result("some {} with some var {}",
+                       typelist<const char *, int>),
        "string", 123);
 ```
 
@@ -415,7 +415,7 @@ Contents of section .rodata:
 The string looks exactly as if one had written `printf("%d hello %s! %d\n", /* ... */);`.
 
 Having exactly that string embedded in the binary does **not** rely on optimization.
-It *may* happen, that the `str()` function which statically returns this string, is still called in an unoptimized binary. 
+It *may* happen, that the `str()` function which statically returns this string, is still called in an unoptimized binary.
 But this function does *nothing* else than returning this string, which is already composed in the binary.
 
 ## Limitations

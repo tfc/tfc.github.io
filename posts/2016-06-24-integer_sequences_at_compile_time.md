@@ -66,7 +66,7 @@ In order to call `f` with the values in `tup`, one can write the following code:
 
 `f(std::get<0>(tup), std::get<1>(tup), std::get<2>(tup))`
 
-This is not too nice to read, and it is error prone, because it's possible to use wrong indices. 
+This is not too nice to read, and it is error prone, because it's possible to use wrong indices.
 Such mistakes would even compile, if the type at the wrong index is the same, as the type at the right index.
 
 It would be nicer to have a function wrapper which has semantics like "*Use this function and this tuple. Then automatically take all the tuple values out of the tuple, in order call the function with them.*":
@@ -84,32 +84,32 @@ using std::tuple;
 
 static void func(double d, float f, int i)
 {
-    std::cout << d << ", " 
-              << f << ", " 
-              << i << std::endl;    
+    std::cout << d << ", "
+              << f << ", "
+              << i << '\n';
 }
 
-// The following code passes all parameters by 
-// value, for the sake of simplicity 
+// The following code passes all parameters by
+// value, for the sake of simplicity
 
-template <typename F, typename TUP, 
+template <typename F, typename TUP,
           int ... INDICES>
-static void tuple_call_(F f, TUP tup, 
+static void tuple_call_(F f, TUP tup,
                        sequence<INDICES...>)
 {
-    f(std::get<INDICES>(tup) ...);   
+    f(std::get<INDICES>(tup) ...);
 }
 
 template <typename F, typename ... Ts>
 static void tuple_call(F f, tuple<Ts...> tup)
 {
-    tuple_call_(f, tup, 
+    tuple_call_(f, tup,
                 sequence_t<sizeof...(Ts)>{});
 }
 
 int main()
 {
-    func(1.0, 2.0, 3); 
+    func(1.0, 2.0, 3);
 
     tuple<double, float, int> tup {1.0, 2.0, 3};
     tuple_call(func, tup); // same effect

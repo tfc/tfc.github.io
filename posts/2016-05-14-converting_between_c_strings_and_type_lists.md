@@ -17,13 +17,13 @@ This is the requirement for all value-carrying types in order to be able to use 
 Using that type, it is possible to compose character type lists, which carry whole strings.
 
 ``` cpp
-template <char val> 
-struct char_t { 
+template <char val>
+struct char_t {
     static const constexpr char value {val};
 };
 ```
 
-`char_t`'s only template parameter is an actual character. 
+`char_t`'s only template parameter is an actual character.
 To carry the character 'a', one just instanciates it like this: `char_t<'a'>`.
 The character can now be accessed via the `value` member of the structure type, both at compile- and at run time:
 
@@ -37,7 +37,7 @@ using next_char = char_t<my_char::value + 1>;
 int f()
 {
     // Accessing it at run time
-    std::cout << my_char::value << std::endl;
+    std::cout << my_char::value << '\n';
 }
 ```
 
@@ -61,7 +61,7 @@ struct char_tl;
 template <char c, char ... chars>
 struct char_tl {
     using type = tl::tl<
-                    char_t<c>, 
+                    char_t<c>,
                     typename char_tl<chars...>::type
                  >;
 };
@@ -99,8 +99,8 @@ struct string_list;
 template <class Str, size_t Pos, char C>
 struct string_list {
     using next_piece = typename string_list<
-                            Str, 
-                            Pos + 1, 
+                            Str,
+                            Pos + 1,
                             Str::str()[Pos + 1]
                         >::type;
     using type = tl::tl<char_t<C>, next_piece>;
@@ -113,8 +113,8 @@ struct string_list<Str, Pos, '\0'> {
 
 template <class Str>
 using string_list_t = typename string_list<
-                          Str, 
-                          0, 
+                          Str,
+                          0,
                           Str::str()[0]
                       >::type;
 ```
@@ -184,7 +184,7 @@ struct tl_to_vl<tl::null_t, chars...> {
 ```
 <br>
 
- - **line 2** defines the general function signature: It takes a character type list as first parameter, and then a variadic list of characters. 
+ - **line 2** defines the general function signature: It takes a character type list as first parameter, and then a variadic list of characters.
  - **line 5** defines the recursion: The idea is to let the type list shrink stepwise, while the character, which is taken from it, is appended to the variadic character list.
  - **line 10** is the recursion abort step. At this point, the type list is empty and the variadic character list contains the whole string. Having the whole string in the `chars...` template variable, we can define the static function `str()` which defines a static character array and returns it.
 

@@ -21,9 +21,9 @@ int& return_int_ref() {
 int main() {
     int &int_ref {return_int_ref()};
 
-    std::cout << "Some stack overwriting intermediate print" << std::endl;
+    std::cout << "Some stack overwriting intermediate print\n";
 
-    std::cout << int_ref << std::endl;
+    std::cout << int_ref << '\n';
 }
 ```
 
@@ -53,9 +53,9 @@ int return_int_ref() {
 int main() {
     const int &int_ref {return_int_ref()}; // is now const
 
-    std::cout << "Some stack overwriting intermediate print" << std::endl;
+    std::cout << "Some stack overwriting intermediate print\n";
 
-    std::cout << int_ref << std::endl;
+    std::cout << int_ref << '\n';
 }
 ```
 
@@ -87,14 +87,14 @@ This brings us to another interesting detail:
 class Base
 {
 public:
-    ~Base() { std::cout << "Base dtor" << std::endl; }
+    ~Base() { std::cout << "Base dtor\n"; }
 };
 
 class Foo : public Base
 {
 public:
-    // Note: No virtual dtors 
-    ~Foo() { std::cout << "Foo dtor" << std::endl; }
+    // Note: No virtual dtors
+    ~Foo() { std::cout << "Foo dtor\n"; }
 };
 
 Base return_base() { return {}; }

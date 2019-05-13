@@ -4,7 +4,7 @@ title: Uncaught Exceptions in C++
 ---
 
 What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it?
-The program gets terminated. 
+The program gets terminated.
 That is fine in general, but what happens to all objects which need to be properly destructed?
 
 <!--more-->
@@ -20,7 +20,7 @@ class Foo
     const std::string str;
 public:
     Foo(const std::string &str_) : str{str_} {}
-    ~Foo() { std::cout << str << " Foo's dtor called." << std::endl; }
+    ~Foo() { std::cout << str << " Foo's dtor called.\n"; }
 };
 
 Foo gfoo {"global"};
@@ -70,7 +70,7 @@ class Foo
     const std::string str;
 public:
     Foo(const std::string &str_) : str{str_} {}
-    ~Foo() { std::cout << str << " Foo's dtor called." << std::endl; }
+    ~Foo() { std::cout << str << " Foo's dtor called.\n"; }
 };
 
 Foo gfoo {"global"};
@@ -83,13 +83,13 @@ int main()
         Foo lfoo2 {"local stack 2"};
         throw int(123);
     } catch (int) {
-        std::cout << "Caught Exception." << std::endl;
+        std::cout << "Caught Exception.\n";
     }
     return 0;
 }
 ```
 
-The output looks much better now. 
+The output looks much better now.
 *All* objects are properly destructed:
 
 ``` bash
@@ -107,7 +107,7 @@ The C++11 standard says the following in section `15.3.9`:
 
 "Whether or not the stack is unwound" is the crunch point here: It is not unwound in our case.
 
-This becomes especially important In C++14, where it is possible to throw exceptions from within `constexpr` functions. 
+This becomes especially important In C++14, where it is possible to throw exceptions from within `constexpr` functions.
 This can be used as an approach which provides `assert` behaviour at compile time *and* at run time (whereas `static_assert` does not help at run time).
 
 
