@@ -1172,7 +1172,7 @@
 <p>Assuming that we have an instance of class <code>C</code> somewhere in memory at address <code>X</code>, we know that its member <code>a</code> which it inherited from struct <code>A</code> lies at exactly the same offset. Member <code>b</code> is located at <code>X + 4</code>, and <code>c</code> is located at <code>X + 8</code>.</p>
 <p>If we are just interested in one of those specific members, we could simply calculate the offset, and then <code>reinterpret_cast</code>, just like this:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="co">// Print c, assuming x is the address of an instance of struct C:</span></a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="bu">std::</span>cout &lt;&lt; *<span class="kw">reinterpret_cast</span>&lt;<span class="dt">int</span>*&gt;(x + <span class="dv">8</span>) &lt;&lt; <span class="bu">std::</span>endl; </a></code></pre></div>
+<a class="sourceLine" id="cb2-2" title="2"><span class="bu">std::</span>cout &lt;&lt; *<span class="kw">reinterpret_cast</span>&lt;<span class="dt">int</span>*&gt;(x + <span class="dv">8</span>) &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</a></code></pre></div>
 <p>Let’s assume we have some code, which <em>relies</em> on getting addresses of <code>struct A</code> typed addresses in integral form:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">struct</span> A {</a>
 <a class="sourceLine" id="cb3-2" title="2">    <span class="dt">int</span> a {<span class="bn">0xa</span>};</a>
@@ -1190,13 +1190,13 @@
 <a class="sourceLine" id="cb3-14" title="14"><span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)</a>
 <a class="sourceLine" id="cb3-15" title="15">{</a>
 <a class="sourceLine" id="cb3-16" title="16">    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};</a>
-<a class="sourceLine" id="cb3-17" title="17">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb3-17" title="17">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</a>
 <a class="sourceLine" id="cb3-18" title="18">}</a>
 <a class="sourceLine" id="cb3-19" title="19"></a>
 <a class="sourceLine" id="cb3-20" title="20"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb3-21" title="21">{</a>
 <a class="sourceLine" id="cb3-22" title="22">    C c;</a>
-<a class="sourceLine" id="cb3-23" title="23"> </a>
+<a class="sourceLine" id="cb3-23" title="23"></a>
 <a class="sourceLine" id="cb3-24" title="24">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
 <a class="sourceLine" id="cb3-25" title="25"></a>
 <a class="sourceLine" id="cb3-26" title="26">    <span class="cf">return</span> <span class="dv">0</span>;</a>
@@ -1222,13 +1222,13 @@
 <a class="sourceLine" id="cb4-13" title="13"><span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)</a>
 <a class="sourceLine" id="cb4-14" title="14">{</a>
 <a class="sourceLine" id="cb4-15" title="15">    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};</a>
-<a class="sourceLine" id="cb4-16" title="16">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb4-16" title="16">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</a>
 <a class="sourceLine" id="cb4-17" title="17">}</a>
 <a class="sourceLine" id="cb4-18" title="18"></a>
 <a class="sourceLine" id="cb4-19" title="19"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb4-20" title="20">{</a>
 <a class="sourceLine" id="cb4-21" title="21">    C c;</a>
-<a class="sourceLine" id="cb4-22" title="22"> </a>
+<a class="sourceLine" id="cb4-22" title="22"></a>
 <a class="sourceLine" id="cb4-23" title="23">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
 <a class="sourceLine" id="cb4-24" title="24"></a>
 <a class="sourceLine" id="cb4-25" title="25">    <span class="cf">return</span> <span class="dv">0</span>;</a>
@@ -1247,7 +1247,7 @@
 <a class="sourceLine" id="cb5-9" title="9"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb5-10" title="10">{</a>
 <a class="sourceLine" id="cb5-11" title="11">    C c;</a>
-<a class="sourceLine" id="cb5-12" title="12"> </a>
+<a class="sourceLine" id="cb5-12" title="12"></a>
 <a class="sourceLine" id="cb5-13" title="13">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
 <a class="sourceLine" id="cb5-14" title="14"></a>
 <a class="sourceLine" id="cb5-15" title="15">    <span class="cf">return</span> <span class="dv">0</span>;</a>
@@ -1293,7 +1293,7 @@
 <a class="sourceLine" id="cb1-2" title="2"></a>
 <a class="sourceLine" id="cb1-3" title="3"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb1-4" title="4">{</a>
-<a class="sourceLine" id="cb1-5" title="5">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>); </a>
+<a class="sourceLine" id="cb1-5" title="5">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>);</a>
 <a class="sourceLine" id="cb1-6" title="6">}</a></code></pre></div>
 <p>It’s simply no fun to tell <code>printf</code> of which type all variables are. The compiler <em>knows</em> the types already, so why must the programmer type the type names <em>again</em>?</p>
 <p>C++ streams fix this, as the <code>operator&lt;&lt;</code> is properly overloaded for any type, which selects the right formatting method automatically. Let’s have a look how to get exactly the same output with C++ streams:</p>
@@ -1302,13 +1302,13 @@
 <a class="sourceLine" id="cb2-3" title="3"></a>
 <a class="sourceLine" id="cb2-4" title="4"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb2-5" title="5">{</a>
-<a class="sourceLine" id="cb2-6" title="6">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>); </a>
+<a class="sourceLine" id="cb2-6" title="6">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>);</a>
 <a class="sourceLine" id="cb2-7" title="7"></a>
 <a class="sourceLine" id="cb2-8" title="8">    <span class="bu">std::</span>cout &lt;&lt; <span class="dv">123</span><span class="bu">u</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
 <a class="sourceLine" id="cb2-9" title="9">              &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; <span class="bn">0x123</span><span class="bu">u</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
 <a class="sourceLine" id="cb2-10" title="10">              &lt;&lt; <span class="bu">std::</span>fixed &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">6</span>) &lt;&lt; <span class="fl">1.0</span><span class="bu">f</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
 <a class="sourceLine" id="cb2-11" title="11">              &lt;&lt; <span class="fl">2.0</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
-<a class="sourceLine" id="cb2-12" title="12">              &lt;&lt; <span class="st">&quot;Hello World&quot;</span> &lt;&lt; <span class="bu">std::</span>endl</a>
+<a class="sourceLine" id="cb2-12" title="12">              &lt;&lt; <span class="st">&quot;Hello World</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
 <a class="sourceLine" id="cb2-13" title="13"></a>
 <a class="sourceLine" id="cb2-14" title="14">}</a></code></pre></div>
 <p>All type safety aside, at this point most likely everyone will agree that this is, from a readability and comfort perspective, <em>no</em> improvement over to <code>printf</code>.</p>
@@ -1317,12 +1317,12 @@
 </blockquote>
 <h3 id="round-2-type-pitfalls">Round 2: Type Pitfalls</h3>
 <p>When compiling the following program on a 64-bit machine, everything is fine:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">printf(<span class="st">&quot;</span><span class="sc">%ld\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>)); </a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">printf(<span class="st">&quot;</span><span class="sc">%ld\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>));</a></code></pre></div>
 <p>Compiling it on a 32-bit machine, the compiler quickly comes up with errors like:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" title="1"><span class="ex">error</span>: format <span class="st">&#39;%ld&#39;</span> expects argument of type <span class="st">&#39;long int&#39;</span>, but argument 2 has type <span class="st">&#39;uint64_t {aka long long unsigned int}&#39;</span> [-Werror=format=]</a></code></pre></div>
 <p>So on 32bit systems, one should better have used <code>%lld</code>. This feels needlessly complicated because in both cases, the compiler knows the *@!#* type, but nevertheless the programmer has to deal with this now.</p>
 <p>There is a portable solution: <code>PRIu64</code>. The header file <cinttypes> brings a lot of PRI macros. Using this here looks like the following:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">printf(<span class="st">&quot;%&quot;</span> PRIu64 <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>)); </a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">printf(<span class="st">&quot;%&quot;</span> PRIu64 <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>));</a></code></pre></div>
 <p>All the <code>printf</code> fans who laughed at the ugliness of C++ streams, now again look a <em>little bit</em> like fools.</p>
 <h3 id="round-3-repetition">Round 3: Repetition</h3>
 <p>There are certain types which are a data composition of multiple values. A very typical example are <em>vectors</em> of data, e.g. geometric vectors:</p>
@@ -1337,7 +1337,7 @@
 <p>What if there are a lot of vectors?</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1">printf(<span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf), &quot;</span></a>
 <a class="sourceLine" id="cb8-2" title="2">       <span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf), &quot;</span></a>
-<a class="sourceLine" id="cb8-3" title="3">       <span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf)</span><span class="sc">\n</span><span class="st">&quot;</span>, </a>
+<a class="sourceLine" id="cb8-3" title="3">       <span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf)</span><span class="sc">\n</span><span class="st">&quot;</span>,</a>
 <a class="sourceLine" id="cb8-4" title="4">       v1.x, v1.y, v1.z,</a>
 <a class="sourceLine" id="cb8-5" title="5">       v2.x, v2.y, v2.z,</a>
 <a class="sourceLine" id="cb8-6" title="6">       v2.x, v3.y, v3.z);</a></code></pre></div>
@@ -1347,18 +1347,18 @@
 </blockquote>
 <p>C++ iostream users would just overload <code>operator&lt;&lt;</code> for <code>std::ostream</code> <strong>once</strong> and be done with this forever:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb9-1" title="1"><span class="bu">std::</span>ostream&amp; <span class="kw">operator</span>&lt;&lt;(<span class="bu">std::</span>ostream &amp;os, <span class="at">const</span> vec3d &amp;v) {</a>
-<a class="sourceLine" id="cb9-2" title="2">    <span class="cf">return</span> os &lt;&lt; <span class="st">&quot;(&quot;</span> </a>
-<a class="sourceLine" id="cb9-3" title="3">              &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">4</span>) </a>
-<a class="sourceLine" id="cb9-4" title="4">              &lt;&lt; v.x &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.z </a>
+<a class="sourceLine" id="cb9-2" title="2">    <span class="cf">return</span> os &lt;&lt; <span class="st">&quot;(&quot;</span></a>
+<a class="sourceLine" id="cb9-3" title="3">              &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb9-4" title="4">              &lt;&lt; v.x &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.z</a>
 <a class="sourceLine" id="cb9-5" title="5">              &lt;&lt; <span class="st">&quot;)&quot;</span>;</a>
 <a class="sourceLine" id="cb9-6" title="6">}</a></code></pre></div>
 <p>Printing multiple vectors now looks like this:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1"><span class="bu">std::</span>cout &lt;&lt; v1 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v2 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v3 &lt;&lt; <span class="bu">std::</span>endl;</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1"><span class="bu">std::</span>cout &lt;&lt; v1 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v2 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v3 &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</a></code></pre></div>
 <p><code>printf</code> users may start defining helpful macros:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb11-1" title="1"><span class="pp">#define PRIvec3d       </span><span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf)&quot;</span></a>
 <a class="sourceLine" id="cb11-2" title="2"><span class="pp">#define UNPACKvec3d</span>(v)<span class="pp"> </span>(v).x,<span class="pp"> </span>(v).y,<span class="pp"> </span>(v).z</a></code></pre></div>
 <p>…and print their vectors like this:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb12-1" title="1">printf(PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, </a>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb12-1" title="1">printf(PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>,</a>
 <a class="sourceLine" id="cb12-2" title="2">       UNPACKvec3d(v1), UNPACKvec3d(v2), UNPACKvec3d(v3));</a></code></pre></div>
 <p>In my opinion, C++ streams clearly win at this point.</p>
 <h2 id="being-stuck-with-printf.-for-reasons.">Being Stuck with <code>printf</code>. For Reasons.</h2>
@@ -1371,8 +1371,8 @@
 <div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb13-1" title="1">python shell <span class="op">&gt;&gt;&gt;</span> <span class="st">&quot;some </span><span class="sc">{}</span><span class="st"> with some var </span><span class="sc">{}</span><span class="st">&quot;</span>.<span class="bu">format</span>(<span class="st">&quot;string&quot;</span>, <span class="dv">123</span>)</a>
 <a class="sourceLine" id="cb13-2" title="2"><span class="co">&#39;some string with some var 123&#39;</span></a></code></pre></div>
 <p>Being inspired from that, I hoped to be able to come up with something like…</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb14-1" title="1">printf(metaprog_result(<span class="st">&quot;some {} with some var {}&quot;</span>, </a>
-<a class="sourceLine" id="cb14-2" title="2">                       typelist&lt;<span class="at">const</span> <span class="dt">char</span> *, <span class="dt">int</span>&gt;), </a>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb14-1" title="1">printf(metaprog_result(<span class="st">&quot;some {} with some var {}&quot;</span>,</a>
+<a class="sourceLine" id="cb14-2" title="2">                       typelist&lt;<span class="at">const</span> <span class="dt">char</span> *, <span class="dt">int</span>&gt;),</a>
 <a class="sourceLine" id="cb14-3" title="3">       <span class="st">&quot;string&quot;</span>, <span class="dv">123</span>);</a></code></pre></div>
 <p>…which collapses to the following during compile time:</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb15-1" title="1">printf(<span class="st">&quot;some </span><span class="sc">%s</span><span class="st"> with some var </span><span class="sc">%d</span><span class="st">&quot;</span>, <span class="st">&quot;string&quot;</span>, <span class="dv">123</span>);</a></code></pre></div>
@@ -1721,7 +1721,7 @@
 <a class="sourceLine" id="cb6-6" title="6"><span class="at">const</span> fibit end {<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>};</a>
 <a class="sourceLine" id="cb6-7" title="7"></a>
 <a class="sourceLine" id="cb6-8" title="8"><span class="cf">while</span> (it != end) {</a>
-<a class="sourceLine" id="cb6-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; *it &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb6-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; *it &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</a>
 <a class="sourceLine" id="cb6-10" title="10">    ++it;</a>
 <a class="sourceLine" id="cb6-11" title="11">}</a>
 <a class="sourceLine" id="cb6-12" title="12"></a>
@@ -1743,7 +1743,7 @@
 <a class="sourceLine" id="cb7-13" title="13">};</a></code></pre></div>
 <p>We can now write…</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1"><span class="cf">for</span> (<span class="at">const</span> <span class="dt">size_t</span> num : fib_range(<span class="dv">10</span>)) {</a>
-<a class="sourceLine" id="cb8-2" title="2">    <span class="bu">std::</span>cout &lt;&lt; num &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb8-2" title="2">    <span class="bu">std::</span>cout &lt;&lt; num &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</a>
 <a class="sourceLine" id="cb8-3" title="3">}</a></code></pre></div>
 <p>… which will print the first 10 fibonacci numbers.</p>
 <p>What does the function <code>fibit_at</code> do? This function is a <code>constexpr</code> function, which advances a fibonacci iterator at <em>compile time</em> if possible, in order to push the iterator towards the fibonacci number which the user wants:</p>
@@ -2095,32 +2095,32 @@
 <a class="sourceLine" id="cb2-5" title="5"></a>
 <a class="sourceLine" id="cb2-6" title="6"><span class="at">static</span> <span class="dt">void</span> func(<span class="dt">double</span> d, <span class="dt">float</span> f, <span class="dt">int</span> i)</a>
 <a class="sourceLine" id="cb2-7" title="7">{</a>
-<a class="sourceLine" id="cb2-8" title="8">    <span class="bu">std::</span>cout &lt;&lt; d &lt;&lt; <span class="st">&quot;, &quot;</span> </a>
-<a class="sourceLine" id="cb2-9" title="9">              &lt;&lt; f &lt;&lt; <span class="st">&quot;, &quot;</span> </a>
-<a class="sourceLine" id="cb2-10" title="10">              &lt;&lt; i &lt;&lt; <span class="bu">std::</span>endl;    </a>
+<a class="sourceLine" id="cb2-8" title="8">    <span class="bu">std::</span>cout &lt;&lt; d &lt;&lt; <span class="st">&quot;, &quot;</span></a>
+<a class="sourceLine" id="cb2-9" title="9">              &lt;&lt; f &lt;&lt; <span class="st">&quot;, &quot;</span></a>
+<a class="sourceLine" id="cb2-10" title="10">              &lt;&lt; i &lt;&lt; <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</a>
 <a class="sourceLine" id="cb2-11" title="11">}</a>
 <a class="sourceLine" id="cb2-12" title="12"></a>
-<a class="sourceLine" id="cb2-13" title="13"><span class="co">// The following code passes all parameters by </span></a>
-<a class="sourceLine" id="cb2-14" title="14"><span class="co">// value, for the sake of simplicity </span></a>
+<a class="sourceLine" id="cb2-13" title="13"><span class="co">// The following code passes all parameters by</span></a>
+<a class="sourceLine" id="cb2-14" title="14"><span class="co">// value, for the sake of simplicity</span></a>
 <a class="sourceLine" id="cb2-15" title="15"></a>
-<a class="sourceLine" id="cb2-16" title="16"><span class="kw">template</span> &lt;<span class="kw">typename</span> F, <span class="kw">typename</span> TUP, </a>
+<a class="sourceLine" id="cb2-16" title="16"><span class="kw">template</span> &lt;<span class="kw">typename</span> F, <span class="kw">typename</span> TUP,</a>
 <a class="sourceLine" id="cb2-17" title="17">          <span class="dt">int</span> ... INDICES&gt;</a>
-<a class="sourceLine" id="cb2-18" title="18"><span class="at">static</span> <span class="dt">void</span> <span class="va">tuple_call_</span>(F f, TUP tup, </a>
+<a class="sourceLine" id="cb2-18" title="18"><span class="at">static</span> <span class="dt">void</span> <span class="va">tuple_call_</span>(F f, TUP tup,</a>
 <a class="sourceLine" id="cb2-19" title="19">                       sequence&lt;INDICES...&gt;)</a>
 <a class="sourceLine" id="cb2-20" title="20">{</a>
-<a class="sourceLine" id="cb2-21" title="21">    f(<span class="bu">std::</span>get&lt;INDICES&gt;(tup) ...);   </a>
+<a class="sourceLine" id="cb2-21" title="21">    f(<span class="bu">std::</span>get&lt;INDICES&gt;(tup) ...);</a>
 <a class="sourceLine" id="cb2-22" title="22">}</a>
 <a class="sourceLine" id="cb2-23" title="23"></a>
 <a class="sourceLine" id="cb2-24" title="24"><span class="kw">template</span> &lt;<span class="kw">typename</span> F, <span class="kw">typename</span> ... Ts&gt;</a>
 <a class="sourceLine" id="cb2-25" title="25"><span class="at">static</span> <span class="dt">void</span> tuple_call(F f, tuple&lt;Ts...&gt; tup)</a>
 <a class="sourceLine" id="cb2-26" title="26">{</a>
-<a class="sourceLine" id="cb2-27" title="27">    <span class="va">tuple_call_</span>(f, tup, </a>
+<a class="sourceLine" id="cb2-27" title="27">    <span class="va">tuple_call_</span>(f, tup,</a>
 <a class="sourceLine" id="cb2-28" title="28">                <span class="dt">sequence_t</span>&lt;<span class="kw">sizeof</span>...(Ts)&gt;{});</a>
 <a class="sourceLine" id="cb2-29" title="29">}</a>
 <a class="sourceLine" id="cb2-30" title="30"></a>
 <a class="sourceLine" id="cb2-31" title="31"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb2-32" title="32">{</a>
-<a class="sourceLine" id="cb2-33" title="33">    func(<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="dv">3</span>); </a>
+<a class="sourceLine" id="cb2-33" title="33">    func(<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="dv">3</span>);</a>
 <a class="sourceLine" id="cb2-34" title="34"></a>
 <a class="sourceLine" id="cb2-35" title="35">    tuple&lt;<span class="dt">double</span>, <span class="dt">float</span>, <span class="dt">int</span>&gt; tup {<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="dv">3</span>};</a>
 <a class="sourceLine" id="cb2-36" title="36">    tuple_call(func, tup); <span class="co">// same effect</span></a>

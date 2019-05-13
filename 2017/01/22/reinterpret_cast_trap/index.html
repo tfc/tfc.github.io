@@ -46,7 +46,7 @@
 <p>Assuming that we have an instance of class <code>C</code> somewhere in memory at address <code>X</code>, we know that its member <code>a</code> which it inherited from struct <code>A</code> lies at exactly the same offset. Member <code>b</code> is located at <code>X + 4</code>, and <code>c</code> is located at <code>X + 8</code>.</p>
 <p>If we are just interested in one of those specific members, we could simply calculate the offset, and then <code>reinterpret_cast</code>, just like this:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="co">// Print c, assuming x is the address of an instance of struct C:</span></a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="bu">std::</span>cout &lt;&lt; *<span class="kw">reinterpret_cast</span>&lt;<span class="dt">int</span>*&gt;(x + <span class="dv">8</span>) &lt;&lt; <span class="bu">std::</span>endl; </a></code></pre></div>
+<a class="sourceLine" id="cb2-2" title="2"><span class="bu">std::</span>cout &lt;&lt; *<span class="kw">reinterpret_cast</span>&lt;<span class="dt">int</span>*&gt;(x + <span class="dv">8</span>) &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a></code></pre></div>
 <p>Let’s assume we have some code, which <em>relies</em> on getting addresses of <code>struct A</code> typed addresses in integral form:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">struct</span> A {</a>
 <a class="sourceLine" id="cb3-2" title="2">    <span class="dt">int</span> a {<span class="bn">0xa</span>};</a>
@@ -64,13 +64,13 @@
 <a class="sourceLine" id="cb3-14" title="14"><span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)</a>
 <a class="sourceLine" id="cb3-15" title="15">{</a>
 <a class="sourceLine" id="cb3-16" title="16">    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};</a>
-<a class="sourceLine" id="cb3-17" title="17">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb3-17" title="17">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
 <a class="sourceLine" id="cb3-18" title="18">}</a>
 <a class="sourceLine" id="cb3-19" title="19"></a>
 <a class="sourceLine" id="cb3-20" title="20"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb3-21" title="21">{</a>
 <a class="sourceLine" id="cb3-22" title="22">    C c;</a>
-<a class="sourceLine" id="cb3-23" title="23"> </a>
+<a class="sourceLine" id="cb3-23" title="23"></a>
 <a class="sourceLine" id="cb3-24" title="24">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
 <a class="sourceLine" id="cb3-25" title="25"></a>
 <a class="sourceLine" id="cb3-26" title="26">    <span class="cf">return</span> <span class="dv">0</span>;</a>
@@ -96,13 +96,13 @@
 <a class="sourceLine" id="cb4-13" title="13"><span class="dt">void</span> print_a_from_address(<span class="bu">std::</span>uintptr_t addr)</a>
 <a class="sourceLine" id="cb4-14" title="14">{</a>
 <a class="sourceLine" id="cb4-15" title="15">    <span class="at">const</span> A *a {<span class="kw">reinterpret_cast</span>&lt;<span class="at">const</span> A*&gt;(addr)};</a>
-<a class="sourceLine" id="cb4-16" title="16">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb4-16" title="16">    <span class="bu">std::</span>cout &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; a-&gt;a &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
 <a class="sourceLine" id="cb4-17" title="17">}</a>
 <a class="sourceLine" id="cb4-18" title="18"></a>
 <a class="sourceLine" id="cb4-19" title="19"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb4-20" title="20">{</a>
 <a class="sourceLine" id="cb4-21" title="21">    C c;</a>
-<a class="sourceLine" id="cb4-22" title="22"> </a>
+<a class="sourceLine" id="cb4-22" title="22"></a>
 <a class="sourceLine" id="cb4-23" title="23">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
 <a class="sourceLine" id="cb4-24" title="24"></a>
 <a class="sourceLine" id="cb4-25" title="25">    <span class="cf">return</span> <span class="dv">0</span>;</a>
@@ -121,7 +121,7 @@
 <a class="sourceLine" id="cb5-9" title="9"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb5-10" title="10">{</a>
 <a class="sourceLine" id="cb5-11" title="11">    C c;</a>
-<a class="sourceLine" id="cb5-12" title="12"> </a>
+<a class="sourceLine" id="cb5-12" title="12"></a>
 <a class="sourceLine" id="cb5-13" title="13">    print_a_from_address(<span class="kw">reinterpret_cast</span>&lt;<span class="bu">std::</span>uintptr_t&gt;(&amp;c));</a>
 <a class="sourceLine" id="cb5-14" title="14"></a>
 <a class="sourceLine" id="cb5-15" title="15">    <span class="cf">return</span> <span class="dv">0</span>;</a>

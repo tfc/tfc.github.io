@@ -135,7 +135,7 @@
 <a class="sourceLine" id="cb6-6" title="6"><span class="at">const</span> fibit end {<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>};</a>
 <a class="sourceLine" id="cb6-7" title="7"></a>
 <a class="sourceLine" id="cb6-8" title="8"><span class="cf">while</span> (it != end) {</a>
-<a class="sourceLine" id="cb6-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; *it &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb6-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; *it &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
 <a class="sourceLine" id="cb6-10" title="10">    ++it;</a>
 <a class="sourceLine" id="cb6-11" title="11">}</a>
 <a class="sourceLine" id="cb6-12" title="12"></a>
@@ -157,7 +157,7 @@
 <a class="sourceLine" id="cb7-13" title="13">};</a></code></pre></div>
 <p>We can now write…</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1"><span class="cf">for</span> (<span class="at">const</span> <span class="dt">size_t</span> num : fib_range(<span class="dv">10</span>)) {</a>
-<a class="sourceLine" id="cb8-2" title="2">    <span class="bu">std::</span>cout &lt;&lt; num &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb8-2" title="2">    <span class="bu">std::</span>cout &lt;&lt; num &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
 <a class="sourceLine" id="cb8-3" title="3">}</a></code></pre></div>
 <p>… which will print the first 10 fibonacci numbers.</p>
 <p>What does the function <code>fibit_at</code> do? This function is a <code>constexpr</code> function, which advances a fibonacci iterator at <em>compile time</em> if possible, in order to push the iterator towards the fibonacci number which the user wants:</p>

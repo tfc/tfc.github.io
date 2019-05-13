@@ -41,8 +41,8 @@
 <!--more-->
 <h2 id="wrapping-characters-into-type-lists">Wrapping characters into Type Lists</h2>
 <p>At first, a type is needed which can carry one actual character, without having to instantiate it. This is the requirement for all value-carrying types in order to be able to use them at compile time. Using that type, it is possible to compose character type lists, which carry whole strings.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">template</span> &lt;<span class="dt">char</span> val&gt; </a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="kw">struct</span> <span class="dt">char_t</span> { </a>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">template</span> &lt;<span class="dt">char</span> val&gt;</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">struct</span> <span class="dt">char_t</span> {</a>
 <a class="sourceLine" id="cb1-3" title="3">    <span class="at">static</span> <span class="at">const</span> <span class="kw">constexpr</span> <span class="dt">char</span> value {val};</a>
 <a class="sourceLine" id="cb1-4" title="4">};</a></code></pre></div>
 <p><code>char_t</code>‘s only template parameter is an actual character. To carry the character ’a’, one just instanciates it like this: <code>char_t&lt;'a'&gt;</code>. The character can now be accessed via the <code>value</code> member of the structure type, both at compile- and at run time:</p>
@@ -55,7 +55,7 @@
 <a class="sourceLine" id="cb2-7" title="7"><span class="dt">int</span> f()</a>
 <a class="sourceLine" id="cb2-8" title="8">{</a>
 <a class="sourceLine" id="cb2-9" title="9">    <span class="co">// Accessing it at run time</span></a>
-<a class="sourceLine" id="cb2-10" title="10">    <span class="bu">std::</span>cout &lt;&lt; my_char::value &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb2-10" title="10">    <span class="bu">std::</span>cout &lt;&lt; my_char::value &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
 <a class="sourceLine" id="cb2-11" title="11">}</a></code></pre></div>
 <p>This type is now fundamental to character type lists.</p>
 <h2 id="converting-from-strings-to-type-lists">Converting from Strings to Type Lists</h2>
@@ -68,7 +68,7 @@
 <a class="sourceLine" id="cb4-4" title="4"><span class="kw">template</span> &lt;<span class="dt">char</span> c, <span class="dt">char</span> ... chars&gt;</a>
 <a class="sourceLine" id="cb4-5" title="5"><span class="kw">struct</span> char_tl {</a>
 <a class="sourceLine" id="cb4-6" title="6">    <span class="kw">using</span> type = tl::tl&lt;</a>
-<a class="sourceLine" id="cb4-7" title="7">                    <span class="dt">char_t</span>&lt;c&gt;, </a>
+<a class="sourceLine" id="cb4-7" title="7">                    <span class="dt">char_t</span>&lt;c&gt;,</a>
 <a class="sourceLine" id="cb4-8" title="8">                    <span class="kw">typename</span> char_tl&lt;chars...&gt;::type</a>
 <a class="sourceLine" id="cb4-9" title="9">                 &gt;;</a>
 <a class="sourceLine" id="cb4-10" title="10">};</a>
@@ -97,8 +97,8 @@
 <a class="sourceLine" id="cb6-4" title="4"><span class="kw">template</span> &lt;<span class="kw">class</span> Str, <span class="dt">size_t</span> Pos, <span class="dt">char</span> C&gt;</a>
 <a class="sourceLine" id="cb6-5" title="5"><span class="kw">struct</span> string_list {</a>
 <a class="sourceLine" id="cb6-6" title="6">    <span class="kw">using</span> next_piece = <span class="kw">typename</span> string_list&lt;</a>
-<a class="sourceLine" id="cb6-7" title="7">                            Str, </a>
-<a class="sourceLine" id="cb6-8" title="8">                            Pos + <span class="dv">1</span>, </a>
+<a class="sourceLine" id="cb6-7" title="7">                            Str,</a>
+<a class="sourceLine" id="cb6-8" title="8">                            Pos + <span class="dv">1</span>,</a>
 <a class="sourceLine" id="cb6-9" title="9">                            Str::str()[Pos + <span class="dv">1</span>]</a>
 <a class="sourceLine" id="cb6-10" title="10">                        &gt;::type;</a>
 <a class="sourceLine" id="cb6-11" title="11">    <span class="kw">using</span> type = tl::tl&lt;<span class="dt">char_t</span>&lt;C&gt;, next_piece&gt;;</a>
@@ -111,8 +111,8 @@
 <a class="sourceLine" id="cb6-18" title="18"></a>
 <a class="sourceLine" id="cb6-19" title="19"><span class="kw">template</span> &lt;<span class="kw">class</span> Str&gt;</a>
 <a class="sourceLine" id="cb6-20" title="20"><span class="kw">using</span> <span class="dt">string_list_t</span> = <span class="kw">typename</span> string_list&lt;</a>
-<a class="sourceLine" id="cb6-21" title="21">                          Str, </a>
-<a class="sourceLine" id="cb6-22" title="22">                          <span class="dv">0</span>, </a>
+<a class="sourceLine" id="cb6-21" title="21">                          Str,</a>
+<a class="sourceLine" id="cb6-22" title="22">                          <span class="dv">0</span>,</a>
 <a class="sourceLine" id="cb6-23" title="23">                          Str::str()[<span class="dv">0</span>]</a>
 <a class="sourceLine" id="cb6-24" title="24">                      &gt;::type;</a></code></pre></div>
 <p><br></p>

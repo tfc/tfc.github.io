@@ -49,9 +49,9 @@
 <a class="sourceLine" id="cb1-6" title="6"><span class="dt">int</span> main() {</a>
 <a class="sourceLine" id="cb1-7" title="7">    <span class="dt">int</span> &amp;int_ref {return_int_ref()};</a>
 <a class="sourceLine" id="cb1-8" title="8"></a>
-<a class="sourceLine" id="cb1-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Some stack overwriting intermediate print&quot;</span> &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb1-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Some stack overwriting intermediate print</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
 <a class="sourceLine" id="cb1-10" title="10"></a>
-<a class="sourceLine" id="cb1-11" title="11">    <span class="bu">std::</span>cout &lt;&lt; int_ref &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb1-11" title="11">    <span class="bu">std::</span>cout &lt;&lt; int_ref &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
 <a class="sourceLine" id="cb1-12" title="12">}</a></code></pre></div>
 <p>When <code>int_ref</code> is evaluated in the <code>cout</code> statement, its position on the stack is most probably not yet overwritten, hence <code>123</code> is printed. If we run any kind of code between obtaining the reference, and printing its referenced value, then the value is destroyed, and it’s not longer printing <code>123</code>.</p>
 <p>Of course, the compiler has been warning us about this all the time:</p>
@@ -70,9 +70,9 @@
 <a class="sourceLine" id="cb3-6" title="6"><span class="dt">int</span> main() {</a>
 <a class="sourceLine" id="cb3-7" title="7">    <span class="at">const</span> <span class="dt">int</span> &amp;int_ref {return_int_ref()}; <span class="co">// is now const</span></a>
 <a class="sourceLine" id="cb3-8" title="8"></a>
-<a class="sourceLine" id="cb3-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Some stack overwriting intermediate print&quot;</span> &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb3-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Some stack overwriting intermediate print</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
 <a class="sourceLine" id="cb3-10" title="10"></a>
-<a class="sourceLine" id="cb3-11" title="11">    <span class="bu">std::</span>cout &lt;&lt; int_ref &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb3-11" title="11">    <span class="bu">std::</span>cout &lt;&lt; int_ref &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
 <a class="sourceLine" id="cb3-12" title="12">}</a></code></pre></div>
 <p>The compiler stopped emitting a warning, and our program correctly prints the right value.</p>
 <p>It is fine to do that, because it is an <em>official C++ feature</em> to <strong><em>extend the life time of a temporary object to the life time of the const reference which refers to it</em></strong>.</p>
@@ -91,14 +91,14 @@
 <a class="sourceLine" id="cb5-3" title="3"><span class="kw">class</span> Base</a>
 <a class="sourceLine" id="cb5-4" title="4">{</a>
 <a class="sourceLine" id="cb5-5" title="5"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb5-6" title="6">    ~Base() { <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Base dtor&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }</a>
+<a class="sourceLine" id="cb5-6" title="6">    ~Base() { <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Base dtor</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
 <a class="sourceLine" id="cb5-7" title="7">};</a>
 <a class="sourceLine" id="cb5-8" title="8"></a>
 <a class="sourceLine" id="cb5-9" title="9"><span class="kw">class</span> Foo : <span class="kw">public</span> Base</a>
 <a class="sourceLine" id="cb5-10" title="10">{</a>
 <a class="sourceLine" id="cb5-11" title="11"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb5-12" title="12">    <span class="co">// Note: No virtual dtors </span></a>
-<a class="sourceLine" id="cb5-13" title="13">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Foo dtor&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }</a>
+<a class="sourceLine" id="cb5-12" title="12">    <span class="co">// Note: No virtual dtors</span></a>
+<a class="sourceLine" id="cb5-13" title="13">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Foo dtor</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
 <a class="sourceLine" id="cb5-14" title="14">};</a>
 <a class="sourceLine" id="cb5-15" title="15"></a>
 <a class="sourceLine" id="cb5-16" title="16">Base return_base() { <span class="cf">return</span> {}; }</a>

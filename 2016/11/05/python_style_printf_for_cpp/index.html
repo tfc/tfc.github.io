@@ -47,7 +47,7 @@
 <a class="sourceLine" id="cb1-2" title="2"></a>
 <a class="sourceLine" id="cb1-3" title="3"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb1-4" title="4">{</a>
-<a class="sourceLine" id="cb1-5" title="5">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>); </a>
+<a class="sourceLine" id="cb1-5" title="5">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>);</a>
 <a class="sourceLine" id="cb1-6" title="6">}</a></code></pre></div>
 <p>It’s simply no fun to tell <code>printf</code> of which type all variables are. The compiler <em>knows</em> the types already, so why must the programmer type the type names <em>again</em>?</p>
 <p>C++ streams fix this, as the <code>operator&lt;&lt;</code> is properly overloaded for any type, which selects the right formatting method automatically. Let’s have a look how to get exactly the same output with C++ streams:</p>
@@ -56,13 +56,13 @@
 <a class="sourceLine" id="cb2-3" title="3"></a>
 <a class="sourceLine" id="cb2-4" title="4"><span class="dt">int</span> main()</a>
 <a class="sourceLine" id="cb2-5" title="5">{</a>
-<a class="sourceLine" id="cb2-6" title="6">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>); </a>
+<a class="sourceLine" id="cb2-6" title="6">    printf(<span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, %0.8f, %0.8lf, </span><span class="sc">%s\n</span><span class="st">&quot;</span>, <span class="dv">123</span><span class="bu">u</span>, <span class="bn">0x123</span><span class="bu">u</span>, <span class="fl">1.0</span><span class="bu">f</span>, <span class="fl">2.0</span>, <span class="st">&quot;Hello World&quot;</span>);</a>
 <a class="sourceLine" id="cb2-7" title="7"></a>
 <a class="sourceLine" id="cb2-8" title="8">    <span class="bu">std::</span>cout &lt;&lt; <span class="dv">123</span><span class="bu">u</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
 <a class="sourceLine" id="cb2-9" title="9">              &lt;&lt; <span class="bu">std::</span>hex &lt;&lt; <span class="bn">0x123</span><span class="bu">u</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
 <a class="sourceLine" id="cb2-10" title="10">              &lt;&lt; <span class="bu">std::</span>fixed &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">6</span>) &lt;&lt; <span class="fl">1.0</span><span class="bu">f</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
 <a class="sourceLine" id="cb2-11" title="11">              &lt;&lt; <span class="fl">2.0</span> &lt;&lt; <span class="st">&quot;, &quot;</span></a>
-<a class="sourceLine" id="cb2-12" title="12">              &lt;&lt; <span class="st">&quot;Hello World&quot;</span> &lt;&lt; <span class="bu">std::</span>endl</a>
+<a class="sourceLine" id="cb2-12" title="12">              &lt;&lt; <span class="st">&quot;Hello World</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
 <a class="sourceLine" id="cb2-13" title="13"></a>
 <a class="sourceLine" id="cb2-14" title="14">}</a></code></pre></div>
 <p>All type safety aside, at this point most likely everyone will agree that this is, from a readability and comfort perspective, <em>no</em> improvement over to <code>printf</code>.</p>
@@ -71,12 +71,12 @@
 </blockquote>
 <h3 id="round-2-type-pitfalls">Round 2: Type Pitfalls</h3>
 <p>When compiling the following program on a 64-bit machine, everything is fine:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">printf(<span class="st">&quot;</span><span class="sc">%ld\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>)); </a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1">printf(<span class="st">&quot;</span><span class="sc">%ld\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>));</a></code></pre></div>
 <p>Compiling it on a 32-bit machine, the compiler quickly comes up with errors like:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" title="1"><span class="ex">error</span>: format <span class="st">'%ld'</span> expects argument of type <span class="st">'long int'</span>, but argument 2 has type <span class="st">'uint64_t {aka long long unsigned int}'</span> [-Werror=format=]</a></code></pre></div>
 <p>So on 32bit systems, one should better have used <code>%lld</code>. This feels needlessly complicated because in both cases, the compiler knows the *@!#* type, but nevertheless the programmer has to deal with this now.</p>
 <p>There is a portable solution: <code>PRIu64</code>. The header file <cinttypes> brings a lot of PRI macros. Using this here looks like the following:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">printf(<span class="st">&quot;%&quot;</span> PRIu64 <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>)); </a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1">printf(<span class="st">&quot;%&quot;</span> PRIu64 <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="kw">static_cast</span>&lt;<span class="dt">uint64_t</span>&gt;(<span class="dv">123</span>));</a></code></pre></div>
 <p>All the <code>printf</code> fans who laughed at the ugliness of C++ streams, now again look a <em>little bit</em> like fools.</p>
 <h3 id="round-3-repetition">Round 3: Repetition</h3>
 <p>There are certain types which are a data composition of multiple values. A very typical example are <em>vectors</em> of data, e.g. geometric vectors:</p>
@@ -91,7 +91,7 @@
 <p>What if there are a lot of vectors?</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1">printf(<span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf), &quot;</span></a>
 <a class="sourceLine" id="cb8-2" title="2">       <span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf), &quot;</span></a>
-<a class="sourceLine" id="cb8-3" title="3">       <span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf)</span><span class="sc">\n</span><span class="st">&quot;</span>, </a>
+<a class="sourceLine" id="cb8-3" title="3">       <span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf)</span><span class="sc">\n</span><span class="st">&quot;</span>,</a>
 <a class="sourceLine" id="cb8-4" title="4">       v1.x, v1.y, v1.z,</a>
 <a class="sourceLine" id="cb8-5" title="5">       v2.x, v2.y, v2.z,</a>
 <a class="sourceLine" id="cb8-6" title="6">       v2.x, v3.y, v3.z);</a></code></pre></div>
@@ -101,18 +101,18 @@
 </blockquote>
 <p>C++ iostream users would just overload <code>operator&lt;&lt;</code> for <code>std::ostream</code> <strong>once</strong> and be done with this forever:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb9-1" title="1"><span class="bu">std::</span>ostream&amp; <span class="kw">operator</span>&lt;&lt;(<span class="bu">std::</span>ostream &amp;os, <span class="at">const</span> vec3d &amp;v) {</a>
-<a class="sourceLine" id="cb9-2" title="2">    <span class="cf">return</span> os &lt;&lt; <span class="st">&quot;(&quot;</span> </a>
-<a class="sourceLine" id="cb9-3" title="3">              &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">4</span>) </a>
-<a class="sourceLine" id="cb9-4" title="4">              &lt;&lt; v.x &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.z </a>
+<a class="sourceLine" id="cb9-2" title="2">    <span class="cf">return</span> os &lt;&lt; <span class="st">&quot;(&quot;</span></a>
+<a class="sourceLine" id="cb9-3" title="3">              &lt;&lt; <span class="bu">std::</span>setprecision(<span class="dv">4</span>)</a>
+<a class="sourceLine" id="cb9-4" title="4">              &lt;&lt; v.x &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v.z</a>
 <a class="sourceLine" id="cb9-5" title="5">              &lt;&lt; <span class="st">&quot;)&quot;</span>;</a>
 <a class="sourceLine" id="cb9-6" title="6">}</a></code></pre></div>
 <p>Printing multiple vectors now looks like this:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1"><span class="bu">std::</span>cout &lt;&lt; v1 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v2 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v3 &lt;&lt; <span class="bu">std::</span>endl;</a></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1"><span class="bu">std::</span>cout &lt;&lt; v1 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v2 &lt;&lt; <span class="st">&quot;, &quot;</span> &lt;&lt; v3 &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a></code></pre></div>
 <p><code>printf</code> users may start defining helpful macros:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb11-1" title="1"><span class="pp">#define PRIvec3d       </span><span class="st">&quot;(%0.3lf, %0.3lf, %0.3lf)&quot;</span></a>
 <a class="sourceLine" id="cb11-2" title="2"><span class="pp">#define UNPACKvec3d</span>(v)<span class="pp"> </span>(v).x,<span class="pp"> </span>(v).y,<span class="pp"> </span>(v).z</a></code></pre></div>
 <p>…and print their vectors like this:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb12-1" title="1">printf(PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, </a>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb12-1" title="1">printf(PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>,</a>
 <a class="sourceLine" id="cb12-2" title="2">       UNPACKvec3d(v1), UNPACKvec3d(v2), UNPACKvec3d(v3));</a></code></pre></div>
 <p>In my opinion, C++ streams clearly win at this point.</p>
 <h2 id="being-stuck-with-printf.-for-reasons.">Being Stuck with <code>printf</code>. For Reasons.</h2>
@@ -125,8 +125,8 @@
 <div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><a class="sourceLine" id="cb13-1" title="1">python shell <span class="op">&gt;&gt;&gt;</span> <span class="st">&quot;some </span><span class="sc">{}</span><span class="st"> with some var </span><span class="sc">{}</span><span class="st">&quot;</span>.<span class="bu">format</span>(<span class="st">&quot;string&quot;</span>, <span class="dv">123</span>)</a>
 <a class="sourceLine" id="cb13-2" title="2"><span class="co">'some string with some var 123'</span></a></code></pre></div>
 <p>Being inspired from that, I hoped to be able to come up with something like…</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb14-1" title="1">printf(metaprog_result(<span class="st">&quot;some {} with some var {}&quot;</span>, </a>
-<a class="sourceLine" id="cb14-2" title="2">                       typelist&lt;<span class="at">const</span> <span class="dt">char</span> *, <span class="dt">int</span>&gt;), </a>
+<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb14-1" title="1">printf(metaprog_result(<span class="st">&quot;some {} with some var {}&quot;</span>,</a>
+<a class="sourceLine" id="cb14-2" title="2">                       typelist&lt;<span class="at">const</span> <span class="dt">char</span> *, <span class="dt">int</span>&gt;),</a>
 <a class="sourceLine" id="cb14-3" title="3">       <span class="st">&quot;string&quot;</span>, <span class="dv">123</span>);</a></code></pre></div>
 <p>…which collapses to the following during compile time:</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb15-1" title="1">printf(<span class="st">&quot;some </span><span class="sc">%s</span><span class="st"> with some var </span><span class="sc">%d</span><span class="st">&quot;</span>, <span class="st">&quot;string&quot;</span>, <span class="dv">123</span>);</a></code></pre></div>

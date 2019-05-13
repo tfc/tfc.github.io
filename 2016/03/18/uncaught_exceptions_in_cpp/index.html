@@ -48,7 +48,7 @@
 <a class="sourceLine" id="cb1-6" title="6">    <span class="at">const</span> <span class="bu">std::</span>string str;</a>
 <a class="sourceLine" id="cb1-7" title="7"><span class="kw">public</span>:</a>
 <a class="sourceLine" id="cb1-8" title="8">    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}</a>
-<a class="sourceLine" id="cb1-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }</a>
+<a class="sourceLine" id="cb1-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
 <a class="sourceLine" id="cb1-10" title="10">};</a>
 <a class="sourceLine" id="cb1-11" title="11"></a>
 <a class="sourceLine" id="cb1-12" title="12">Foo gfoo {<span class="st">&quot;global&quot;</span>};</a>
@@ -85,7 +85,7 @@
 <a class="sourceLine" id="cb3-6" title="6">    <span class="at">const</span> <span class="bu">std::</span>string str;</a>
 <a class="sourceLine" id="cb3-7" title="7"><span class="kw">public</span>:</a>
 <a class="sourceLine" id="cb3-8" title="8">    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}</a>
-<a class="sourceLine" id="cb3-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl; }</a>
+<a class="sourceLine" id="cb3-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
 <a class="sourceLine" id="cb3-10" title="10">};</a>
 <a class="sourceLine" id="cb3-11" title="11"></a>
 <a class="sourceLine" id="cb3-12" title="12">Foo gfoo {<span class="st">&quot;global&quot;</span>};</a>
@@ -98,7 +98,7 @@
 <a class="sourceLine" id="cb3-19" title="19">        Foo lfoo2 {<span class="st">&quot;local stack 2&quot;</span>};</a>
 <a class="sourceLine" id="cb3-20" title="20">        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);</a>
 <a class="sourceLine" id="cb3-21" title="21">    } <span class="cf">catch</span> (<span class="dt">int</span>) {</a>
-<a class="sourceLine" id="cb3-22" title="22">        <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Caught Exception.&quot;</span> &lt;&lt; <span class="bu">std::</span>endl;</a>
+<a class="sourceLine" id="cb3-22" title="22">        <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Caught Exception.</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
 <a class="sourceLine" id="cb3-23" title="23">    }</a>
 <a class="sourceLine" id="cb3-24" title="24">    <span class="cf">return</span> <span class="dv">0</span>;</a>
 <a class="sourceLine" id="cb3-25" title="25">}</a></code></pre></div>
