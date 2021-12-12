@@ -99,8 +99,8 @@ postRoute =
 
 feedConfig :: FeedConfiguration
 feedConfig = FeedConfiguration {
-    feedTitle       = "Jacek's C++ Blog",
-    feedDescription = "This blog is about C++",
+    feedTitle       = "Jacek's Blog",
+    feedDescription = "This blog is about programming",
     feedAuthorName  = "Jacek Galowicz",
     feedAuthorEmail = "jacek@galowicz.de",
     feedRoot        = "https://blog.galowicz.de"
