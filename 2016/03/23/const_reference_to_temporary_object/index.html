@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
-<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Blog" />
 <link rel="canonical" href="https://blog.galowicz.de/" />
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
@@ -12,10 +12,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Jacek's C++ Blog &middot; Const References to Temporary Objects</title>
-<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+<title>Jacek's Blog &middot; Const References to Temporary Objects</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's <del>C++</del> Blog</a>
 </h1>
-<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About</a>
@@ -41,18 +41,18 @@
 <!--more-->
 <h2 id="the-situation">The Situation</h2>
 <p>Referencing a temporarily created object looks like the following:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="dt">int</span>&amp; return_int_ref() {</a>
-<a class="sourceLine" id="cb1-2" title="2">    <span class="dt">int</span> a {<span class="dv">123</span>};</a>
-<a class="sourceLine" id="cb1-3" title="3">    <span class="cf">return</span> a; <span class="co">// Returning a reference to something on the stack!</span></a>
-<a class="sourceLine" id="cb1-4" title="4">}</a>
-<a class="sourceLine" id="cb1-5" title="5"></a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="dt">int</span> main() {</a>
-<a class="sourceLine" id="cb1-7" title="7">    <span class="dt">int</span> &amp;int_ref {return_int_ref()};</a>
-<a class="sourceLine" id="cb1-8" title="8"></a>
-<a class="sourceLine" id="cb1-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Some stack overwriting intermediate print</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
-<a class="sourceLine" id="cb1-10" title="10"></a>
-<a class="sourceLine" id="cb1-11" title="11">    <span class="bu">std::</span>cout &lt;&lt; int_ref &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
-<a class="sourceLine" id="cb1-12" title="12">}</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span><span class="op">&amp;</span> return_int_ref<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> a <span class="op">{</span><span class="dv">123</span><span class="op">};</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a<span class="op">;</span> <span class="co">// Returning a reference to something on the stack!</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> <span class="op">&amp;</span>int_ref <span class="op">{</span>return_int_ref<span class="op">()};</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="st">&quot;Some stack overwriting intermediate print</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> int_ref <span class="op">&lt;&lt;</span> <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span><span class="op">;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>When <code>int_ref</code> is evaluated in the <code>cout</code> statement, its position on the stack is most probably not yet overwritten, hence <code>123</code> is printed. If we run any kind of code between obtaining the reference, and printing its referenced value, then the value is destroyed, and it’s not longer printing <code>123</code>.</p>
 <p>Of course, the compiler has been warning us about this all the time:</p>
 <pre><code>main.cpp:20:32: warning: reference to stack memory associated with local variable 'a' returned
@@ -62,22 +62,22 @@
                                      1 warning generated.</code></pre>
 <h2 id="using-const-references">Using Const References</h2>
 <p>Changing the code to the following fixes a lot:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">int</span> return_int_ref() {</a>
-<a class="sourceLine" id="cb3-2" title="2">    <span class="dt">int</span> a {<span class="dv">123</span>};</a>
-<a class="sourceLine" id="cb3-3" title="3">    <span class="cf">return</span> a; <span class="co">// Returning a copy now, see return type</span></a>
-<a class="sourceLine" id="cb3-4" title="4">}</a>
-<a class="sourceLine" id="cb3-5" title="5"></a>
-<a class="sourceLine" id="cb3-6" title="6"><span class="dt">int</span> main() {</a>
-<a class="sourceLine" id="cb3-7" title="7">    <span class="at">const</span> <span class="dt">int</span> &amp;int_ref {return_int_ref()}; <span class="co">// is now const</span></a>
-<a class="sourceLine" id="cb3-8" title="8"></a>
-<a class="sourceLine" id="cb3-9" title="9">    <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Some stack overwriting intermediate print</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
-<a class="sourceLine" id="cb3-10" title="10"></a>
-<a class="sourceLine" id="cb3-11" title="11">    <span class="bu">std::</span>cout &lt;&lt; int_ref &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
-<a class="sourceLine" id="cb3-12" title="12">}</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> return_int_ref<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> a <span class="op">{</span><span class="dv">123</span><span class="op">};</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a<span class="op">;</span> <span class="co">// Returning a copy now, see return type</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="dt">int</span> <span class="op">&amp;</span>int_ref <span class="op">{</span>return_int_ref<span class="op">()};</span> <span class="co">// is now const</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="st">&quot;Some stack overwriting intermediate print</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> int_ref <span class="op">&lt;&lt;</span> <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span><span class="op">;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The compiler stopped emitting a warning, and our program correctly prints the right value.</p>
 <p>It is fine to do that, because it is an <em>official C++ feature</em> to <strong><em>extend the life time of a temporary object to the life time of the const reference which refers to it</em></strong>.</p>
 <p>This can be boiled down to an even shorter example:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="at">const</span> <span class="dt">int</span> &amp;int_ref {<span class="dv">1</span>}; <span class="co">// valid C++</span></a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> <span class="dt">int</span> <span class="op">&amp;</span>int_ref <span class="op">{</span><span class="dv">1</span><span class="op">};</span> <span class="co">// valid C++</span></span></code></pre></div>
 <p>Bjarne Stroustrup on this in the C++11 edition of his book “The C++ Programming Language”:</p>
 <blockquote>
 <p>A temporary created to hold a reference initializer persists until the end of its reference’s scope.</p>
@@ -86,34 +86,34 @@
 <p>If we were not dealing with trivial ints here, but with complex objects which have constructors and destructors, the question arises which destructor is called. Interestingly, exactly the destructor which would be called for destroying the temporary without this feature, is called.</p>
 <p>This brings us to another interesting detail:</p>
 <h2 id="the-more-interesting-example">The More Interesting Example</h2>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></a>
-<a class="sourceLine" id="cb5-2" title="2"></a>
-<a class="sourceLine" id="cb5-3" title="3"><span class="kw">class</span> Base</a>
-<a class="sourceLine" id="cb5-4" title="4">{</a>
-<a class="sourceLine" id="cb5-5" title="5"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb5-6" title="6">    ~Base() { <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Base dtor</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
-<a class="sourceLine" id="cb5-7" title="7">};</a>
-<a class="sourceLine" id="cb5-8" title="8"></a>
-<a class="sourceLine" id="cb5-9" title="9"><span class="kw">class</span> Foo : <span class="kw">public</span> Base</a>
-<a class="sourceLine" id="cb5-10" title="10">{</a>
-<a class="sourceLine" id="cb5-11" title="11"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb5-12" title="12">    <span class="co">// Note: No virtual dtors</span></a>
-<a class="sourceLine" id="cb5-13" title="13">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Foo dtor</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
-<a class="sourceLine" id="cb5-14" title="14">};</a>
-<a class="sourceLine" id="cb5-15" title="15"></a>
-<a class="sourceLine" id="cb5-16" title="16">Base return_base() { <span class="cf">return</span> {}; }</a>
-<a class="sourceLine" id="cb5-17" title="17">Foo  return_foo()  { <span class="cf">return</span> {}; }</a>
-<a class="sourceLine" id="cb5-18" title="18"></a>
-<a class="sourceLine" id="cb5-19" title="19"><span class="dt">int</span> main()</a>
-<a class="sourceLine" id="cb5-20" title="20">{</a>
-<a class="sourceLine" id="cb5-21" title="21">        <span class="at">const</span> Base &amp;b {return_foo()};</a>
-<a class="sourceLine" id="cb5-22" title="22">}</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Base</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">~</span>Base<span class="op">()</span> <span class="op">{</span> <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="st">&quot;Base dtor</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">:</span> <span class="kw">public</span> Base</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Note: No virtual dtors</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">~</span>Foo<span class="op">()</span> <span class="op">{</span> <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="st">&quot;Foo dtor</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>Base return_base<span class="op">()</span> <span class="op">{</span> <span class="cf">return</span> <span class="op">{};</span> <span class="op">}</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>Foo  return_foo<span class="op">()</span>  <span class="op">{</span> <span class="cf">return</span> <span class="op">{};</span> <span class="op">}</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">const</span> Base <span class="op">&amp;</span>b <span class="op">{</span>return_foo<span class="op">()};</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>We have class <code>Base</code>, and class <code>Foo</code>, which inherits from <code>Base</code>. If we called <code>delete</code> on a <code>Base</code>-typed pointer to a <code>Foo</code> instance, we would incorrectly only call the destructor of <code>Base</code>, because the destructors of these classes are <em>not virtual</em>.</p>
 <p>However, in this code snippet, we’re taking a const reference of type <code>Base</code> to a temporary object of type <code>Foo</code>. This should also result in a <code>Base</code> destructor being called afterwards, regardless of the life time extension thing.</p>
 <p>Let’s have a look at the program output:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb6-1" title="1">$ <span class="fu">clang</span>++ -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></a>
-<a class="sourceLine" id="cb6-2" title="2"><span class="ex">Foo</span> dtor</a>
-<a class="sourceLine" id="cb6-3" title="3"><span class="ex">Base</span> dtor</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clang++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Foo</span> dtor</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Base</span> dtor</span></code></pre></div>
 <p>Wow, it’s actually calling the correct <code>Foo</code> destructor (which in turn calls the <code>Base</code> destructor). This means that we just got polymorphy for free, without using <code>virtual</code> destructors!</p>
 <p>Andrei Alexandrescu put this feature to use in his interesting <a href="http://www.drdobbs.com/cpp/generic-change-the-way-you-write-excepti/184403758">Article about ScopeGuards</a> for nicer exception-safe programming.</p>
 <p>More than a decade later, this does also work with rvalue references like <code>Base &amp;&amp;ref {return_foo()};</code>, which gives us nice new use cases.</p></div>

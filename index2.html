@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
-<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Blog" />
 <link rel="canonical" href="https://blog.galowicz.de/" />
 <link rel="stylesheet" href="./css/poole.css">
 <link rel="stylesheet" href="./css/syntax.css">
@@ -12,10 +12,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Jacek's C++ Blog &middot; Posts (Page 2)</title>
-<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="./">Jacek's C++ Blog</a>
+<title>Jacek's Blog &middot; Posts (Page 2)</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="./">Jacek's <del>C++</del> Blog</a>
 </h1>
-<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="./">Home</a>
 <a class="sidebar-nav-item" href="./about.html">About</a>
@@ -36,7 +36,22 @@
 </div>
 </div>
 <div class="content container"><h1>Posts (Page 2)</h1>
-<div class="posts"><div><h4><a href="./2016/06/16/cpp_template_compile_time_brainfuck_interpreter">Executing Brainfuck at Compile Time with C++ Templates</a>
+<div class="posts"><div><h4><a href="./2016/06/24/integer_sequences_at_compile_time">Generating Integer Sequences at Compile Time</a>
+</h4>
+<p><strong><small>June 24, 2016</small>
+</strong>
+</p>
+
+<p>In some situations, it can be useful ot generate sequences of numbers at compile time. This article shows how to generate integer sequences with C++ templates, and gives an example how to use it.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/06/24/integer_sequences_at_compile_time" role="button">Read more 
+<i class="fa fa-arrow-circle-right"></i>
+</a>
+</p>
+</div>
+
+<hr>
+<div><h4><a href="./2016/06/16/cpp_template_compile_time_brainfuck_interpreter">Executing Brainfuck at Compile Time with C++ Templates</a>
 </h4>
 <p><strong><small>June 16, 2016</small>
 </strong>
@@ -165,21 +180,6 @@
 <p>Some objects have different interfaces for doing the same thing in a different way. One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>. Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>. Classes should sometimes provide multiple kinds to express the same thing to let the user decide which way to express something is more readable in a specific context. But that does not mean, that the class developer has to express everything multiple times. This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/26/how_to_use_crtp_to_reduce_duplication" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
-</p>
-</div>
-
-<hr>
-<div><h4><a href="./2016/02/21/on_exit_macro">ON_EXIT - Combining Automatic Destruction and Lambdas</a>
-</h4>
-<p><strong><small>February 21, 2016</small>
-</strong>
-</p>
-
-<p>When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can’t easily stick with the <em>RAII</em> principle. Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again. When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/02/21/on_exit_macro" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
 </a>
 </p>

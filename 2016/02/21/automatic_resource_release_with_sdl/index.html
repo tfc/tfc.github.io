@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
-<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Blog" />
 <link rel="canonical" href="https://blog.galowicz.de/" />
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
@@ -12,10 +12,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Jacek's C++ Blog &middot; A Nice Way to Manage SDL Resource Lifetime</title>
-<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+<title>Jacek's Blog &middot; A Nice Way to Manage SDL Resource Lifetime</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's <del>C++</del> Blog</a>
 </h1>
-<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About</a>
@@ -40,99 +40,99 @@
 <p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL. SDL is easy to use and portable, but it is a C-style library. Because of that C nature, the library does not really help the user to write elegant, modern code. Acquiring and Releasing SDL resources often ends up in ugly old school resource management. It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases. The approach is easily extendable to other kinds of resources, too.</p>
 <!--more-->
 <h2 id="typical-c-style-sdl-code">Typical C-Style SDL Code</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></a>
-<a class="sourceLine" id="cb1-2" title="2"></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="dt">int</span> main() {</a>
-<a class="sourceLine" id="cb1-4" title="4">    <span class="cf">if</span> (SDL_Init(SDL_INIT_VIDEO) != <span class="dv">0</span>){</a>
-<a class="sourceLine" id="cb1-5" title="5">        <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb1-6" title="6">    }</a>
-<a class="sourceLine" id="cb1-7" title="7"></a>
-<a class="sourceLine" id="cb1-8" title="8">    SDL_Window *win {SDL_CreateWindow(<span class="st">&quot;Window Title&quot;</span>,</a>
-<a class="sourceLine" id="cb1-9" title="9">            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,</a>
-<a class="sourceLine" id="cb1-10" title="10">            width, height, SDL_WINDOW_SHOWN)};</a>
-<a class="sourceLine" id="cb1-11" title="11">    <span class="cf">if</span> (win == <span class="kw">nullptr</span>){</a>
-<a class="sourceLine" id="cb1-12" title="12">        SDL_Quit();</a>
-<a class="sourceLine" id="cb1-13" title="13">        <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb1-14" title="14">    }</a>
-<a class="sourceLine" id="cb1-15" title="15"></a>
-<a class="sourceLine" id="cb1-16" title="16">    SDL_Renderer *ren {SDL_CreateRenderer(win, -<span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb1-17" title="17">            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)};</a>
-<a class="sourceLine" id="cb1-18" title="18">    <span class="cf">if</span> (ren == <span class="kw">nullptr</span>){</a>
-<a class="sourceLine" id="cb1-19" title="19">        SDL_DestroyWindow(win);</a>
-<a class="sourceLine" id="cb1-20" title="20">        SDL_Quit();</a>
-<a class="sourceLine" id="cb1-21" title="21">        <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb1-22" title="22">    }</a>
-<a class="sourceLine" id="cb1-23" title="23"></a>
-<a class="sourceLine" id="cb1-24" title="24">    SDL_Surface *bmp {SDL_LoadBMP(<span class="st">&quot;some_bitmap.bmp&quot;</span>)};</a>
-<a class="sourceLine" id="cb1-25" title="25">    <span class="cf">if</span> (bmp == <span class="kw">nullptr</span>){</a>
-<a class="sourceLine" id="cb1-26" title="26">        SDL_DestroyRenderer(ren);</a>
-<a class="sourceLine" id="cb1-27" title="27">        SDL_DestroyWindow(win);</a>
-<a class="sourceLine" id="cb1-28" title="28">        SDL_Quit();</a>
-<a class="sourceLine" id="cb1-29" title="29">        <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb1-30" title="30">    }</a>
-<a class="sourceLine" id="cb1-31" title="31"></a>
-<a class="sourceLine" id="cb1-32" title="32">    SDL_Texture *tex {SDL_CreateTextureFromSurface(ren, bmp)};</a>
-<a class="sourceLine" id="cb1-33" title="33">    <span class="cf">if</span> (tex == <span class="kw">nullptr</span>) {</a>
-<a class="sourceLine" id="cb1-34" title="34">        SDL_FreeSurface(bmp);</a>
-<a class="sourceLine" id="cb1-35" title="35">        SDL_DestroyRenderer(ren);</a>
-<a class="sourceLine" id="cb1-36" title="36">        SDL_DestroyWindow(win);</a>
-<a class="sourceLine" id="cb1-37" title="37">        SDL_Quit();</a>
-<a class="sourceLine" id="cb1-38" title="38">        <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb1-39" title="39">    }</a>
-<a class="sourceLine" id="cb1-40" title="40"></a>
-<a class="sourceLine" id="cb1-41" title="41">    <span class="co">// ...</span></a>
-<a class="sourceLine" id="cb1-42" title="42"></a>
-<a class="sourceLine" id="cb1-43" title="43">    SDL_DestroyTexture(tex);</a>
-<a class="sourceLine" id="cb1-44" title="44">    SDL_FreeSurface(bmp);</a>
-<a class="sourceLine" id="cb1-45" title="45">    SDL_DestroyRenderer(ren);</a>
-<a class="sourceLine" id="cb1-46" title="46">    SDL_DestroyWindow(win);</a>
-<a class="sourceLine" id="cb1-47" title="47">    SDL_Quit();</a>
-<a class="sourceLine" id="cb1-48" title="48">}</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>SDL_Init<span class="op">(</span>SDL_INIT_VIDEO<span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">){</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    SDL_Window <span class="op">*</span>win <span class="op">{</span>SDL_CreateWindow<span class="op">(</span><span class="st">&quot;Window Title&quot;</span><span class="op">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>            SDL_WINDOWPOS_CENTERED<span class="op">,</span> SDL_WINDOWPOS_CENTERED<span class="op">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>            width<span class="op">,</span> height<span class="op">,</span> SDL_WINDOW_SHOWN<span class="op">)};</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>win <span class="op">==</span> <span class="kw">nullptr</span><span class="op">){</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        SDL_Quit<span class="op">();</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    SDL_Renderer <span class="op">*</span>ren <span class="op">{</span>SDL_CreateRenderer<span class="op">(</span>win<span class="op">,</span> <span class="op">-</span><span class="dv">1</span><span class="op">,</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>            SDL_RENDERER_ACCELERATED <span class="op">|</span> SDL_RENDERER_PRESENTVSYNC<span class="op">)};</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>ren <span class="op">==</span> <span class="kw">nullptr</span><span class="op">){</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        SDL_DestroyWindow<span class="op">(</span>win<span class="op">);</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        SDL_Quit<span class="op">();</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    SDL_Surface <span class="op">*</span>bmp <span class="op">{</span>SDL_LoadBMP<span class="op">(</span><span class="st">&quot;some_bitmap.bmp&quot;</span><span class="op">)};</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>bmp <span class="op">==</span> <span class="kw">nullptr</span><span class="op">){</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        SDL_DestroyRenderer<span class="op">(</span>ren<span class="op">);</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        SDL_DestroyWindow<span class="op">(</span>win<span class="op">);</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        SDL_Quit<span class="op">();</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    SDL_Texture <span class="op">*</span>tex <span class="op">{</span>SDL_CreateTextureFromSurface<span class="op">(</span>ren<span class="op">,</span> bmp<span class="op">)};</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>tex <span class="op">==</span> <span class="kw">nullptr</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        SDL_FreeSurface<span class="op">(</span>bmp<span class="op">);</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        SDL_DestroyRenderer<span class="op">(</span>ren<span class="op">);</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        SDL_DestroyWindow<span class="op">(</span>win<span class="op">);</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        SDL_Quit<span class="op">();</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    SDL_DestroyTexture<span class="op">(</span>tex<span class="op">);</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    SDL_FreeSurface<span class="op">(</span>bmp<span class="op">);</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    SDL_DestroyRenderer<span class="op">(</span>ren<span class="op">);</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>    SDL_DestroyWindow<span class="op">(</span>win<span class="op">);</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    SDL_Quit<span class="op">();</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This code contains a list of resource release code which is also quite error prone to write/maintain.</p>
 <h2 id="using-shared_ptr-to-automate-resource-handling">Using <code>shared_ptr</code> to Automate Resource Handling</h2>
 <p><code>shared_ptr</code> from the STL is a useful helper class, which wraps a pointer to some resource payload. As soon as a shared pointer is released, it automatically calls <code>delete</code> on the payload instance being pointed to.</p>
 <p>The resources which SDL gives us, cannot be release using <code>delete</code>, as the SDL provides specific functions for every resource type. In order to be able to use <code>shared_ptr</code>’s automatic resource management capability, it needs to be customized to call <em>different</em> code than the default <code>delete</code> call.</p>
 <p>This is indeed possible: <code>shared_ptr</code>’s constructor takes a second, optional parameter, which can be a lambda expression. This lambda expression will then be called (with the payload pointer as its only parameter) by the shared pointer class instead of its default <code>delete</code> call.</p>
 <p>The following code provides a function <code>sdl_shared</code>, which takes a pointer to an SDL resource, and wraps it into a <code>shared_ptr</code> instance which automatically calls the right SDL specific release function at its end of life cycle:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="pp">#include </span><span class="im">&lt;memory&gt;</span><span class="pp"> </span><span class="co">// shared_ptr</span></a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></a>
-<a class="sourceLine" id="cb2-3" title="3"></a>
-<a class="sourceLine" id="cb2-4" title="4"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Window   *r) { SDL_DestroyWindow(r);   }</a>
-<a class="sourceLine" id="cb2-5" title="5"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Renderer *r) { SDL_DestroyRenderer(r); }</a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Texture  *r) { SDL_DestroyTexture(r);  }</a>
-<a class="sourceLine" id="cb2-7" title="7"><span class="at">static</span> <span class="dt">void</span> SDL_DelRes(SDL_Surface  *r) { SDL_FreeSurface(r);     }</a>
-<a class="sourceLine" id="cb2-8" title="8"></a>
-<a class="sourceLine" id="cb2-9" title="9"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb2-10" title="10"><span class="bu">std::</span>shared_ptr&lt;T&gt; sdl_shared(T *t) {</a>
-<a class="sourceLine" id="cb2-11" title="11">    <span class="cf">return</span> <span class="bu">std::</span>shared_ptr&lt;T&gt;(t, [](T *t) { SDL_DelRes(t); });</a>
-<a class="sourceLine" id="cb2-12" title="12">}</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;memory&gt;</span><span class="pp"> </span><span class="co">// shared_ptr</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="dt">void</span> SDL_DelRes<span class="op">(</span>SDL_Window   <span class="op">*</span>r<span class="op">)</span> <span class="op">{</span> SDL_DestroyWindow<span class="op">(</span>r<span class="op">);</span>   <span class="op">}</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="dt">void</span> SDL_DelRes<span class="op">(</span>SDL_Renderer <span class="op">*</span>r<span class="op">)</span> <span class="op">{</span> SDL_DestroyRenderer<span class="op">(</span>r<span class="op">);</span> <span class="op">}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="dt">void</span> SDL_DelRes<span class="op">(</span>SDL_Texture  <span class="op">*</span>r<span class="op">)</span> <span class="op">{</span> SDL_DestroyTexture<span class="op">(</span>r<span class="op">);</span>  <span class="op">}</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="dt">void</span> SDL_DelRes<span class="op">(</span>SDL_Surface  <span class="op">*</span>r<span class="op">)</span> <span class="op">{</span> SDL_FreeSurface<span class="op">(</span>r<span class="op">);</span>     <span class="op">}</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>shared_ptr<span class="op">&lt;</span>T<span class="op">&gt;</span> sdl_shared<span class="op">(</span>T <span class="op">*</span>t<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">std::</span>shared_ptr<span class="op">&lt;</span>T<span class="op">&gt;(</span>t<span class="op">,</span> <span class="op">[](</span>T <span class="op">*</span>t<span class="op">)</span> <span class="op">{</span> SDL_DelRes<span class="op">(</span>t<span class="op">);</span> <span class="op">});</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p><code>sdl_shared</code> is a template function which deduces the pointer type from the input parameter. This helper function can be wrapped around any SDL resource allocating function, as long as one <code>SDL_DelRes</code> overload is defined for the specific SDL resource type.</p>
 <p>Using this helper, the resource management can be implemented much cleaner:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="dt">int</span> main() {</a>
-<a class="sourceLine" id="cb3-2" title="2">    <span class="cf">if</span> (SDL_Init(SDL_INIT_VIDEO) != <span class="dv">0</span>) {</a>
-<a class="sourceLine" id="cb3-3" title="3">        <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb3-4" title="4">    }</a>
-<a class="sourceLine" id="cb3-5" title="5"></a>
-<a class="sourceLine" id="cb3-6" title="6">    ON_EXIT { SDL_Quit(); };</a>
-<a class="sourceLine" id="cb3-7" title="7"></a>
-<a class="sourceLine" id="cb3-8" title="8">    <span class="kw">auto</span> win (sdl_shared(SDL_CreateWindow(<span class="st">&quot;Hello World!&quot;</span>,</a>
-<a class="sourceLine" id="cb3-9" title="9">            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,</a>
-<a class="sourceLine" id="cb3-10" title="10">            width, height, SDL_WINDOW_SHOWN)));</a>
-<a class="sourceLine" id="cb3-11" title="11">    <span class="cf">if</span> (win == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb3-12" title="12"></a>
-<a class="sourceLine" id="cb3-13" title="13">    <span class="kw">auto</span> ren (sdl_shared(SDL_CreateRenderer(win.get(), -<span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb3-14" title="14">            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC)));</a>
-<a class="sourceLine" id="cb3-15" title="15">    <span class="cf">if</span> (ren == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb3-16" title="16"></a>
-<a class="sourceLine" id="cb3-17" title="17">    <span class="kw">auto</span> bmp(sdl_shared(SDL_LoadBMP(<span class="st">&quot;hello.bmp&quot;</span>)));</a>
-<a class="sourceLine" id="cb3-18" title="18">    <span class="cf">if</span> (bmp == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb3-19" title="19"></a>
-<a class="sourceLine" id="cb3-20" title="20">    <span class="kw">auto</span> tex (sdl_shared(SDL_CreateTextureFromSurface(</a>
-<a class="sourceLine" id="cb3-21" title="21">                                    ren.get(), bmp.get())));</a>
-<a class="sourceLine" id="cb3-22" title="22">    <span class="cf">if</span> (tex == <span class="kw">nullptr</span>) <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb3-23" title="23"></a>
-<a class="sourceLine" id="cb3-24" title="24">    <span class="co">// ...</span></a>
-<a class="sourceLine" id="cb3-25" title="25">}</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>SDL_Init<span class="op">(</span>SDL_INIT_VIDEO<span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    ON_EXIT <span class="op">{</span> SDL_Quit<span class="op">();</span> <span class="op">};</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> win <span class="op">(</span>sdl_shared<span class="op">(</span>SDL_CreateWindow<span class="op">(</span><span class="st">&quot;Hello World!&quot;</span><span class="op">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>            SDL_WINDOWPOS_CENTERED<span class="op">,</span> SDL_WINDOWPOS_CENTERED<span class="op">,</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            width<span class="op">,</span> height<span class="op">,</span> SDL_WINDOW_SHOWN<span class="op">)));</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>win <span class="op">==</span> <span class="kw">nullptr</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> ren <span class="op">(</span>sdl_shared<span class="op">(</span>SDL_CreateRenderer<span class="op">(</span>win<span class="op">.</span>get<span class="op">(),</span> <span class="op">-</span><span class="dv">1</span><span class="op">,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            SDL_RENDERER_ACCELERATED <span class="op">|</span> SDL_RENDERER_PRESENTVSYNC<span class="op">)));</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>ren <span class="op">==</span> <span class="kw">nullptr</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> bmp<span class="op">(</span>sdl_shared<span class="op">(</span>SDL_LoadBMP<span class="op">(</span><span class="st">&quot;hello.bmp&quot;</span><span class="op">)));</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>bmp <span class="op">==</span> <span class="kw">nullptr</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> tex <span class="op">(</span>sdl_shared<span class="op">(</span>SDL_CreateTextureFromSurface<span class="op">(</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                                    ren<span class="op">.</span>get<span class="op">(),</span> bmp<span class="op">.</span>get<span class="op">())));</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>tex <span class="op">==</span> <span class="kw">nullptr</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p><em>Also have a look at the other article, which <a href="../../../../2016/02/21/on_exit_macro">describes the <code>ON_EXIT</code> macro</a></em>.</p>
 <p>All resources are automatically released, and the programmer does not need to define which resource is to be released in which case and what order.</p></div>
 <div id="disqus_thread"></div>

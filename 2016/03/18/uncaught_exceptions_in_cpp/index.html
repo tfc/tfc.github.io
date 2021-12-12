@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
-<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Blog" />
 <link rel="canonical" href="https://blog.galowicz.de/" />
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
@@ -12,10 +12,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Jacek's C++ Blog &middot; Uncaught Exceptions in C++</title>
-<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+<title>Jacek's Blog &middot; Uncaught Exceptions in C++</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's <del>C++</del> Blog</a>
 </h1>
-<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About</a>
@@ -40,75 +40,75 @@
 <p>What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it? The program gets terminated. That is fine in general, but what happens to all objects which need to be properly destructed?</p>
 <!--more-->
 <p>Let’s try it out:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="pp">#include </span><span class="im">&lt;string&gt;</span></a>
-<a class="sourceLine" id="cb1-3" title="3"></a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="kw">class</span> Foo</a>
-<a class="sourceLine" id="cb1-5" title="5">{</a>
-<a class="sourceLine" id="cb1-6" title="6">    <span class="at">const</span> <span class="bu">std::</span>string str;</a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb1-8" title="8">    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}</a>
-<a class="sourceLine" id="cb1-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
-<a class="sourceLine" id="cb1-10" title="10">};</a>
-<a class="sourceLine" id="cb1-11" title="11"></a>
-<a class="sourceLine" id="cb1-12" title="12">Foo gfoo {<span class="st">&quot;global&quot;</span>};</a>
-<a class="sourceLine" id="cb1-13" title="13"><span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};</a>
-<a class="sourceLine" id="cb1-14" title="14"></a>
-<a class="sourceLine" id="cb1-15" title="15"><span class="dt">int</span> main(<span class="dt">int</span> argc, <span class="dt">char</span> **argv)</a>
-<a class="sourceLine" id="cb1-16" title="16">{</a>
-<a class="sourceLine" id="cb1-17" title="17">    Foo lfoo {<span class="st">&quot;local stack&quot;</span>};</a>
-<a class="sourceLine" id="cb1-18" title="18"></a>
-<a class="sourceLine" id="cb1-19" title="19">    <span class="cf">if</span> (argc &lt; <span class="dv">2</span>) {</a>
-<a class="sourceLine" id="cb1-20" title="20">        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);</a>
-<a class="sourceLine" id="cb1-21" title="21">    }</a>
-<a class="sourceLine" id="cb1-22" title="22"></a>
-<a class="sourceLine" id="cb1-23" title="23">    <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb1-24" title="24">}</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="bu">std::</span>string<span class="op"> </span>str<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    Foo<span class="op">(</span><span class="at">const</span> <span class="bu">std::</span>string<span class="op"> &amp;</span><span class="va">str_</span><span class="op">)</span> <span class="op">:</span> str<span class="op">{</span><span class="va">str_</span><span class="op">}</span> <span class="op">{}</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">~</span>Foo<span class="op">()</span> <span class="op">{</span> <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> str <span class="op">&lt;&lt;</span> <span class="st">&quot; Foo's dtor called.</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>Foo gfoo <span class="op">{</span><span class="st">&quot;global&quot;</span><span class="op">};</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> Foo sgfoo <span class="op">{</span><span class="st">&quot;static global&quot;</span><span class="op">};</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">int</span> argc<span class="op">,</span> <span class="dt">char</span> <span class="op">**</span>argv<span class="op">)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    Foo lfoo <span class="op">{</span><span class="st">&quot;local stack&quot;</span><span class="op">};</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>argc <span class="op">&lt;</span> <span class="dv">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> <span class="dt">int</span><span class="op">(</span><span class="dv">123</span><span class="op">);</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This program instanciates three <code>Foo</code> objects: A global one, a static global one, and a local stack instance. <code>Foo</code>’s destructor just emits a message which tells which one of the three instances was just destructed.</p>
 <p>(I wrapped the <code>throw</code> clause into a conditional which the compiler cannot optimize away, as it cannot predict with how many parameters the executable will be called.)</p>
 <p>In the ideal case, the compiler should emit code which unrolls the stack as soon as the exception is thrown, destructs all objects which are in flight and then terminates the program:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb2-1" title="1">$ <span class="ex">clangg++</span> -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span> bla</a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="bu">local</span> <span class="va">stack</span> 1 <span class="va">Foo</span><span class="st">'s dtor called.</span></a>
-<a class="sourceLine" id="cb2-3" title="3"><span class="st">static global Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.</a>
-<a class="sourceLine" id="cb2-4" title="4"><span class="ex">global</span> Foo<span class="st">'s dtor called.</span></a>
-<a class="sourceLine" id="cb2-5" title="5"></a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="st">$ ./main</span></a>
-<a class="sourceLine" id="cb2-7" title="7"><span class="st">terminate called after throwing an instance of '</span>int<span class="st">'</span></a>
-<a class="sourceLine" id="cb2-8" title="8"><span class="st">Aborted (core dumped)</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clangg++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span> bla</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">local</span> <span class="va">stack</span> 1 <span class="va">Foo</span><span class="st">'s dtor called.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">static global Foo'</span>s <span class="va">dtor</span> <span class="va">called</span>.</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">global</span> Foo<span class="st">'s dtor called.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">$ ./main</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">terminate called after throwing an instance of '</span>int<span class="st">'</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">Aborted (core dumped)</span></span></code></pre></div>
 <p><em>Ooops</em>, unfortunately, this is not the case: If those <code>Foo</code> objects held any unflushed buffers, they’d be gone now!</p>
 <p>Wrapping the exception into a <code>try</code>-<code>catch</code> clause fixes this behaviour.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></a>
-<a class="sourceLine" id="cb3-2" title="2"><span class="pp">#include </span><span class="im">&lt;string&gt;</span></a>
-<a class="sourceLine" id="cb3-3" title="3"></a>
-<a class="sourceLine" id="cb3-4" title="4"><span class="kw">class</span> Foo</a>
-<a class="sourceLine" id="cb3-5" title="5">{</a>
-<a class="sourceLine" id="cb3-6" title="6">    <span class="at">const</span> <span class="bu">std::</span>string str;</a>
-<a class="sourceLine" id="cb3-7" title="7"><span class="kw">public</span>:</a>
-<a class="sourceLine" id="cb3-8" title="8">    Foo(<span class="at">const</span> <span class="bu">std::</span>string &amp;<span class="va">str_</span>) : str{<span class="va">str_</span>} {}</a>
-<a class="sourceLine" id="cb3-9" title="9">    ~Foo() { <span class="bu">std::</span>cout &lt;&lt; str &lt;&lt; <span class="st">&quot; Foo's dtor called.</span><span class="sc">\n</span><span class="st">&quot;</span>; }</a>
-<a class="sourceLine" id="cb3-10" title="10">};</a>
-<a class="sourceLine" id="cb3-11" title="11"></a>
-<a class="sourceLine" id="cb3-12" title="12">Foo gfoo {<span class="st">&quot;global&quot;</span>};</a>
-<a class="sourceLine" id="cb3-13" title="13"><span class="at">static</span> Foo sgfoo {<span class="st">&quot;static global&quot;</span>};</a>
-<a class="sourceLine" id="cb3-14" title="14"></a>
-<a class="sourceLine" id="cb3-15" title="15"><span class="dt">int</span> main()</a>
-<a class="sourceLine" id="cb3-16" title="16">{</a>
-<a class="sourceLine" id="cb3-17" title="17">    Foo lfoo {<span class="st">&quot;local stack 1&quot;</span>};</a>
-<a class="sourceLine" id="cb3-18" title="18">    <span class="cf">try</span> {</a>
-<a class="sourceLine" id="cb3-19" title="19">        Foo lfoo2 {<span class="st">&quot;local stack 2&quot;</span>};</a>
-<a class="sourceLine" id="cb3-20" title="20">        <span class="cf">throw</span> <span class="dt">int</span>(<span class="dv">123</span>);</a>
-<a class="sourceLine" id="cb3-21" title="21">    } <span class="cf">catch</span> (<span class="dt">int</span>) {</a>
-<a class="sourceLine" id="cb3-22" title="22">        <span class="bu">std::</span>cout &lt;&lt; <span class="st">&quot;Caught Exception.</span><span class="sc">\n</span><span class="st">&quot;</span>;</a>
-<a class="sourceLine" id="cb3-23" title="23">    }</a>
-<a class="sourceLine" id="cb3-24" title="24">    <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb3-25" title="25">}</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> <span class="bu">std::</span>string<span class="op"> </span>str<span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    Foo<span class="op">(</span><span class="at">const</span> <span class="bu">std::</span>string<span class="op"> &amp;</span><span class="va">str_</span><span class="op">)</span> <span class="op">:</span> str<span class="op">{</span><span class="va">str_</span><span class="op">}</span> <span class="op">{}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">~</span>Foo<span class="op">()</span> <span class="op">{</span> <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> str <span class="op">&lt;&lt;</span> <span class="st">&quot; Foo's dtor called.</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>Foo gfoo <span class="op">{</span><span class="st">&quot;global&quot;</span><span class="op">};</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> Foo sgfoo <span class="op">{</span><span class="st">&quot;static global&quot;</span><span class="op">};</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    Foo lfoo <span class="op">{</span><span class="st">&quot;local stack 1&quot;</span><span class="op">};</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span> <span class="op">{</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        Foo lfoo2 <span class="op">{</span><span class="st">&quot;local stack 2&quot;</span><span class="op">};</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">throw</span> <span class="dt">int</span><span class="op">(</span><span class="dv">123</span><span class="op">);</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> <span class="cf">catch</span> <span class="op">(</span><span class="dt">int</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="st">&quot;Caught Exception.</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The output looks much better now. <em>All</em> objects are properly destructed:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><a class="sourceLine" id="cb4-1" title="1">$ <span class="fu">clang</span>++ -o main main.cpp -std=c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="bu">local</span> <span class="va">stack</span> 2 <span class="va">Foo</span><span class="st">'s dtor called.</span></a>
-<a class="sourceLine" id="cb4-3" title="3"><span class="st">Caught Exception.</span></a>
-<a class="sourceLine" id="cb4-4" title="4"><span class="st">local stack 1 Foo'</span><span class="va">s</span> <span class="va">dtor</span> <span class="va">called</span>.</a>
-<a class="sourceLine" id="cb4-5" title="5"><span class="ex">static</span> global Foo<span class="st">'s dtor called.</span></a>
-<a class="sourceLine" id="cb4-6" title="6"><span class="st">global Foo'</span>s dtor called.</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clang++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">local</span> <span class="va">stack</span> 2 <span class="va">Foo</span><span class="st">'s dtor called.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Caught Exception.</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">local stack 1 Foo'</span>s <span class="va">dtor</span> <span class="va">called</span>.</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">static</span> global Foo<span class="st">'s dtor called.</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="st">global Foo'</span>s dtor called.</span></code></pre></div>
 <p>The C++11 standard says the following in section <code>15.3.9</code>:</p>
 <blockquote>
 <p>If no matching handler is found, the function std::terminate() is called; whether or not the stack is unwound before this call to std::terminate() is implementation-defined (15.5.1).</p>

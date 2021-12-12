@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
-<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Blog" />
 <link rel="canonical" href="https://blog.galowicz.de/" />
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
@@ -12,10 +12,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Jacek's C++ Blog &middot; What is a Type Trait?</title>
-<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+<title>Jacek's Blog &middot; What is a Type Trait?</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's <del>C++</del> Blog</a>
 </h1>
-<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About</a>
@@ -45,93 +45,93 @@
 <h2 id="simplest-example">Simplest example</h2>
 <p>Let’s start with a simple example. We implement a <code>not</code> meta programming function, which takes a simple <code>bool</code> parameter and returns its negation.</p>
 <p>C++ template variables can contain types or values. For template variables containing values, simple builtin integral types are supported. <code>bool</code> is one of them. So let’s write some code which does at compile time what we want to achieve:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">template</span> &lt;<span class="dt">bool</span> X&gt;</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="kw">struct</span> <span class="kw">not</span></a>
-<a class="sourceLine" id="cb1-3" title="3">{</a>
-<a class="sourceLine" id="cb1-4" title="4">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {!X};</a>
-<a class="sourceLine" id="cb1-5" title="5">};</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> X<span class="op">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="kw">not</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{!</span>X<span class="op">};</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
 <p>This class just takes the parameter <code>X</code> which is provided using template syntax, and initializes its only member. This member is <code>static</code>, so it can be accessed from the type directly without us having to allocate an instance of it first. Furthermore, it is <code>constexpr</code>, which means that we can assume it is already accessible at compile time.</p>
 <p>Actually using it looks like this:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">static_assert</span>(<span class="kw">not</span>&lt;<span class="kw">true</span> &gt;::value == <span class="kw">false</span>, <span class="st">&quot;&quot;</span>);</a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="kw">static_assert</span>(<span class="kw">not</span>&lt;<span class="kw">false</span>&gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span><span class="kw">not</span><span class="op">&lt;</span><span class="kw">true</span> <span class="op">&gt;::</span>value <span class="op">==</span> <span class="kw">false</span><span class="op">,</span> <span class="st">&quot;&quot;</span><span class="op">);</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span><span class="kw">not</span><span class="op">&lt;</span><span class="kw">false</span><span class="op">&gt;::</span>value <span class="op">==</span> <span class="kw">true</span><span class="op">,</span>  <span class="st">&quot;&quot;</span><span class="op">);</span></span></code></pre></div>
 <p>We simply feed the structure with a <code>true</code>/<code>false</code> input value and scope down to its static member, to get at the return value. That’s it, we just implemented a complicated way to express <code>bool y = not(x)</code>.</p>
 <p>The cool thing is, that this code will be completely fixed at runtime, so the compiler can reduce it to a constant value which will reside in the binary. <em>No</em> part of this will have to be evaluated at run time.</p>
 <p>Of course, since the release of C++11, we also could have written:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb3-1" title="1"><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">not</span>(<span class="dt">bool</span> x) </a>
-<a class="sourceLine" id="cb3-2" title="2">{</a>
-<a class="sourceLine" id="cb3-3" title="3">    <span class="cf">return</span> !x;</a>
-<a class="sourceLine" id="cb3-4" title="4">}</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">not</span><span class="op">(</span><span class="dt">bool</span> x<span class="op">)</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">!</span>x<span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>…and both use this function at compile time and at run time. This is amazingly useful, but it’s not today’s topic.</p>
 <p>Getting back to bloated template syntax, we could have implemented it a different way. Many type traits need to be implemented this other way, because it’s not always simple <code>true</code>/<code>false</code> situations:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb4-1" title="1"><span class="co">// (A)</span></a>
-<a class="sourceLine" id="cb4-2" title="2"><span class="kw">template</span> &lt;<span class="dt">bool</span> X&gt;</a>
-<a class="sourceLine" id="cb4-3" title="3"><span class="kw">struct</span> <span class="kw">not</span></a>
-<a class="sourceLine" id="cb4-4" title="4">{</a>
-<a class="sourceLine" id="cb4-5" title="5">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">false</span>};</a>
-<a class="sourceLine" id="cb4-6" title="6">};</a>
-<a class="sourceLine" id="cb4-7" title="7"></a>
-<a class="sourceLine" id="cb4-8" title="8"><span class="co">// (B)</span></a>
-<a class="sourceLine" id="cb4-9" title="9"><span class="kw">template</span> &lt;&gt;</a>
-<a class="sourceLine" id="cb4-10" title="10"><span class="kw">struct</span> <span class="kw">not</span>&lt;<span class="kw">false</span>&gt;</a>
-<a class="sourceLine" id="cb4-11" title="11">{</a>
-<a class="sourceLine" id="cb4-12" title="12">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">true</span>};</a>
-<a class="sourceLine" id="cb4-13" title="13">};</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// (A)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> X<span class="op">&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="kw">not</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{</span><span class="kw">false</span><span class="op">};</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">// (B)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="kw">not</span><span class="op">&lt;</span><span class="kw">false</span><span class="op">&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{</span><span class="kw">true</span><span class="op">};</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
 <p>So we have two structs now. Or, to be specific, one general definition <code>(A)</code> of <code>struct not</code> and a specialized one <code>(B)</code>. The specialized one will be selected by the compiler when the user references this type, if the template parameters match.</p>
 <p>Hence, if the user instanciates <code>not&lt;false&gt;</code>, the compiler will select <code>(B)</code> as the right implementation, because its described specialization is a perfect match. And that implementation always contains the fixed value <code>true</code>. Any other instantiation (This is easy, because if the input is not <code>false</code>, it’s <code>true</code>, of course) matches the general implementation <code>(A)</code>, which always contains the value <code>false</code>.</p>
 <h2 id="next-example-comparing-types">Next Example: Comparing types</h2>
 <p>Using that second, clumsiest possible implementation of <code>not</code>, we have a technique at hand to do more useful stuff. We can, for example, ask at compile time if some user provided type which we got from some template parameter, is a specific type. Maybe we have an if-else construct somewhere, and need this information to decide which branch to take. This is easily possible:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb5-1" title="1"><span class="co">// (A)</span></a>
-<a class="sourceLine" id="cb5-2" title="2"><span class="kw">template</span> &lt;<span class="kw">typename</span> T, <span class="kw">typename</span> U&gt;</a>
-<a class="sourceLine" id="cb5-3" title="3"><span class="kw">struct</span> <span class="dt">is_same_type</span></a>
-<a class="sourceLine" id="cb5-4" title="4">{</a>
-<a class="sourceLine" id="cb5-5" title="5">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">false</span>};</a>
-<a class="sourceLine" id="cb5-6" title="6">};</a>
-<a class="sourceLine" id="cb5-7" title="7"></a>
-<a class="sourceLine" id="cb5-8" title="8"><span class="co">// (B)</span></a>
-<a class="sourceLine" id="cb5-9" title="9"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb5-10" title="10"><span class="kw">struct</span> <span class="dt">is_same_type</span>&lt;T, T&gt;</a>
-<a class="sourceLine" id="cb5-11" title="11">{</a>
-<a class="sourceLine" id="cb5-12" title="12">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">true</span>};</a>
-<a class="sourceLine" id="cb5-13" title="13">};</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// (A)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">,</span> <span class="kw">typename</span> U<span class="op">&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="dt">is_same_type</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{</span><span class="kw">false</span><span class="op">};</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">// (B)</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="dt">is_same_type</span><span class="op">&lt;</span>T<span class="op">,</span> T<span class="op">&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{</span><span class="kw">true</span><span class="op">};</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
 <p>Again, we have a general implementation <code>(A)</code>, and a specialized one <code>(B)</code>. Both take two input types, in order to compare them, and they also both have the same static member variable, but they initialize it to different values. Usage:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb6-1" title="1"><span class="kw">static_assert</span>(<span class="dt">is_same_type</span>&lt;<span class="dt">int</span>, <span class="dt">char</span>&gt;::value == <span class="kw">false</span>, <span class="st">&quot;&quot;</span>);</a>
-<a class="sourceLine" id="cb6-2" title="2"><span class="kw">static_assert</span>(<span class="dt">is_same_type</span>&lt;<span class="dt">int</span>, <span class="dt">int</span> &gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span><span class="dt">is_same_type</span><span class="op">&lt;</span><span class="dt">int</span><span class="op">,</span> <span class="dt">char</span><span class="op">&gt;::</span>value <span class="op">==</span> <span class="kw">false</span><span class="op">,</span> <span class="st">&quot;&quot;</span><span class="op">);</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span><span class="dt">is_same_type</span><span class="op">&lt;</span><span class="dt">int</span><span class="op">,</span> <span class="dt">int</span> <span class="op">&gt;::</span>value <span class="op">==</span> <span class="kw">true</span><span class="op">,</span>  <span class="st">&quot;&quot;</span><span class="op">);</span></span></code></pre></div>
 <p>If both input types are equal, the specialized implementation <code>(B)</code> is a perfect match. <code>(B)</code> still uses template type <code>T</code>, which is completely unspecified and could be anything, but it constraints its input parameters to be the same, which is exactly what we want to determine.</p>
 <p>It is now perfectly fine to write code like:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb7-2" title="2">T myfunc(T x)</a>
-<a class="sourceLine" id="cb7-3" title="3">{</a>
-<a class="sourceLine" id="cb7-4" title="4">    <span class="cf">if</span> (<span class="dt">is_same_type</span>&lt;T, FooType&gt;::value) {</a>
-<a class="sourceLine" id="cb7-5" title="5">        <span class="co">/* do something which is completely FooType specific */</span></a>
-<a class="sourceLine" id="cb7-6" title="6">    } <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb7-7" title="7">        <span class="co">/* do the general thing */</span></a>
-<a class="sourceLine" id="cb7-8" title="8">    }</a>
-<a class="sourceLine" id="cb7-9" title="9">}</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>T myfunc<span class="op">(</span>T x<span class="op">)</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span><span class="dt">is_same_type</span><span class="op">&lt;</span>T<span class="op">,</span> FooType<span class="op">&gt;::</span>value<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">/* do something which is completely FooType specific */</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">/* do the general thing */</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Of course, this is just an alternative to:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb8-2" title="2">T myfunc(T x)</a>
-<a class="sourceLine" id="cb8-3" title="3">{ <span class="co">/* do the general thing */</span> }</a>
-<a class="sourceLine" id="cb8-4" title="4"></a>
-<a class="sourceLine" id="cb8-5" title="5"><span class="kw">template</span> &lt;&gt;</a>
-<a class="sourceLine" id="cb8-6" title="6">FooType myfunc(FooType x)</a>
-<a class="sourceLine" id="cb8-7" title="7">{ <span class="co">/* do something which is completely FooType specific */</span> }</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>T myfunc<span class="op">(</span>T x<span class="op">)</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="co">/* do the general thing */</span> <span class="op">}</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>FooType myfunc<span class="op">(</span>FooType x<span class="op">)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="co">/* do something which is completely FooType specific */</span> <span class="op">}</span></span></code></pre></div>
 <p>It depends on the situation, which one is more useful/better to read/whatever.</p>
 <h2 id="last-example-determining-if-t-is-a-pointer-type">Last Example: Determining if <code>T</code> is a pointer type</h2>
 <p>The compiler behaves rather intelligent while trying to match template parameters. One can constraint the parameter specializations to <code>const</code>, append <code>*</code> and <code>[N]</code> (where <code>N</code> is another integral template parameter), etc.</p>
 <p>This example determines, if type <code>T</code> is a pointer. This is useful in some situations.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb9-2" title="2"><span class="kw">struct</span> i<span class="va">s_pointer</span></a>
-<a class="sourceLine" id="cb9-3" title="3">{</a>
-<a class="sourceLine" id="cb9-4" title="4">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">false</span>};</a>
-<a class="sourceLine" id="cb9-5" title="5">};</a>
-<a class="sourceLine" id="cb9-6" title="6"></a>
-<a class="sourceLine" id="cb9-7" title="7"><span class="kw">template</span> &lt;<span class="kw">typename</span> T&gt;</a>
-<a class="sourceLine" id="cb9-8" title="8"><span class="kw">struct</span> is_pointer&lt;T*&gt;</a>
-<a class="sourceLine" id="cb9-9" title="9">{</a>
-<a class="sourceLine" id="cb9-10" title="10">    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value {<span class="kw">true</span>};</a>
-<a class="sourceLine" id="cb9-11" title="11">};</a></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><a class="sourceLine" id="cb10-1" title="1"><span class="kw">static_assert</span>(is_pointer&lt;<span class="dt">int</span> &gt;::value == <span class="kw">false</span>, <span class="st">&quot;&quot;</span>);</a>
-<a class="sourceLine" id="cb10-2" title="2"><span class="kw">static_assert</span>(is_pointer&lt;<span class="dt">int</span>*&gt;::value == <span class="kw">true</span>,  <span class="st">&quot;&quot;</span>);</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> is_pointer</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{</span><span class="kw">false</span><span class="op">};</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> is_pointer<span class="op">&lt;</span>T<span class="op">*&gt;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{</span><span class="kw">true</span><span class="op">};</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>is_pointer<span class="op">&lt;</span><span class="dt">int</span> <span class="op">&gt;::</span>value <span class="op">==</span> <span class="kw">false</span><span class="op">,</span> <span class="st">&quot;&quot;</span><span class="op">);</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>is_pointer<span class="op">&lt;</span><span class="dt">int</span><span class="op">*&gt;::</span>value <span class="op">==</span> <span class="kw">true</span><span class="op">,</span>  <span class="st">&quot;&quot;</span><span class="op">);</span></span></code></pre></div>
 <p>However, this trait is not useful when asking if T is dereferenceable in general. Pointers are dereferenceable, but iterators are also dereferenceable. This trait is not mighty enough to detect that, but more advanced techniques like <em>SFINAE type traits</em> can easily do this job. I will explain those in another article.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

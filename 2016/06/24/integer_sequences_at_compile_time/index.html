@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
-<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's C++ Blog" />
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Blog" />
 <link rel="canonical" href="https://blog.galowicz.de/" />
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
@@ -12,10 +12,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Jacek's C++ Blog &middot; Generating Integer Sequences at Compile Time</title>
-<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's C++ Blog</a>
+<title>Jacek's Blog &middot; Generating Integer Sequences at Compile Time</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's <del>C++</del> Blog</a>
 </h1>
-<p class="lead">Writing about daily experiences and thoughts with C++ as my main work language.</p>
+<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About</a>
@@ -42,33 +42,33 @@
 <h2 id="compile-time-integer-sequences">Compile Time Integer Sequences</h2>
 <p>We are going to build integer sequences, which will look like the following:</p>
 <p><code>sequence&lt;0, 1, 2, 3, 4, 5, 6, 7, 8, 9&gt;</code></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><a class="sourceLine" id="cb1-1" title="1"><span class="co">// This is the type which holds sequences</span></a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="kw">template</span> &lt;<span class="dt">int</span> ... Ns&gt; <span class="kw">struct</span> sequence {};</a>
-<a class="sourceLine" id="cb1-3" title="3"></a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="co">// First define the template signature</span></a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="kw">template</span> &lt;<span class="dt">int</span> ... Ns&gt; <span class="kw">struct</span> seq_gen;</a>
-<a class="sourceLine" id="cb1-6" title="6"></a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="co">// Recursion case</span></a>
-<a class="sourceLine" id="cb1-8" title="8"><span class="kw">template</span> &lt;<span class="dt">int</span> I, <span class="dt">int</span> ... Ns&gt;</a>
-<a class="sourceLine" id="cb1-9" title="9"><span class="kw">struct</span> seq_gen&lt;I, Ns...&gt;</a>
-<a class="sourceLine" id="cb1-10" title="10">{</a>
-<a class="sourceLine" id="cb1-11" title="11">    <span class="co">// Take front most number of sequence,</span></a>
-<a class="sourceLine" id="cb1-12" title="12">    <span class="co">// decrement it, and prepend it twice.</span></a>
-<a class="sourceLine" id="cb1-13" title="13">    <span class="co">// First I - 1 goes into the counter,</span></a>
-<a class="sourceLine" id="cb1-14" title="14">    <span class="co">// Second I - 1 goes into the sequence.</span></a>
-<a class="sourceLine" id="cb1-15" title="15">    <span class="kw">using</span> type = <span class="kw">typename</span> seq_gen&lt;</a>
-<a class="sourceLine" id="cb1-16" title="16">        I - <span class="dv">1</span>, I - <span class="dv">1</span>, Ns...&gt;::type;</a>
-<a class="sourceLine" id="cb1-17" title="17">};</a>
-<a class="sourceLine" id="cb1-18" title="18"></a>
-<a class="sourceLine" id="cb1-19" title="19"><span class="co">// Recursion abort</span></a>
-<a class="sourceLine" id="cb1-20" title="20"><span class="kw">template</span> &lt;<span class="dt">int</span> ... Ns&gt;</a>
-<a class="sourceLine" id="cb1-21" title="21"><span class="kw">struct</span> seq_gen&lt;<span class="dv">0</span>, Ns...&gt;</a>
-<a class="sourceLine" id="cb1-22" title="22">{</a>
-<a class="sourceLine" id="cb1-23" title="23">    <span class="kw">using</span> type = sequence&lt;Ns...&gt;;</a>
-<a class="sourceLine" id="cb1-24" title="24">};</a>
-<a class="sourceLine" id="cb1-25" title="25"></a>
-<a class="sourceLine" id="cb1-26" title="26"><span class="kw">template</span> &lt;<span class="dt">int</span> N&gt;</a>
-<a class="sourceLine" id="cb1-27" title="27"><span class="kw">using</span> <span class="dt">sequence_t</span> = <span class="kw">typename</span> seq_gen&lt;N&gt;::type;</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">// This is the type which holds sequences</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> <span class="op">...</span> Ns<span class="op">&gt;</span> <span class="kw">struct</span> sequence <span class="op">{};</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co">// First define the template signature</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> <span class="op">...</span> Ns<span class="op">&gt;</span> <span class="kw">struct</span> seq_gen<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="co">// Recursion case</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> I<span class="op">,</span> <span class="dt">int</span> <span class="op">...</span> Ns<span class="op">&gt;</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="kw">struct</span> seq_gen<span class="op">&lt;</span>I<span class="op">,</span> Ns<span class="op">...&gt;</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="op">{</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a>    <span class="co">// Take front most number of sequence,</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a>    <span class="co">// decrement it, and prepend it twice.</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>    <span class="co">// First I - 1 goes into the counter,</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a>    <span class="co">// Second I - 1 goes into the sequence.</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="kw">typename</span> seq_gen<span class="op">&lt;</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a>        I <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> I <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> Ns<span class="op">...&gt;::</span>type<span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17"></a><span class="op">};</span></span>
+<span id="cb1-18"><a href="#cb1-18"></a></span>
+<span id="cb1-19"><a href="#cb1-19"></a><span class="co">// Recursion abort</span></span>
+<span id="cb1-20"><a href="#cb1-20"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> <span class="op">...</span> Ns<span class="op">&gt;</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a><span class="kw">struct</span> seq_gen<span class="op">&lt;</span><span class="dv">0</span><span class="op">,</span> Ns<span class="op">...&gt;</span></span>
+<span id="cb1-22"><a href="#cb1-22"></a><span class="op">{</span></span>
+<span id="cb1-23"><a href="#cb1-23"></a>    <span class="kw">using</span> type <span class="op">=</span> sequence<span class="op">&lt;</span>Ns<span class="op">...&gt;;</span></span>
+<span id="cb1-24"><a href="#cb1-24"></a><span class="op">};</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a></span>
+<span id="cb1-26"><a href="#cb1-26"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> N<span class="op">&gt;</span></span>
+<span id="cb1-27"><a href="#cb1-27"></a><span class="kw">using</span> <span class="dt">sequence_t</span> <span class="op">=</span> <span class="kw">typename</span> seq_gen<span class="op">&lt;</span>N<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
 <p><code>sequence_t</code>’s purpose is solely carrying number sequences. Note that it is an empty class which is actually <em>defined</em> (because it has an empty <code>{}</code> definition body). This is important, because in some use cases it is going to be instantiated.</p>
 <p><code>seq_gen</code> is used to recursively generate the integer sequence.</p>
 <p><code>sequence_t</code> is the <code>using</code> clause which represents the interface for the end user. Writing <code>sequence_t&lt;10&gt;</code> evaluates to the initial example with the numeric range going from 0 to 9.</p>
@@ -83,43 +83,43 @@
 <p>It would be nicer to have a function wrapper which has semantics like “<em>Use this function and this tuple. Then automatically take all the tuple values out of the tuple, in order call the function with them.</em>”:</p>
 <p><code>unpack_and_call(f, tup);</code></p>
 <p>This is indeed possible since C++11. Let’s have a look how to implement that:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="pp">#include </span><span class="im">&lt;tuple&gt;</span></a>
-<a class="sourceLine" id="cb2-3" title="3"></a>
-<a class="sourceLine" id="cb2-4" title="4"><span class="kw">using</span> <span class="bu">std::</span>tuple;</a>
-<a class="sourceLine" id="cb2-5" title="5"></a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="at">static</span> <span class="dt">void</span> func(<span class="dt">double</span> d, <span class="dt">float</span> f, <span class="dt">int</span> i)</a>
-<a class="sourceLine" id="cb2-7" title="7">{</a>
-<a class="sourceLine" id="cb2-8" title="8">    <span class="bu">std::</span>cout &lt;&lt; d &lt;&lt; <span class="st">&quot;, &quot;</span></a>
-<a class="sourceLine" id="cb2-9" title="9">              &lt;&lt; f &lt;&lt; <span class="st">&quot;, &quot;</span></a>
-<a class="sourceLine" id="cb2-10" title="10">              &lt;&lt; i &lt;&lt; <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span>;</a>
-<a class="sourceLine" id="cb2-11" title="11">}</a>
-<a class="sourceLine" id="cb2-12" title="12"></a>
-<a class="sourceLine" id="cb2-13" title="13"><span class="co">// The following code passes all parameters by</span></a>
-<a class="sourceLine" id="cb2-14" title="14"><span class="co">// value, for the sake of simplicity</span></a>
-<a class="sourceLine" id="cb2-15" title="15"></a>
-<a class="sourceLine" id="cb2-16" title="16"><span class="kw">template</span> &lt;<span class="kw">typename</span> F, <span class="kw">typename</span> TUP,</a>
-<a class="sourceLine" id="cb2-17" title="17">          <span class="dt">int</span> ... INDICES&gt;</a>
-<a class="sourceLine" id="cb2-18" title="18"><span class="at">static</span> <span class="dt">void</span> <span class="va">tuple_call_</span>(F f, TUP tup,</a>
-<a class="sourceLine" id="cb2-19" title="19">                       sequence&lt;INDICES...&gt;)</a>
-<a class="sourceLine" id="cb2-20" title="20">{</a>
-<a class="sourceLine" id="cb2-21" title="21">    f(<span class="bu">std::</span>get&lt;INDICES&gt;(tup) ...);</a>
-<a class="sourceLine" id="cb2-22" title="22">}</a>
-<a class="sourceLine" id="cb2-23" title="23"></a>
-<a class="sourceLine" id="cb2-24" title="24"><span class="kw">template</span> &lt;<span class="kw">typename</span> F, <span class="kw">typename</span> ... Ts&gt;</a>
-<a class="sourceLine" id="cb2-25" title="25"><span class="at">static</span> <span class="dt">void</span> tuple_call(F f, tuple&lt;Ts...&gt; tup)</a>
-<a class="sourceLine" id="cb2-26" title="26">{</a>
-<a class="sourceLine" id="cb2-27" title="27">    <span class="va">tuple_call_</span>(f, tup,</a>
-<a class="sourceLine" id="cb2-28" title="28">                <span class="dt">sequence_t</span>&lt;<span class="kw">sizeof</span>...(Ts)&gt;{});</a>
-<a class="sourceLine" id="cb2-29" title="29">}</a>
-<a class="sourceLine" id="cb2-30" title="30"></a>
-<a class="sourceLine" id="cb2-31" title="31"><span class="dt">int</span> main()</a>
-<a class="sourceLine" id="cb2-32" title="32">{</a>
-<a class="sourceLine" id="cb2-33" title="33">    func(<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="dv">3</span>);</a>
-<a class="sourceLine" id="cb2-34" title="34"></a>
-<a class="sourceLine" id="cb2-35" title="35">    tuple&lt;<span class="dt">double</span>, <span class="dt">float</span>, <span class="dt">int</span>&gt; tup {<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="dv">3</span>};</a>
-<a class="sourceLine" id="cb2-36" title="36">    tuple_call(func, tup); <span class="co">// same effect</span></a>
-<a class="sourceLine" id="cb2-37" title="37">}</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="pp">#include </span><span class="im">&lt;tuple&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">using</span> <span class="bu">std::</span>tuple<span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="at">static</span> <span class="dt">void</span> func<span class="op">(</span><span class="dt">double</span> d<span class="op">,</span> <span class="dt">float</span> f<span class="op">,</span> <span class="dt">int</span> i<span class="op">)</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="op">{</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> d <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>              <span class="op">&lt;&lt;</span> f <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a>              <span class="op">&lt;&lt;</span> i <span class="op">&lt;&lt;</span> <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span><span class="op">;</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="op">}</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a></span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="co">// The following code passes all parameters by</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a><span class="co">// value, for the sake of simplicity</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a></span>
+<span id="cb2-16"><a href="#cb2-16"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> F<span class="op">,</span> <span class="kw">typename</span> TUP<span class="op">,</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a>          <span class="dt">int</span> <span class="op">...</span> INDICES<span class="op">&gt;</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a><span class="at">static</span> <span class="dt">void</span> <span class="va">tuple_call_</span><span class="op">(</span>F f<span class="op">,</span> TUP tup<span class="op">,</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a>                       sequence<span class="op">&lt;</span>INDICES<span class="op">...&gt;)</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a><span class="op">{</span></span>
+<span id="cb2-21"><a href="#cb2-21"></a>    f<span class="op">(</span><span class="bu">std::</span>get<span class="op">&lt;</span>INDICES<span class="op">&gt;(</span>tup<span class="op">)</span> <span class="op">...);</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a><span class="op">}</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a></span>
+<span id="cb2-24"><a href="#cb2-24"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> F<span class="op">,</span> <span class="kw">typename</span> <span class="op">...</span> Ts<span class="op">&gt;</span></span>
+<span id="cb2-25"><a href="#cb2-25"></a><span class="at">static</span> <span class="dt">void</span> tuple_call<span class="op">(</span>F f<span class="op">,</span> tuple<span class="op">&lt;</span>Ts<span class="op">...&gt;</span> tup<span class="op">)</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a><span class="op">{</span></span>
+<span id="cb2-27"><a href="#cb2-27"></a>    <span class="va">tuple_call_</span><span class="op">(</span>f<span class="op">,</span> tup<span class="op">,</span></span>
+<span id="cb2-28"><a href="#cb2-28"></a>                <span class="dt">sequence_t</span><span class="op">&lt;</span><span class="kw">sizeof</span><span class="op">...(</span>Ts<span class="op">)&gt;{});</span></span>
+<span id="cb2-29"><a href="#cb2-29"></a><span class="op">}</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a></span>
+<span id="cb2-31"><a href="#cb2-31"></a><span class="dt">int</span> main<span class="op">()</span></span>
+<span id="cb2-32"><a href="#cb2-32"></a><span class="op">{</span></span>
+<span id="cb2-33"><a href="#cb2-33"></a>    func<span class="op">(</span><span class="fl">1.0</span><span class="op">,</span> <span class="fl">2.0</span><span class="op">,</span> <span class="dv">3</span><span class="op">);</span></span>
+<span id="cb2-34"><a href="#cb2-34"></a></span>
+<span id="cb2-35"><a href="#cb2-35"></a>    tuple<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="dt">float</span><span class="op">,</span> <span class="dt">int</span><span class="op">&gt;</span> tup <span class="op">{</span><span class="fl">1.0</span><span class="op">,</span> <span class="fl">2.0</span><span class="op">,</span> <span class="dv">3</span><span class="op">};</span></span>
+<span id="cb2-36"><a href="#cb2-36"></a>    tuple_call<span class="op">(</span>func<span class="op">,</span> tup<span class="op">);</span> <span class="co">// same effect</span></span>
+<span id="cb2-37"><a href="#cb2-37"></a><span class="op">}</span></span></code></pre></div>
 <p><code>func</code> is the example function with its own specific signature. It has no knowledge about tuples at all. It could even be a legacy C function.</p>
 <p><code>tuple_call</code> is the helper function which automatically unwraps all values from a tuple in order to feed them directly into the function <code>func</code>. It works in two steps:</p>
 <ol type="1">
