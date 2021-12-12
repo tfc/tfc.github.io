@@ -21,7 +21,7 @@ rec {
 
   release = pkgs.stdenv.mkDerivation {
     name = "blog.galowicz.de-content";
-    src = ./.;
+    src = pkgs.nix-gitignore.gitignoreSource [] ./.;
     buildInputs = [ blog-generator ];
     buildPhase = ''
       export LANG="en_US.UTF-8"
