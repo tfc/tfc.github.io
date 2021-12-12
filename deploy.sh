@@ -6,14 +6,14 @@ git stash
 
 git checkout develop
 
-"$(nix-build --no-out-path)/bin/blog-generator" build
+blogRelease=$(nix-build --no-out-link release.nix -A release)
 
 # Get previous files
 git fetch --all
 git checkout -b master --track origin/master
 
-cp -r _site/* .
-rm result
+git clean -xdf
+cp -r "$blogRelease/*" .
 
 # Commit
 git add -A
