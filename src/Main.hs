@@ -81,7 +81,7 @@ postCtx = dateField "date" "%B %e, %Y" <>
 teaserCtx :: Context String
 teaserCtx = teaserField "teaser" "post_content" <> postCtx
 
-grouper :: MonadMetadata m => [Identifier] -> m [[Identifier]]
+grouper :: (MonadFail m, MonadMetadata m) => [Identifier] -> m [[Identifier]]
 grouper = liftM (paginateEvery 10) . sortRecentFirst
 
 makeId :: PageNumber -> Identifier

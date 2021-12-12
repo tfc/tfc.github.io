@@ -1,4 +1,7 @@
 .stack-work/
 _cache/
 _site/
+dist/
+dist-newstyle/
 result
+result-*

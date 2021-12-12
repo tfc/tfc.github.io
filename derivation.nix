@@ -1,5 +1,11 @@
-{ mkDerivation, base, blaze-html, containers, hakyll
-, hakyll-shakespeare, stdenv, text
+{ mkDerivation
+, base
+, blaze-html
+, containers
+, hakyll
+, hakyll-shakespeare
+, stdenv
+, text
 }:
 mkDerivation {
   pname = "blog";
@@ -8,7 +14,12 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   executableHaskellDepends = [
-    base blaze-html containers hakyll hakyll-shakespeare text
+    base
+    blaze-html
+    containers
+    hakyll
+    hakyll-shakespeare
+    text
   ];
   doHaddock = false;
   license = "unknown";

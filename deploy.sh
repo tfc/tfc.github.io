@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 git stash
 
 git checkout develop
 
-"$(nix-build)/bin/blog-generator" build
+"$(nix-build --no-out-path)/bin/blog-generator" build
 
 # Get previous files
 git fetch --all
