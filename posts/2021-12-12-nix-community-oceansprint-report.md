@@ -181,7 +181,7 @@ which is a set of custom NixOS modules that remove systemd and create system
 initialization scripts from scratch in order to reach a minimal system.
 They resulted in an impressive written overview of what would need to be done
 to minimize the system further and even reach systems without interpreters.
-(Blog article coming on Jonas's blog)
+(Blog article coming on [Jonas's blog](https://zimbatm.com/))
 
 Both approaches seem like they could be combined upstream with some amount of
 work.
