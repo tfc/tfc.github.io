@@ -34,9 +34,9 @@
             name = "blog.galowicz.de-content";
             src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
             buildInputs = [ blog-generator ];
+            LANG = "en_US.UTF-8";
+            LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
             buildPhase = ''
-              export LANG="en_US.UTF-8"
-              export LOCALE_ARCHIVE="${pkgs.glibcLocales}/lib/locale/locale-archive"
               blog-generator clean
               blog-generator build
             '';
