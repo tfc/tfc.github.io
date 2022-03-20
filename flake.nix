@@ -14,25 +14,25 @@
       (system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          cleanSrc =
-            let
-              nonHaskell = [
-                "*.nix"
-                "css"
-                "deploy.sh"
-                "images"
-                "nix"
-                "posts"
-                "templates"
-              ];
-            in
-            pkgs.nix-gitignore.gitignoreSource nonHaskell ./.;
+          haskellSrc = pkgs.lib.sourceByRegex ./. [
+            "^LICENSE$"
+            "^Setup.hs$"
+            "^blog.cabal$"
+            "^src.*"
+          ];
           inherit (pkgs) haskellPackages;
-          blog-generator = pkgs.haskellPackages.callCabal2nix "blog" cleanSrc { };
+          blog-generator = pkgs.haskellPackages.callCabal2nix "blog" haskellSrc { };
+
+          blogSrc = pkgs.lib.sourceByRegex ./. [
+            "^css.*"
+            "^images.*"
+            "^posts.*"
+            "^templates.*"
+          ];
 
           release = pkgs.stdenv.mkDerivation {
             name = "blog.galowicz.de-content";
-            src = pkgs.nix-gitignore.gitignoreSource [ ] ./.;
+            src = blogSrc;
             buildInputs = [ blog-generator ];
             LANG = "en_US.UTF-8";
             LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
