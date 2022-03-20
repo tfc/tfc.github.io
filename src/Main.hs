@@ -18,16 +18,16 @@ main = hakyll $ do
 
     indexPages <- buildPaginateWith grouper "posts/*" makeId
 
-    paginateRules indexPages $ \pageNum pattern -> do
+    paginateRules indexPages $ \pageNum pat -> do
       route idRoute
       compile $ do
-          posts <- recentFirst =<< loadAll pattern
+          posts <- recentFirst =<< loadAll pat
           let paginateCtx = paginateContext indexPages pageNum
               ctx =
-                  constField "title" ("Posts" ++ if (pageNum > 1)
-                                then " (Page " ++ (show pageNum) ++ ")"
+                  constField "title" ("Posts" ++ if pageNum > 1
+                                then " (Page " ++ show pageNum ++ ")"
                                 else "") <>
-                  listField "posts" (teaserCtx) (return posts) <>
+                  listField "posts" teaserCtx (return posts) <>
                   paginateCtx <>
                   defaultContext
           makeItem ""
@@ -36,7 +36,7 @@ main = hakyll $ do
               >>= relativizeUrls
 
     match "posts/*" $ do
-        route $ postRoute
+        route postRoute
         compile $ pandocCompiler
             >>= saveSnapshot "post_content"
             >>= loadAndApplyTemplate "templates/post.hamlet" postCtx
@@ -82,7 +82,7 @@ teaserCtx :: Context String
 teaserCtx = teaserField "teaser" "post_content" <> postCtx
 
 grouper :: (MonadFail m, MonadMetadata m) => [Identifier] -> m [[Identifier]]
-grouper = liftM (paginateEvery 10) . sortRecentFirst
+grouper = fmap (paginateEvery 10) . sortRecentFirst
 
 makeId :: PageNumber -> Identifier
 makeId pageNum = fromFilePath $ "index" ++ pageStr ++ ".html"
