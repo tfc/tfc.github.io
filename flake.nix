@@ -13,32 +13,32 @@
     (flake-utils.lib.eachDefaultSystem
       (system:
         let
-          # this is an overly specific selection. This is just for fun.
-          ghcVersion = "901";
-          haskellOverlay = final: prev: let
-            cleanSrc =
-              let
-                nonHaskell = [
-                  "*.nix"
-                  "css"
-                  "deploy.sh"
-                  "images"
-                  "nix"
-                  "posts"
-                  "templates"
-                ];
-              in
-              final.nix-gitignore.gitignoreSource nonHaskell ./.;
-            inherit (final.haskell.lib) dontCheck;
-          in {
-            #haskellPackages = prev.haskell.packages."ghc${ghcVersion}".override {
-            haskellPackages = prev.haskellPackages.override {
-              overrides = hFinal: hPrev: {
-                shakespeare = dontCheck hPrev.shakespeare;
-                blog-generator = hFinal.callCabal2nix "blog" cleanSrc {};
+          haskellOverlay = final: prev:
+            let
+              cleanSrc =
+                let
+                  nonHaskell = [
+                    "*.nix"
+                    "css"
+                    "deploy.sh"
+                    "images"
+                    "nix"
+                    "posts"
+                    "templates"
+                  ];
+                in
+                final.nix-gitignore.gitignoreSource nonHaskell ./.;
+              inherit (final.haskell.lib) dontCheck;
+            in
+            {
+              #haskellPackages = prev.haskell.packages."ghc${ghcVersion}".override {
+              haskellPackages = prev.haskellPackages.override {
+                overrides = hFinal: hPrev: {
+                  shakespeare = dontCheck hPrev.shakespeare;
+                  blog-generator = hFinal.callCabal2nix "blog" cleanSrc { };
+                };
               };
             };
-          };
           pkgs = nixpkgs.legacyPackages.${system}.extend haskellOverlay;
           inherit (pkgs) haskellPackages;
           inherit (pkgs.haskellPackages) blog-generator;
@@ -80,10 +80,10 @@
             withHoogle = true;
           };
         }
-        )) // {
-    ciNix = flake-compat-ci.lib.recurseIntoFlakeWith {
-      flake = self;
-      systems = [ "x86_64-linux" ];
+      )) // {
+      ciNix = flake-compat-ci.lib.recurseIntoFlakeWith {
+        flake = self;
+        systems = [ "x86_64-linux" ];
+      };
     };
-  };
 }
