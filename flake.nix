@@ -28,6 +28,7 @@
             "^images.*"
             "^posts.*"
             "^templates.*"
+            "^.*\.md"
           ];
 
           release = pkgs.stdenv.mkDerivation {
