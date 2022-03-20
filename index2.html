@@ -36,7 +36,22 @@
 </div>
 </div>
 <div class="content container"><h1>Posts (Page 2)</h1>
-<div class="posts"><div><h4><a href="./2016/06/24/integer_sequences_at_compile_time">Generating Integer Sequences at Compile Time</a>
+<div class="posts"><div><h4><a href="./2016/06/25/cpp_template_type_list_performance">Type List Compile Time Performance</a>
+</h4>
+<p><strong><small>June 25, 2016</small>
+</strong>
+</p>
+
+<p>Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times. I came up with rules of thumb like “<em>Prefer pattern matching over if_else_t</em>”, and “<em>Prefer nested type lists over variadic type lists</em>”. But i did not know how much faster which pattern is, i just knew about tendencies. Finally, i sat down to write some compile time benchmarks, and this blog posts presents the results.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/06/25/cpp_template_type_list_performance" role="button">Read more 
+<i class="fa fa-arrow-circle-right"></i>
+</a>
+</p>
+</div>
+
+<hr>
+<div><h4><a href="./2016/06/24/integer_sequences_at_compile_time">Generating Integer Sequences at Compile Time</a>
 </h4>
 <p><strong><small>June 24, 2016</small>
 </strong>
@@ -165,21 +180,6 @@
 <p>In order to use <em>polymorphy</em>, virtual functions are the way to go in C++. They are nice and easy to use. However, polymorphy is not always needed at actual runtime. If it is only used to separate generic from specific functionality in order to have a common interface and avoid code duplication, the cost of having indirection introduced by <em>vtables</em> might not be desired. This article shows how to use the CRTP in order to get the compile time advantages of polymorphy, without using virtual methods.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/27/static_polymorphy" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
-</p>
-</div>
-
-<hr>
-<div><h4><a href="./2016/02/26/how_to_use_crtp_to_reduce_duplication">How to Use the CRTP to Reduce Duplication</a>
-</h4>
-<p><strong><small>February 26, 2016</small>
-</strong>
-</p>
-
-<p>Some objects have different interfaces for doing the same thing in a different way. One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>. Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>. Classes should sometimes provide multiple kinds to express the same thing to let the user decide which way to express something is more readable in a specific context. But that does not mean, that the class developer has to express everything multiple times. This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/02/26/how_to_use_crtp_to_reduce_duplication" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
 </a>
 </p>

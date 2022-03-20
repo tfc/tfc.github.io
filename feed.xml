@@ -7,8 +7,1151 @@
         <description><![CDATA[This blog is about programming]]></description>
         <atom:link href="https://blog.galowicz.de/feed.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Sun, 12 Dec 2021 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Sun, 20 Mar 2022 00:00:00 UT</lastBuildDate>
         <item>
+    <title>Filtering Unique Items from Heterogeneous Lists at Compile Time</title>
+    <link>https://blog.galowicz.de/2022/03/20/unique-heterogeneous-typelists</link>
+    <description><![CDATA[<p>This article is about how to filter unique items from heterogeneous lists on the type level in Haskell. This example, without further context, might look a bit esoteric by itself, but i learned a lot writing it and wanted to share the experience.</p>
+<!--more-->
+<p>In the last years i’ve been programming more in Haskell than in C++. I find Haskell is super fascinating because of its mighty type system. C++ already makes it possible to lift a lot of computation from compile time to run time (using <code>constexpr</code> and template meta programming) with the positive effect of resulting in less code in your binaries. Less code in your binaries is great, because this means a <a href="https://en.wikipedia.org/wiki/Shift-left_testing">“shift left”</a> of bug potential on the time axis from run time to compile time. Now Haskell makes this much more interesting because its type system is much more intelligent than the one of C++ or comparable languages. There are many libraries that show off what’s possible. My current favorite example because i have been using it a lot is the <a href="https://docs.servant.dev"><code>servant</code></a> library.</p>
+<p>I found learning C++ template meta programming very hard in the beginning because it’s completely different than <em>normal</em> programming. But once you get there, it’s really enlightening and helps in cleaner thinking about and designing of what your programs are actually supposed to do. Trying to do the same things and even more in Haskell, i found the following books and blog articles extremely helpful:</p>
+<ul>
+<li>Book: <a href="https://leanpub.com/thinking-with-types"><strong>“Thinking with Types”</strong> by Sandy Maguire</a></li>
+<li>Book: <a href="https://www.packtpub.com/product/haskell-design-patterns/9781783988723"><strong>“Haskell Design Patterns”</strong> by Ryan Lemmer</a></li>
+<li>Blog: <a href="https://hengchu.github.io/posts/2018-05-09-type-lists-and-type-classes.lhs.html"><strong>“Taming Heterogeneous Lists in Haskell”</strong> by Hengchu Zhang</a></li>
+</ul>
+<p>However, after getting some inspiration what fascinating things some libraries do at the type level, i wanted to give it a try myself and came up with some private hobby challenge that i wanted to try myself. While trying to hack on the type level, i found the available books and blogs super helpful. But as so often the case, books/articles often tend to explain the simple things simple, then switch to much more complicated examples, but there is quite some gap between the simple and the (maybe too) advanced examples. I got lost there unfortunately and came up with a solution to a sub-problem of my hobby challenge that i wanted to share to fill up that gap.</p>
+<p>This blog article shows how to:</p>
+<ul>
+<li>Define a heterogeneous list and print it (looks exactly as known from books/articles)</li>
+<li>How to reverse such lists</li>
+<li>How to filter out unique type items from them
+<ul>
+<li>both at type-level and run time because we need both</li>
+</ul></li>
+</ul>
+<p>Let’s start with some includes and GHC extensions that we need. The full code of this article is <a href="https://gist.github.com/tfc/a525ef630abe215d1ec1d3c50609a340">here</a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE AllowAmbiguousTypes    #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE DataKinds              #-}</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE FlexibleContexts       #-}</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE FlexibleInstances      #-}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE FunctionalDependencies #-}</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE GADTs                  #-}</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE PolyKinds              #-}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE RankNTypes             #-}</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE ScopedTypeVariables    #-}</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE TypeApplications       #-}</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE TypeFamilies           #-}</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE TypeOperators          #-}</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE UndecidableInstances   #-}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span>           <span class="dt">Data.Kind</span>    (<span class="dt">Type</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span>           <span class="dt">GHC.TypeLits</span> (<span class="dt">ErrorMessage</span> (<span class="dt">Text</span>), <span class="dt">TypeError</span>)</span></code></pre></div>
+<h2 id="heterogeneous-lists">Heterogeneous Lists</h2>
+<p>First, we need a way to create a way to describe lists of items that have different types (without polymorphy).</p>
+<p>So let’s create the type <code>HList</code> (as in “<strong>H</strong>eterogeneous <strong>List</strong>”) whose GADT constructors help us constructing a list at compile time:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">HList</span><span class="ot"> ::</span> [<span class="dt">Type</span>] <span class="ot">-&gt;</span> <span class="dt">Type</span> <span class="kw">where</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">HNil</span><span class="ot"> ::</span> <span class="dt">HList</span> &#39;[]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  (:#) ::</span> x <span class="ot">-&gt;</span> <span class="dt">HList</span> xs <span class="ot">-&gt;</span> <span class="dt">HList</span> (x &#39;<span class="op">:</span> xs)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">infixr</span> <span class="dv">5</span> <span class="op">:#</span></span></code></pre></div>
+<p>Creating such a hlist now looks like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="dt">A</span> <span class="dt">Int</span> <span class="kw">deriving</span> <span class="dt">Show</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">B</span> <span class="ot">=</span> <span class="dt">B</span> <span class="dt">Int</span> <span class="kw">deriving</span> <span class="dt">Show</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">C</span> <span class="ot">=</span> <span class="dt">C</span> <span class="dt">Int</span> <span class="kw">deriving</span> <span class="dt">Show</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>abc <span class="ot">=</span> <span class="dt">A</span> <span class="dv">1</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">2</span> <span class="op">:#</span> <span class="dt">C</span> <span class="dv">3</span> <span class="op">:#</span> <span class="dt">HNil</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">:</span><span class="kw">type</span> abc</span></code></pre></div>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">abc :: HList ’[A, B, C]</span></p>
+<p>Although other tutorials and books cover this topic already, let us also create at least the <code>Show</code> instance for our <code>HList</code> in order to be able to print not only their types but also their values:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">HList</span> &#39;[]) <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show</span> <span class="dt">HNil</span> <span class="ot">=</span> <span class="st">&quot;HNil&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> (<span class="dt">Show</span> x, <span class="dt">Show</span> (<span class="dt">HList</span> xs))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=&gt;</span> <span class="dt">Show</span> (<span class="dt">HList</span> (x &#39;<span class="op">:</span> xs)) <span class="kw">where</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show</span> (x <span class="op">:#</span> xs) <span class="ot">=</span> <span class="fu">show</span> x <span class="op">++</span> <span class="st">&quot; :# &quot;</span> <span class="op">++</span> <span class="fu">show</span> xs</span></code></pre></div>
+<p>The implementation is much simpler than the following stuff, because the return type of <code>show</code> is just <code>String</code> and that is easy to assemble from our list construction.</p>
+<p>Let’s try it out:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>abc</span></code></pre></div>
+<pre><code>A 1 :# B 2 :# C 3 :# HNil</code></pre>
+<p>Fine. Off to the more complicated things now.</p>
+<h2 id="reversing-hlists">Reversing HLists</h2>
+<p>All the examples on the internet first show how to write functions on hlists: First, implement a type class and then all the relevant instances for them. These are usually not too hard to understand and write, because the output type does not really depend on the inputs - just like our <code>Show</code> instance from before.</p>
+<p>Having understood that, the next thing that i found hard to achieve was <em>reversing</em> a heterogeneous list. The reason is, that the return type of a reverse function would completely depend on the input:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">aReverserFunction ::</span> <span class="dt">Hlist</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] <span class="ot">-&gt;</span> <span class="dt">HList</span> &#39;[ <span class="dt">C</span>, <span class="dt">B</span>, <span class="dt">A</span> ]</span></code></pre></div>
+<p>But how to express that programmatically? Implementing the type class would be easy, but i would need to programmatically calculate the output type from the input type. Without knowing the resulting return type in advance, the type class would be of no use. Afterward, we can implement the type class that uses this calculated type.</p>
+<p>A function on the <em>type level</em> that creates a new type from some input type can be implemented in terms of a <em>type family</em>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Reverse&#39;</span> (<span class="ot">inputList ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                     (<span class="ot">accumulator ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ot">                     ::</span> [<span class="dt">Type</span>]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                     <span class="kw">where</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Reverse&#39;</span> &#39;[] accumulator <span class="ot">=</span> accumulator</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Reverse&#39;</span> (i &#39;<span class="op">:</span> is) accumulator <span class="ot">=</span> <span class="dt">Reverse&#39;</span> is (i &#39;<span class="op">:</span> accumulator)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Reverse</span> a <span class="ot">=</span> <span class="dt">Reverse&#39;</span> a &#39;[]</span></code></pre></div>
+<p>This function takes an input type list and accumulates the reverse of the list, item by item, on the accumulator argument. As soon as the input list contains no items any longer, the accumulator is returned.</p>
+<p>As it would be otherwise uncomfortable to provide the input list <em>and</em> the accumulator, let’s call this type-level function <code>Reverse'</code> and define a type alias <code>Reverse</code> which just accepts the input list and hides the rest of the interface for us.</p>
+<p>This works as expected:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Reverse</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ]</span></code></pre></div>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">Reverse ‘[ A, B, C ] :: [*] =’[C, B, A]</span></p>
+<p>The type class <code>Rev</code> will provide us a <code>rev'</code> function with just the same interface but at normal function level. In order to hide this input-and-accumulator interface, we will later define function <code>rev</code> which hides this implementation detail from the user.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">ReversedHList</span> (<span class="ot">inputList ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                    (<span class="ot">accumulator ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                    (<span class="ot">reversedList ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">where</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ot">  rev&#39; ::</span> <span class="dt">HList</span> inputList</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> accumulator</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> reversedList</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">ReversedHList</span> &#39;[] a a <span class="kw">where</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  rev&#39; _ a <span class="ot">=</span> a</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">ReversedHList</span> is (i &#39;<span class="op">:</span> as) rs</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">ReversedHList</span> (i &#39;<span class="op">:</span> is) as rs <span class="kw">where</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    rev&#39; (i <span class="op">:#</span> is) as <span class="ot">=</span> rev&#39; is (i <span class="op">:#</span> as)</span></code></pre></div>
+<p>What’s most interesting here is that <code>reversedList</code> is a type that remains completely unchanged over the instances that are called one after the other. This is the final return type that needs to be calculated before, and we have not done that, yet.</p>
+<p>Our <code>rev</code> function does both hide the accumulator from the user and calculate the result type using our previously implemented <code>Reverse</code> type-level function:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ot">rev ::</span> <span class="kw">forall</span> inputList<span class="op">.</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>       <span class="dt">ReversedHList</span> inputList &#39;[] (<span class="dt">Reverse</span> inputList)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">HList</span> inputList</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">HList</span> (<span class="dt">Reverse</span> inputList)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>rev i <span class="ot">=</span> rev&#39; <span class="op">@</span>inputList <span class="op">@</span>&#39;[] <span class="op">@</span>(<span class="dt">Reverse</span> inputList) i <span class="dt">HNil</span></span></code></pre></div>
+<p>The strange <code>@inputList</code> notation is called <a href="https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/type_applications.html"><em>type application</em></a> and makes it easier to see which instance of function <code>rev'</code> we are calling. Often enough such hints are not needed (in this specific case the code will compile without), but they also make it easier to read the code due to its explicitness.</p>
+<p>That the output type is <code>HList (Reverse inputList)</code> is the simpler part of this function. But that i have to write down the <code>Rev inputList '[] (Reverse inputList)</code> class constraint is something that i didn’t get for a long time. If you leave that away, the compiler will give you the following feedback:</p>
+<pre><code>&lt;interactive&gt;:3:9: error:
+    • No instance for (Rev inputList &#39;[] (Reverse&#39; inputList &#39;[])) arising from a use of ‘rev&#39;’
+    • In the expression: rev&#39; @inputList @&#39;[] @(Reverse inputList) i HNil
+      In an equation for ‘rev’: rev i = rev&#39; @inputList @&#39;[] @(Reverse inputList) i HNil</code></pre>
+<p>I understand this as “Just because you’re using <code>rev'</code> does not mean that i can automatically constraint the user’s input types to be instances of this class. Please write down this requirement explicitly.” Thinking about it a bit longer, it does help reading the rest of the code because it explains which type instance it will select first.</p>
+<p>Afterall, the function works just as expected:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span><span class="kw">type</span> rev abc</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>rev abc</span></code></pre></div>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">rev abc :: HList ’[C, B, A]</span></p>
+<pre><code>C 3 :# B 2 :# A 1 :# HNil</code></pre>
+<p>If we had implemented the <code>Show</code> instance for our lists, we could also see that the transformation was not only done on the type level.</p>
+<p>Now, let’s look at the next challenge.</p>
+<h2 id="type-level-helper-functions">Type-Level Helper Functions</h2>
+<p>In the end we are going to remove duplicate types from heterogeneous lists, but before we arrive there we need to implement some helper functions.</p>
+<p>The first helper type-level function tells us if a list already contains some type:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Contains</span> (<span class="ot">inputList ::</span> [<span class="dt">Type</span>]) (<span class="ot">inputType ::</span> <span class="dt">Type</span>)<span class="ot"> ::</span> <span class="dt">Bool</span> <span class="kw">where</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- head of the list equals the input type</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contains</span> (x &#39;<span class="op">:</span> _) x <span class="ot">=</span> <span class="dt">&#39;True</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- recursion terminator: list didn&#39;t contain it</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contains</span> &#39;[] _ <span class="ot">=</span> <span class="dt">&#39;False</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- current head does not equal the input type, so recurse to the next one</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contains</span> (_ &#39;<span class="op">:</span> xs) x <span class="ot">=</span> <span class="dt">Contains</span> xs x</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Contains</span> &#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span>] <span class="dt">A</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Contains</span> &#39;[<span class="dt">B</span>, <span class="dt">C</span>] <span class="dt">A</span></span></code></pre></div>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">Contains ’[A, B, C] A :: Bool = ’True</span></p>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">Contains ’[B, C] A :: Bool = ’False</span></p>
+<p>This works great.</p>
+<p>The next helper that we are going to need later is a type-level if function. It accepts a bool value on the type-level, and two types of which one is returned back, depending on the boolean condition input:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">If</span> (<span class="ot">condition ::</span> <span class="dt">Bool</span>) (<span class="ot">thenCase ::</span> k) (<span class="ot">elseCase ::</span> k)<span class="ot"> ::</span> k <span class="kw">where</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">If</span> <span class="dt">&#39;True</span>  a _ <span class="ot">=</span> a</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">If</span> <span class="dt">&#39;False</span> _ b <span class="ot">=</span> b</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">If</span> <span class="dt">&#39;True</span>  <span class="dt">A</span> <span class="dt">B</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">If</span> <span class="dt">&#39;False</span> <span class="dt">A</span> <span class="dt">B</span></span></code></pre></div>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class='get-type'>If ’True A B :: * = A</span></p>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class='get-type'>If ’False A B :: * = B</span></p>
+<h2 id="filtering-only-unique-items-from-a-list">Filtering Only Unique Items from a List</h2>
+<p>The type-level function that immediately puts to use our new <code>Contains</code> and <code>If</code> function shall recursively traverse through an input list and return an output list that only contains the unique types of the input list:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Uniques</span> (<span class="ot">xs ::</span> [<span class="dt">Type</span>])<span class="ot"> ::</span> [<span class="dt">Type</span>] <span class="kw">where</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Uniques</span> (x &#39;<span class="op">:</span> xs) <span class="ot">=</span> <span class="dt">If</span> (<span class="dt">Contains</span> xs x) (<span class="dt">Uniques</span> xs) (x &#39;<span class="op">:</span> <span class="dt">Uniques</span> xs)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Uniques</span> &#39;[] <span class="ot">=</span> &#39;[]</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Uniques</span> &#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">A</span>, <span class="dt">C</span>]</span></code></pre></div>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">Uniques ‘[A, B, A, C] :: [*] =’[B, A, C]</span></p>
+<p>A helper that is going to be handy in the following is the type-level function <code>ContainsHead</code>: It accepts two type lists as arguments and tests if the first list contains the head element of the second list.</p>
+<p>We are later feeding this function into a type class parameter that then helps us selecting the right type class. In the special case that the second list is <em>empty</em>, we return a comprehensible error message.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">ContainsHead</span> (<span class="ot">listToCheckAgainst ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                         (<span class="ot">listToCheck ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="ot">                         ::</span> <span class="dt">Bool</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                         <span class="kw">where</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ContainsHead</span> as (b &#39;<span class="op">:</span> bs) <span class="ot">=</span> <span class="dt">Contains</span> as b</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ContainsHead</span> _ &#39;[] <span class="ot">=</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">TypeError</span> (<span class="dt">&#39;Text</span> <span class="st">&quot;ContainsHead can&#39;t take off the head of an empty list&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] &#39;[ <span class="dt">B</span>, <span class="dt">C</span> ]</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> &#39;[ <span class="dt">A</span> ] &#39;[ <span class="dt">B</span>, <span class="dt">C</span> ]</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] &#39;[ ]</span></code></pre></div>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">ContainsHead ‘[ A, B, C ]’[ B, C ] :: Bool = ’True</span></p>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">ContainsHead ‘[ A ]’[ B, C ] :: Bool = ’False</span></p>
+<style>/* Styles used for the Hoogle display in the pager */
+.hoogle-doc {
+display: block;
+padding-bottom: 1.3em;
+padding-left: 0.4em;
+}
+.hoogle-code {
+display: block;
+font-family: monospace;
+white-space: pre;
+}
+.hoogle-text {
+display: block;
+}
+.hoogle-name {
+color: green;
+font-weight: bold;
+}
+.hoogle-head {
+font-weight: bold;
+}
+.hoogle-sub {
+display: block;
+margin-left: 0.4em;
+}
+.hoogle-package {
+font-weight: bold;
+font-style: italic;
+}
+.hoogle-module {
+font-weight: bold;
+}
+.hoogle-class {
+font-weight: bold;
+}
+.get-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+display: block;
+white-space: pre-wrap;
+}
+.show-type {
+color: green;
+font-weight: bold;
+font-family: monospace;
+margin-left: 1em;
+}
+.mono {
+font-family: monospace;
+display: block;
+}
+.err-msg {
+color: red;
+font-style: italic;
+font-family: monospace;
+white-space: pre;
+display: block;
+}
+#unshowable {
+color: red;
+font-weight: bold;
+}
+.err-msg.in.collapse {
+padding-top: 0.7em;
+}
+.highlight-code {
+white-space: pre;
+font-family: monospace;
+}
+.suggestion-warning {
+font-weight: bold;
+color: rgb(200, 130, 0);
+}
+.suggestion-error {
+font-weight: bold;
+color: red;
+}
+.suggestion-name {
+font-weight: bold;
+}
+</style>
+<p><span class="get-type">ContainsHead ‘[ A, B, C ]’[ ] :: Bool = (TypeError …)</span></p>
+<p>Now we get to the part that turned out to look really complicated: The class <code>UniqueHList</code> provides us a function <code>ul'</code> that has a similar accumulator based interface like the reverse function. A given input list is consumed step by step, and if the current item is already in the accumulator list, we drop it. Otherwise, we put it into the accumulator. After fully consuming the input list, we can return the accumulator. The type <code>uniqueList</code> can be forecasted using our <code>Uniques</code> type-level function. It doesn’t change throughout all the instances ass they call each other and pass it from the first call to the last.</p>
+<p>The most interesting addition to this interface is the <code>nextElementIsContainedAlready</code> boolean argument. As the name suggests, one instance fills it out for the next instance so they can decide what to do with the current input list head item, as we will see in the following.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">UniqueHList</span> (<span class="ot">inList ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                  (<span class="ot">accumulator ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                  (<span class="ot">uniqueList ::</span> [<span class="dt">Type</span>])</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                  (<span class="ot">nextElementIsContainedAlready ::</span> <span class="dt">Bool</span>)</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                  <span class="kw">where</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="ot">  ulr&#39; ::</span> <span class="dt">HList</span> inList</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> accumulator</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> uniqueList</span></code></pre></div>
+<p>The recursion terminal instance is the one where the input list is empty. In this case we simply return the accumulator. It is not interesting what the value of the bool argument is in this special case.</p>
+<p>I named the class function <code>ulr'</code> as in “<strong>u</strong>nique <strong>l</strong>ist <strong>reversed</strong>”, because due to the accumulator interface of this function, the accumulator will contain all the items in reversed order when we consumed the input list. We will turn it around later.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">UniqueHList</span> &#39;[] uniqueList uniqueList dontCare <span class="kw">where</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  ulr&#39; _ x <span class="ot">=</span> x</span></code></pre></div>
+<p>In all of the following instances, i used some very much abbreviated type variable names: <code>is</code> stands for <strong>i</strong>nput item<strong>s</strong>”, <code>as</code> for “<strong>a</strong>ccumulator item<strong>s</strong>”, and <code>us</code> for “<strong>u</strong>nique item<strong>s</strong>”.</p>
+<p>The <code>'False</code> value in the <code>nextElementIsContainedAlready</code> argument says that this instance is for the cases where the next input list item is not yet contained by the accumulator. So by removing it from the input list and prepending it to the accumulator, we do the right thing.</p>
+<p>The many type application <code>@</code> things here are a bit noisy, but this time the compiler needs them as a hint. They basically replicate the class constraint that described what the next instance is.</p>
+<p><code>(ContainsHead (i ': as) is)</code> is the next bool value that is put into the next class instance: The new state of our accumulator will be <code>i ': as</code> in that next instance, so we need to check if the head of the rest of the input list is already contained in that new accumulator. That is practically the essence of the complicated-looking <code>UniqueHList</code> instance unfolding logic.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">UniqueHList</span> is (i &#39;<span class="op">:</span> as) us (<span class="dt">ContainsHead</span> (i &#39;<span class="op">:</span> as) is)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">UniqueHList</span> (i &#39;<span class="op">:</span> is) as us <span class="dt">&#39;False</span> <span class="kw">where</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    ulr&#39; (i <span class="op">:#</span> is) as <span class="ot">=</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>        ulr&#39; <span class="op">@</span>is <span class="op">@</span>(i &#39;<span class="op">:</span> as) <span class="op">@</span>us <span class="op">@</span>(<span class="dt">ContainsHead</span> (i &#39;<span class="op">:</span> as) is) is (i <span class="op">:#</span> as)</span></code></pre></div>
+<p>In the cases where the next item from the input list is already contained by the accumulator, we need to drop it and then call the next instance.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">UniqueHList</span> is as us (<span class="dt">ContainsHead</span> as is)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">UniqueHList</span> (i &#39;<span class="op">:</span> is) as us <span class="dt">&#39;True</span> <span class="kw">where</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    ulr&#39; (_ <span class="op">:#</span> is) as <span class="ot">=</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>        ulr&#39; <span class="op">@</span>is <span class="op">@</span>as <span class="op">@</span>us <span class="op">@</span>(<span class="dt">ContainsHead</span> as is) is as</span></code></pre></div>
+<p>We can already call it for a quick test:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ulr&#39; <span class="op">@</span>&#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">A</span>, <span class="dt">C</span>] <span class="op">@</span>&#39;[] <span class="op">@</span>(<span class="dt">Uniques</span> (<span class="dt">Reverse</span> &#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">A</span>, <span class="dt">C</span>])) <span class="op">@</span><span class="dt">&#39;False</span> (<span class="dt">A</span> <span class="dv">1</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">2</span> <span class="op">:#</span> <span class="dt">A</span> <span class="dv">3</span> <span class="op">:#</span> <span class="dt">C</span> <span class="dv">4</span> <span class="op">:#</span> <span class="dt">HNil</span>) <span class="dt">HNil</span></span></code></pre></div>
+<pre><code>C 4 :# B 2 :# A 1 :# HNil</code></pre>
+<p>It works, but what struck me was the fact that the output is the unique list of the reverse input list. I am pretty sure that if i was smarter, i could construct the whole thing to work more intuitively. After playing around with the implementation trying to make it nicer without nice results, i concluded that this may be a quest for another day. I was already happy that it works at all, so let’s continue describing the working state.</p>
+<p>Building on the working example input, the function <code>ulr</code> hides all the type hints from the user and calls our class function with the right arguments:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="ot">ulr ::</span> <span class="kw">forall</span> inputList<span class="op">.</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>       <span class="dt">UniqueHList</span> inputList &#39;[] (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)) <span class="dt">&#39;False</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>   <span class="ot">=&gt;</span> <span class="dt">HList</span> inputList</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>   <span class="ot">-&gt;</span> <span class="dt">HList</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList))</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>ulr x <span class="ot">=</span> ulr&#39; <span class="op">@</span>inputList <span class="op">@</span>&#39;[] <span class="op">@</span>(<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)) <span class="op">@</span><span class="dt">&#39;False</span> x <span class="dt">HNil</span></span></code></pre></div>
+<p>As the user would not expect a reversed output list, let’s concatenate our <code>rev</code> function with the new <code>ulr</code> function to provide the expected results.</p>
+<p>The implementation is really simple but writing down the types turned out a bit ugly. It is surely somehow possible to tell the compiler that <code>Reverse (Uniques (Reverse x))</code> is really the same as <code>Uniques x</code>, but at this time i don’t know how to do it.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="ot">ul ::</span> <span class="kw">forall</span> inputList<span class="op">.</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    ( <span class="dt">ReversedHList</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList))</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                    &#39;[]</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                    (<span class="dt">Reverse</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)))</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    , <span class="dt">UniqueHList</span> inputList &#39;[] (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)) <span class="dt">&#39;False</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">HList</span> inputList</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">HList</span> (<span class="dt">Reverse</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)))</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>ul <span class="ot">=</span> rev <span class="op">.</span> ulr</span></code></pre></div>
+<h2 id="the-moment-of-truth">The Moment of Truth</h2>
+<p>That should be it. The moment of truth - does it work?</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>abc</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>ul abc</span></code></pre></div>
+<pre><code>A 1 :# B 2 :# C 3 :# HNil
+
+A 1 :# B 2 :# C 3 :# HNil</code></pre>
+<p>It doesn’t destroy a list that is already unique. Actually, it doesn’t do anything on a unique list and that’s good.</p>
+<p>Let’s roll out a more complicated case:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>ababca <span class="ot">=</span> <span class="dt">A</span> <span class="dv">1</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">2</span> <span class="op">:#</span> <span class="dt">A</span> <span class="dv">3</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">4</span> <span class="op">:#</span> <span class="dt">C</span> <span class="dv">5</span> <span class="op">:#</span> <span class="dt">A</span> <span class="dv">6</span> <span class="op">:#</span> <span class="dt">HNil</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>ababca</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>ul ababca</span></code></pre></div>
+<pre><code>A 1 :# B 2 :# A 3 :# B 4 :# C 5 :# A 6 :# HNil
+
+A 1 :# B 2 :# C 5 :# HNil</code></pre>
+<p>Happiness.</p>
+<h2 id="summary">Summary</h2>
+<p>This is now a big bunch of special purpose code that reinvents multiple wheels, but it really helped my personal understanding, and i hope it also helps yours. The next step would be to use libraries which do all of this better, so we don’t need so much code. There is for example <a href="https://hackage.haskell.org/package/HList"><code>HList</code></a> which is really elegant and is so much more comprehensible once we understand more type-level programming.</p>
+<p>I’ve done a type-level programming in C++ before (have a look at the older articles in this blog) and i find it very interesting how similar it really is. In haskell, it is more frustrating in the beginning because the kind system is complicated. As soon as the basic mechanisms are understood, it is nice to see that Haskell’s type system is much more intelligent than C++ templates and there’s much more control over everything.</p>]]></description>
+    <pubDate>Sun, 20 Mar 2022 00:00:00 UT</pubDate>
+    <guid>https://blog.galowicz.de/2022/03/20/unique-heterogeneous-typelists</guid>
+    <dc:creator>Jacek Galowicz</dc:creator>
+</item>
+<item>
     <title>NixOS Community Oceansprint 2021 Report</title>
     <link>https://blog.galowicz.de/2021/12/12/nix-community-oceansprint-report</link>
     <description><![CDATA[<p>This is my trip report from the awesome NixOS community hackathon on Lanzarote. For more information please also have a look on the website: <a href="https://oceansprint.org">https://oceansprint.org</a></p>
@@ -80,7 +1223,7 @@
 </ul>
 <p>There were basically two approaches:</p>
 <p>Robert created a <a href="https://github.com/NixOS/nixpkgs/pull/148456">pull request with a POC</a> that shows how to whitelist NixOS modules into a system. This is different from the usual approach because the NixOS function that evaluates a config imports <em>all</em> the NixOS modules and then lets the user activate/deactivate things at will, but has a lot of things already activated by default. “Blacklisting” features by disabling them one by one in order to arrive at a minimal system is very uncomfortable becasue you end up searching for which nix file enables what. Some things also cannot be (easily) disabled this way. Robert’s approach is creating a function that does not work with a default list of imports. He also added unit tests to facilitate regression-free maintenance and extension of this effort.</p>
-<p>Jonas and Thu experimented with <a href="https://github.com/cleverca22/not-os">not-os</a>, which is a set of custom NixOS modules that remove systemd and create system initialization scripts from scratch in order to reach a minimal system. They resulted in an impressive written overview of what would need to be done to minimize the system further and even reach systems without interpreters. (Blog article coming on Jonas’s blog)</p>
+<p>Jonas and Thu experimented with <a href="https://github.com/cleverca22/not-os">not-os</a>, which is a set of custom NixOS modules that remove systemd and create system initialization scripts from scratch in order to reach a minimal system. They resulted in an impressive written overview of what would need to be done to minimize the system further and even reach systems without interpreters. (Blog article coming on <a href="https://zimbatm.com/">Jonas’s blog</a>)</p>
 <p>Both approaches seem like they could be combined upstream with some amount of work.</p>
 <h2 id="makebinarywrapper">MakeBinaryWrapper</h2>
 <p>Pointed at an existing <a href="https://github.com/NixOS/nixpkgs/pull/124556">pull request from user <code>bergkvist</code></a> by Robert, Jacek Galowicz stopped participating in the discussion about minimizing NixOS systems and started helping improving and testing an application wrapper that is called <code>makeBinaryWrapper</code>. There is an existing tool called <a href="https://nixos.org/manual/nixpkgs/stable/#fun-makeWrapper"><code>makeWrapper</code></a> that can substitute any binary or script by another script that first manipulates the shell environment in user-specified form and then calls the original app/script, possibly with prepended command line arguments. The binary wrapper builds a tiny C program and compiles it instead of composing a shellscript. This is interesting for the following reasons:</p>
@@ -1885,262 +3028,6 @@
 <p>This article described a kind of iterator, which is not a plain pointer to <em>data</em>. It is an algorithm implementation in the sense, that the <em>increment</em> step does actually calculate something more complex than just a new internal pointer position to some next item. Interestingly, this way one can instantiate some kind of <em>iterable</em> object, which defines a range, which involves a lot of computation - but that computation is not executed until someone actually asks for the result (And the code which asks for the result does not even need to know what kind of algorithm it is implicitly executing, as this is all hidden behind a simple iterator interface). This kind of programming style goes towards <a href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a>, which is a powerful and elegant principle known from purely functional programming languages.</p>]]></description>
     <pubDate>Sun, 04 Sep 2016 00:00:00 UT</pubDate>
     <guid>https://blog.galowicz.de/2016/09/04/algorithms_in_iterators</guid>
-    <dc:creator>Jacek Galowicz</dc:creator>
-</item>
-<item>
-    <title>Type List Compile Time Performance</title>
-    <link>https://blog.galowicz.de/2016/06/25/cpp_template_type_list_performance</link>
-    <description><![CDATA[<p>Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times. I came up with rules of thumb like “<em>Prefer pattern matching over if_else_t</em>”, and “<em>Prefer nested type lists over variadic type lists</em>”. But i did not know how much faster which pattern is, i just knew about tendencies. Finally, i sat down to write some compile time benchmarks, and this blog posts presents the results.</p>
-<!--more-->
-<h1 id="creating-lists">Creating Lists</h1>
-<p>A fundamental thing to measure are <strong>lists</strong>. Everything else which can grow to arbitrary sizes, will somehow be implemented using lists. There are different possible ways to implement lists. I present measurements of nested and variadic type lists. This article does not explain how to implement them, but there is an <a href="/2016/05/08/compile_time_type_lists">article about C++ template type lists</a> already.</p>
-<p>The first benchmark just creates lists of rising sizes, and measures how much time that takes. The lists are generated from integer sequences, just like those from <a href="/2016/06/24/integer_sequences_at_compile_time">this article which explains how to generate integer sequences at compile time</a>.</p>
-<p>I present graphs for doing this inside <a href="http://metashell.org/">Metashell</a>, and also using real compilers. Metashell is a great tool for debugging meta programs, or playing around with expressions. It is basically what <code>ghci</code> is to Haskell, an interactive shell for programming.</p>
-<p>Since Metashell does also provide a profiling feature, it is tempting to measure performance with it. This turns out to be a bad idea when comparing such performance numbers with real compiler performance: Not only are compilers significantly faster than meta shell, but they also do generate <em>completely different</em> numbers.</p>
-<p>It is generally fine, that Metashell instantiates templates slower than compilers do. Metashell is meant as a development tool, and not as a high performance compiler. However, using it to compare the performance of different algorithms can result in very misleading numbers.</p>
-<h2 id="metashell">Metashell</h2>
-<figure>
-<img src="/images/compile_time_type_list_creation_benchmark_metashell.png" alt="Metashell: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists" /><figcaption aria-hidden="true">Metashell: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists</figcaption>
-</figure>
-<p>The graphs both have fitted polygonal function overlays. The runtime of generating lists, both nested and variadic types, is obviously within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>. This is usually something which would be considered having <em>linear</em> runtime, because the lists grow linearly.</p>
-<p>These numbers turn out to be completely different when measured on real compilers like Clang and GCC:</p>
-<h2 id="compilers">Compilers</h2>
-<p>To my knowledge it is not possible to measure only the actual template instantiation time when using a compiler. Hence i just measured how long it takes the compiler to start, instantiate the template code, and exit again. These numbers are inherently more noisy than the metashell numbers.</p>
-<figure>
-<img src="/images/compile_time_type_list_creation_benchmark_compilers.png" alt="GCC/Clang: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists" /><figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists</figcaption>
-</figure>
-<p>Both GCC and Clang are much faster in instantiating large variadic lists, compared to Metashell. But what is most obvious on this graph, is that nested type lists in turn are <strong>much</strong> faster than variadic type lists.</p>
-<p>Variadic type lists are easier to read and write for programmers, but this performance penalty makes their use inpractiable for algorithms. Hence, variadic type lists can nicely be used as input/output interface to the user (the coder). But inbetween, they should be converted to type lists, in order to work efficiently on the data they convey. <a href="/2016/05/14/converting_between_c_strings_and_type_lists">This article explains how to convert between different type list formats</a>.</p>
-<p>The performance numbers of GCC and Clang when instantiating nested type lists, look really similar in this diagram. They actually are, and i do not provide another diagram showing only these two graphs. A comparison between them based on this data would not be too fair, as these graphs are really noisy. It would be easier to compare with even larger type lists, but i experienced compiler <em>crashes</em> with even higher numbers.</p>
-<h1 id="filtering-lists">Filtering Lists</h1>
-<p>The next thing to measure after creating lists, is applying operations on them. I chose to measure how long it takes to apply a <strong>filter</strong> on a list. The filter itself is rather cheap: I implemented functions which take a list of integer sequences, and return a list of integer sequences, but inbetween <em>remove</em> all <em>even</em> numbers.</p>
-<p>I wrote one benchmark measuring different implementations (a code snippet appendix follows at the end of the article):</p>
-<ul>
-<li>Filtering the even numbers out using the <code>if_else_t</code> construct</li>
-<li>Filtering the even numbers out using <em>pattern matching</em></li>
-<li>Generating lists which do not contain even numbers from the beginning</li>
-</ul>
-<p>Comparing the same algorithm using <code>if_else_t</code> vs. <em>pattern matching</em> is interesting, because there are obvious performance differences.</p>
-<p>I tried to do a <em>fair</em> comparison between filtering nested and variadic type lists. To ensure this, i implemented the if-else/pattern-matching variants <em>once</em> in a way that the same implementation works on both kinds of lists.</p>
-<p>All these algorithms are applied to both nested and variadic type lists. As the list creation benchmark already suggests, the nested variants of these algorithms will be faster. This time, the differences between Clang and GCC are more significant when looking at the nested variants, hence i present another diagram plotting only these.</p>
-<figure>
-<img src="/images/compile_time_type_list_filter_benchmark.png" alt="GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested vs. variadic type lists" /><figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested vs. variadic type lists</figcaption>
-</figure>
-<p>There are three obvious clusters in this diagram:</p>
-<h3 id="variadic-list-operations-on-gcc">Variadic list operations on GCC</h3>
-<p>This cluster shows very nicely, that the performance using <code>if_else_t</code> for filtering items is worst, compared to all other variants. Applying pattern matching is indeed faster.</p>
-<p>The most performant variant is assembling an already filtered list. This effectively removes the overhead of at first generating a full sequence, and filtering it afterwards.</p>
-<h3 id="variadic-list-operations-on-clang">Variadic list operations on Clang</h3>
-<p>Here, we see a generally similar pattern compared to the variadic-GCC-cluster before, but it is a bit faster with this compiler. Clang handles variadic type lists faster than GCC does.</p>
-<p>Apart from that, the pattern matching style filter operation on the type list is faster, than creating an already filtered list. For some reason. I don’t know.</p>
-<h3 id="nested-list-operations-on-clanggcc">Nested list operations on Clang/GCC</h3>
-<p>All of these transformations on nested type lists are <strong>generally</strong> faster, and they are <strong>much</strong> faster.</p>
-<p>Because the differences are not obvious on the first diagram, they are extracted and plotted on a nested-only diagram:</p>
-<figure>
-<img src="/images/compile_time_type_list_filter_benchmark_recursive_only.png" alt="GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested type lists" /><figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested type lists</figcaption>
-</figure>
-<p>These numbers are very noisy, because they are near to the general process start time of the compiler executable in the shell.</p>
-<p>Apart from that, the two different implementations of list filter operations, and manual filtered list creation have the same performance characteristics like before, when compared to each other.</p>
-<p>Interestingly, clang seems to be slower for small type lists, because the time it takes to launch and return to shell is larger. For large type lists (which means they contain about 500 and more items), clang takes over and compiles faster.</p>
-<p>The most important observation here is, that the runtime of these algorithms on nested type lists seems to be within <span class="math inline">𝒪(<em>n</em>)</span>. Creating variadic type lists alone is already <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>.</p>
-<h1 id="the-implementations">The Implementations</h1>
-<p>This section shows the implementations of <em>what</em> i actually measured. There’s not much explanation how this works, because i wrote other articles covering that:</p>
-<ul>
-<li>To understand basics like <code>if_else_t</code>, and pattern matching, have a look at <a href="/2016/05/05/template_meta_programming_basics">the template meta programming basics 101 article</a>.</li>
-<li>To understand, how type lists work, please have a look at <a href="/2016/05/08/compile_time_type_lists">the type list article</a>.</li>
-</ul>
-<p>Both list filter implementations remove even numbers from the input type list. They are implemented in a way that they can handle both variadic and nested type lists.</p>
-<p>Only for creating already filtered lists, there are two different implementations for the different types of type lists.</p>
-<p>For all functions, at the very <em>bottom</em> of every example, there is an <code>odds_t</code> using clause, which represents the actual user interface.</p>
-<h2 id="if_else_t">if_else_t</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="at">const</span> <span class="dt">int</span>  val    <span class="op">{</span><span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;::</span>value<span class="op">};</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="at">const</span> <span class="dt">bool</span> is_odd <span class="op">{(</span>val <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">};</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> next <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span><span class="dt">tail_t</span><span class="op">&lt;</span>List<span class="op">&gt;&gt;::</span>type<span class="op">;</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">// If odd, prepend value to list. Else, skip it:</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="dt">if_else_t</span><span class="op">&lt;</span>is_odd<span class="op">,</span> </span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                    <span class="dt">prepend_t</span><span class="op">&lt;</span>next<span class="op">,</span> <span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;&gt;,</span> </span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                    next</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                 <span class="op">&gt;;</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">// Recursion terminator for nested type lists</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span>rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">;</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co">// Recursion terminator for variadic type lists</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span>var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;&gt;</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;;</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="dt">odds_t</span> <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span>List<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
-<h2 id="pattern-matching">Pattern Matching</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// is_odd = true: Prepend item to list</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// This is not a template specialization, but there is a template</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// specialization afterwards, which assumes is_odd=false.</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Hence, this is an implicit specialization on is_odd=true cases.</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> is_odd<span class="op">,</span> <span class="kw">typename</span> Head<span class="op">,</span> <span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> next <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span><span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;,</span> </span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">tail_t</span><span class="op">&lt;</span>List<span class="op">&gt;&gt;::</span>type<span class="op">;</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="dt">prepend_t</span><span class="op">&lt;</span>next<span class="op">,</span> Head<span class="op">&gt;;</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">// is_odd = false: Skip item</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">,</span> <span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">false</span><span class="op">,</span> Head<span class="op">,</span> List<span class="op">&gt;</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span><span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;,</span> </span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">tail_t</span><span class="op">&lt;</span>List<span class="op">&gt;&gt;::</span>type<span class="op">;</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">// Recursion terminator for nested type lists</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">// Last element: is_odd = true</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">&gt;</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">true</span><span class="op">,</span> Head<span class="op">,</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> rec_tl<span class="op">::</span>tl<span class="op">&lt;</span>Head<span class="op">,</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;;</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">// Recursion terminator for nested type lists</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">// Last element: is_odd = false</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">&gt;</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">false</span><span class="op">,</span> Head<span class="op">,</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">;</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co">// Recursion terminator for variadic type lists</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">// Last element: is_odd = true</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">&gt;</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">true</span><span class="op">,</span> Head<span class="op">,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;&gt;</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Head<span class="op">&gt;;</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="co">// Recursion terminator for variadic type lists</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="co">// Last element: is_odd = false</span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">&gt;</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">false</span><span class="op">,</span> Head<span class="op">,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;&gt;</span></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;;</span></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="dt">odds_t</span> <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span><span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;,</span> </span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">tail_t</span><span class="op">&lt;</span>List<span class="op">&gt;&gt;::</span>type<span class="op">;</span></span></code></pre></div>
-<h2 id="filtered-list-generation">Filtered List Generation</h2>
-<p>Nested:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> is_odd<span class="op">,</span> <span class="kw">typename</span> Head<span class="op">,</span> <span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">,</span> <span class="kw">typename</span> TailHead<span class="op">,</span> <span class="kw">typename</span> TailTail<span class="op">&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">true</span><span class="op">,</span> Head<span class="op">,</span> rec_tl<span class="op">::</span>tl<span class="op">&lt;</span>TailHead<span class="op">,</span> TailTail<span class="op">&gt;&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> next <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span>TailHead<span class="op">::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                            TailHead<span class="op">,</span> </span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                            TailTail<span class="op">&gt;::</span>type<span class="op">;</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> rec_tl<span class="op">::</span>tl<span class="op">&lt;</span>Head<span class="op">,</span> next<span class="op">&gt;</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">,</span> <span class="kw">typename</span> TailHead<span class="op">,</span> <span class="kw">typename</span> TailTail<span class="op">&gt;</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">false</span><span class="op">,</span> Head<span class="op">,</span> rec_tl<span class="op">::</span>tl<span class="op">&lt;</span>TailHead<span class="op">,</span> TailTail<span class="op">&gt;&gt;</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span>TailHead<span class="op">::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                            TailHead<span class="op">,</span> </span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                            TailTail<span class="op">&gt;::</span>type<span class="op">;</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">&gt;</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">true</span><span class="op">,</span> Head<span class="op">,</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> rec_tl<span class="op">::</span>tl<span class="op">&lt;</span>Head<span class="op">,</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;;</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Head<span class="op">&gt;</span></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">false</span><span class="op">,</span> Head<span class="op">,</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> rec_tl<span class="op">::</span><span class="dt">null_t</span><span class="op">;</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="dt">odds_t</span> <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span><span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;,</span> </span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>                            <span class="dt">tail_t</span><span class="op">&lt;</span>List<span class="op">&gt;&gt;::</span>type<span class="op">;</span></span></code></pre></div>
-<p>Variadic:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> is_odd<span class="op">,</span> <span class="kw">typename</span> Current<span class="op">,</span> <span class="kw">typename</span> InList<span class="op">,</span> <span class="kw">typename</span> OutList<span class="op">&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Current<span class="op">,</span> <span class="kw">typename</span> InHead<span class="op">,</span> </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span> <span class="op">...</span> InTail<span class="op">,</span> <span class="kw">typename</span> <span class="op">...</span> Outs<span class="op">&gt;</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">true</span><span class="op">,</span> Current<span class="op">,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>InHead<span class="op">,</span> InTail<span class="op">...&gt;,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...&gt;&gt;</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span>InHead<span class="op">::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                            InHead<span class="op">,</span> </span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                            var_tl<span class="op">::</span>tl<span class="op">&lt;</span>InTail<span class="op">...&gt;,</span> </span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                            var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...,</span> Current<span class="op">&gt;&gt;::</span>type<span class="op">;</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Current<span class="op">,</span> <span class="kw">typename</span> InHead<span class="op">,</span> </span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>          <span class="kw">typename</span> <span class="op">...</span> InTail<span class="op">,</span> <span class="kw">typename</span> <span class="op">...</span> Outs<span class="op">&gt;</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">false</span><span class="op">,</span> Current<span class="op">,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>InHead<span class="op">,</span> InTail<span class="op">...&gt;,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...&gt;&gt;</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>                            <span class="op">(</span>InHead<span class="op">::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                            InHead<span class="op">,</span> </span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>                            var_tl<span class="op">::</span>tl<span class="op">&lt;</span>InTail<span class="op">...&gt;,</span> </span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                            var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...&gt;&gt;::</span>type<span class="op">;</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Current<span class="op">,</span> <span class="kw">typename</span> <span class="op">...</span> Outs<span class="op">&gt;</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">true</span><span class="op">,</span> Current<span class="op">,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...&gt;&gt;</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...,</span> Current<span class="op">&gt;;</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Current<span class="op">,</span> <span class="kw">typename</span> <span class="op">...</span> Outs<span class="op">&gt;</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> odds<span class="op">&lt;</span><span class="kw">false</span><span class="op">,</span> Current<span class="op">,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;,</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...&gt;&gt;</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> var_tl<span class="op">::</span>tl<span class="op">&lt;</span>Outs<span class="op">...&gt;;</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> List<span class="op">&gt;</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="dt">odds_t</span> <span class="op">=</span> <span class="kw">typename</span> odds<span class="op">&lt;</span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>                        <span class="op">(</span><span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;::</span>value <span class="op">%</span> <span class="dv">2</span><span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">,</span> </span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">head_t</span><span class="op">&lt;</span>List<span class="op">&gt;,</span> </span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>                        <span class="dt">tail_t</span><span class="op">&lt;</span>List<span class="op">&gt;,</span> </span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>                        var_tl<span class="op">::</span>tl<span class="op">&lt;&gt;&gt;::</span>type<span class="op">;</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span></code></pre></div>
-<h1 id="conclusion">Conclusion</h1>
-<p>What i learned from my previous C++ TMP experience, and these benchmarks;</p>
-<ul>
-<li>Branching using <em>pattern matching</em> is generally <strong>faster</strong> than <code>if_else_t</code></li>
-<li>Modifying <em>nested</em> type lists is generally <strong>faster</strong> than <em>variadic</em> type lists.</li>
-<li>Metashell is fine for debugging C++ TMP code, but not for actual measuring</li>
-</ul>
-<p>I hope these insights are also useful for others!</p>]]></description>
-    <pubDate>Sat, 25 Jun 2016 00:00:00 UT</pubDate>
-    <guid>https://blog.galowicz.de/2016/06/25/cpp_template_type_list_performance</guid>
     <dc:creator>Jacek Galowicz</dc:creator>
 </item>
 
