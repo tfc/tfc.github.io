@@ -13,35 +13,22 @@
     (flake-utils.lib.eachDefaultSystem
       (system:
         let
-          haskellOverlay = final: prev:
+          pkgs = nixpkgs.legacyPackages.${system};
+          cleanSrc =
             let
-              cleanSrc =
-                let
-                  nonHaskell = [
-                    "*.nix"
-                    "css"
-                    "deploy.sh"
-                    "images"
-                    "nix"
-                    "posts"
-                    "templates"
-                  ];
-                in
-                final.nix-gitignore.gitignoreSource nonHaskell ./.;
-              inherit (final.haskell.lib) dontCheck;
+              nonHaskell = [
+                "*.nix"
+                "css"
+                "deploy.sh"
+                "images"
+                "nix"
+                "posts"
+                "templates"
+              ];
             in
-            {
-              #haskellPackages = prev.haskell.packages."ghc${ghcVersion}".override {
-              haskellPackages = prev.haskellPackages.override {
-                overrides = hFinal: hPrev: {
-                  shakespeare = dontCheck hPrev.shakespeare;
-                  blog-generator = hFinal.callCabal2nix "blog" cleanSrc { };
-                };
-              };
-            };
-          pkgs = nixpkgs.legacyPackages.${system}.extend haskellOverlay;
+            pkgs.nix-gitignore.gitignoreSource nonHaskell ./.;
           inherit (pkgs) haskellPackages;
-          inherit (pkgs.haskellPackages) blog-generator;
+          blog-generator = pkgs.haskellPackages.callCabal2nix "blog" cleanSrc { };
 
           release = pkgs.stdenv.mkDerivation {
             name = "blog.galowicz.de-content";
