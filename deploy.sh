@@ -8,7 +8,8 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-blogRelease=$(nix-build --no-out-link release.nix -A release)
+nix build
+blogRelease=$(readlink result)
 
 git clone git@github.com:tfc/tfc.github.io.git "$tmpDir"
 
@@ -17,6 +18,7 @@ git checkout master
 
 rm -rf "$tmpDir/"*
 cp -r "$blogRelease/"* .
+
 chmod -R 755 .
 touch .nojekyll
 
