@@ -326,7 +326,7 @@ font-weight: bold;
 = '[C, B, A]</span>
 
 
-The type class `Rev` will provide us a `rev'` function with just the same interface but at normal function level.
+The type class `ReversedHList` will provide us a `rev'` function with just the same interface but at normal function level.
 In order to hide this input-and-accumulator interface, we will later define function `rev` which hides this implementation detail from the user.
 
 
@@ -365,7 +365,7 @@ The strange `@inputList` notation is called [*type application*](https://ghc.git
 Often enough such hints are not needed (in this specific case the code will compile without), but they also make it easier to read the code due to its explicitness.
 
 That the output type is `HList (Reverse inputList)` is the simpler part of this function.
-But that i have to write down the `Rev inputList '[] (Reverse inputList)` class constraint is something that i didn't get for a long time.
+But that i have to write down the `ReversedHList inputList '[] (Reverse inputList)` class constraint is something that i didn't get for a long time.
 If you leave that away, the compiler will give you the following feedback:
 
 ```
@@ -375,7 +375,7 @@ If you leave that away, the compiler will give you the following feedback:
       In an equation for ‘rev’: rev i = rev' @inputList @'[] @(Reverse inputList) i HNil
 ```
 
-I understand this as "Just because you're using `rev'` does not mean that i can automatically constraint the user's input types to be instances of this class. Please write down this requirement explicitly."
+I understand this as "Just because you're using `rev'` does not mean that i can automatically require the user's input types to be instances of this class. Please write down this requirement explicitly."
 Thinking about it a bit longer, it does help reading the rest of the code because it explains which type instance it will select first.
 
 Afterall, the function works just as expected:
@@ -476,7 +476,7 @@ font-weight: bold;
     C 3 :# B 2 :# A 1 :# HNil
 
 
-If we had implemented the `Show` instance for our lists, we could also see that the transformation was not only done on the type level.
+Thanks to the `Show` instance we can nicely inspect our reversed list both at the type- and value-level.
 
 Now, let's look at the next challenge.
 
@@ -1323,9 +1323,7 @@ We can already call it for a quick test:
 ulr' @'[A, B, A, C] @'[] @(Uniques (Reverse '[A, B, A, C])) @'False (A 1 :# B 2 :# A 3 :# C 4 :# HNil) HNil
 ```
 
-
     C 4 :# B 2 :# A 1 :# HNil
-
 
 It works, but what struck me was the fact that the output is the unique list of the reverse input list.
 I am pretty sure that if i was smarter, i could construct the whole thing to work more intuitively.
@@ -1371,9 +1369,7 @@ abc
 ul abc
 ```
 
-
     A 1 :# B 2 :# C 3 :# HNil
-
     A 1 :# B 2 :# C 3 :# HNil
 
 
@@ -1389,11 +1385,8 @@ ababca
 ul ababca
 ```
 
-
     A 1 :# B 2 :# A 3 :# B 4 :# C 5 :# A 6 :# HNil
-
     A 1 :# B 2 :# C 5 :# HNil
-
 
 Happiness.
 
