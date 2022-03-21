@@ -4,9 +4,9 @@
   inputs = {
     nixpkgs.url = github:nixos/nixpkgs/nixos-21.11;
     flake-utils.url = github:numtide/flake-utils;
-    flake-compat.url = "github:edolstra/flake-compat";
+    flake-compat.url = github:edolstra/flake-compat;
     flake-compat.flake = false;
-    flake-compat-ci.url = "github:hercules-ci/flake-compat-ci";
+    flake-compat-ci.url = github:hercules-ci/flake-compat-ci;
   };
 
   outputs = { self, nixpkgs, flake-utils, flake-compat, flake-compat-ci }:
