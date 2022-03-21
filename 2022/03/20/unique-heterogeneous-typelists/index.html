@@ -284,7 +284,7 @@ font-weight: bold;
 }
 </style>
 <p><span class="get-type">Reverse ‘[ A, B, C ] :: [*] =’[C, B, A]</span></p>
-<p>The type class <code>Rev</code> will provide us a <code>rev'</code> function with just the same interface but at normal function level. In order to hide this input-and-accumulator interface, we will later define function <code>rev</code> which hides this implementation detail from the user.</p>
+<p>The type class <code>ReversedHList</code> will provide us a <code>rev'</code> function with just the same interface but at normal function level. In order to hide this input-and-accumulator interface, we will later define function <code>rev</code> which hides this implementation detail from the user.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">ReversedHList</span> (<span class="ot">inputList ::</span> [<span class="dt">Type</span>])</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                    (<span class="ot">accumulator ::</span> [<span class="dt">Type</span>])</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                    (<span class="ot">reversedList ::</span> [<span class="dt">Type</span>])</span>
@@ -307,12 +307,12 @@ font-weight: bold;
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">HList</span> (<span class="dt">Reverse</span> inputList)</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>rev i <span class="ot">=</span> rev' <span class="op">@</span>inputList <span class="op">@</span>'[] <span class="op">@</span>(<span class="dt">Reverse</span> inputList) i <span class="dt">HNil</span></span></code></pre></div>
 <p>The strange <code>@inputList</code> notation is called <a href="https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/type_applications.html"><em>type application</em></a> and makes it easier to see which instance of function <code>rev'</code> we are calling. Often enough such hints are not needed (in this specific case the code will compile without), but they also make it easier to read the code due to its explicitness.</p>
-<p>That the output type is <code>HList (Reverse inputList)</code> is the simpler part of this function. But that i have to write down the <code>Rev inputList '[] (Reverse inputList)</code> class constraint is something that i didn’t get for a long time. If you leave that away, the compiler will give you the following feedback:</p>
+<p>That the output type is <code>HList (Reverse inputList)</code> is the simpler part of this function. But that i have to write down the <code>ReversedHList inputList '[] (Reverse inputList)</code> class constraint is something that i didn’t get for a long time. If you leave that away, the compiler will give you the following feedback:</p>
 <pre><code>&lt;interactive&gt;:3:9: error:
     • No instance for (Rev inputList '[] (Reverse' inputList '[])) arising from a use of ‘rev'’
     • In the expression: rev' @inputList @'[] @(Reverse inputList) i HNil
       In an equation for ‘rev’: rev i = rev' @inputList @'[] @(Reverse inputList) i HNil</code></pre>
-<p>I understand this as “Just because you’re using <code>rev'</code> does not mean that i can automatically constraint the user’s input types to be instances of this class. Please write down this requirement explicitly.” Thinking about it a bit longer, it does help reading the rest of the code because it explains which type instance it will select first.</p>
+<p>I understand this as “Just because you’re using <code>rev'</code> does not mean that i can automatically require the user’s input types to be instances of this class. Please write down this requirement explicitly.” Thinking about it a bit longer, it does help reading the rest of the code because it explains which type instance it will select first.</p>
 <p>Afterall, the function works just as expected:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span><span class="kw">type</span> rev abc</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -401,7 +401,7 @@ font-weight: bold;
 </style>
 <p><span class="get-type">rev abc :: HList ’[C, B, A]</span></p>
 <pre><code>C 3 :# B 2 :# A 1 :# HNil</code></pre>
-<p>If we had implemented the <code>Show</code> instance for our lists, we could also see that the transformation was not only done on the type level.</p>
+<p>Thanks to the <code>Show</code> instance we can nicely inspect our reversed list both at the type- and value-level.</p>
 <p>Now, let’s look at the next challenge.</p>
 <h2 id="type-level-helper-functions">Type-Level Helper Functions</h2>
 <p>In the end we are going to remove duplicate types from heterogeneous lists, but before we arrive there we need to implement some helper functions.</p>
