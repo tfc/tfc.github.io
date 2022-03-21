@@ -11,7 +11,7 @@ trap cleanup EXIT
 nix build
 blogRelease=$(readlink result)
 
-git clone git@github.com:tfc/tfc.github.io.git "$tmpDir"
+git clone --depth 1 git@github.com:tfc/tfc.github.io.git "$tmpDir"
 
 cd "$tmpDir"
 git checkout master
