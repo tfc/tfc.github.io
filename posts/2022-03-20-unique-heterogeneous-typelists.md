@@ -6,29 +6,29 @@ title: Filtering Unique Items from Heterogeneous Lists at Compile Time
 This article is about how to filter unique items from heterogeneous lists on
 the type level in Haskell.
 This example, without further context, might look a bit esoteric by itself,
-but i learned a lot writing it and wanted to share the experience.
+but I learned a lot writing it and wanted to share the experience.
 
 <!--more-->
 
-In the last years i've been programming more in Haskell than in C++.
+In the last years I've been programming more in Haskell than in C++.
 I find Haskell is super fascinating because of its mighty type system.
 C++ already makes it possible to lift a lot of computation from compile time to run time (using `constexpr` and template meta programming) with the positive effect of resulting in less code in your binaries.
 Less code in your binaries is great, because this means a ["shift left"](https://en.wikipedia.org/wiki/Shift-left_testing) of bug potential on the time axis from run time to compile time.
 Now Haskell makes this much more interesting because its type system is much more intelligent than the one of C++ or comparable languages.
 There are many libraries that show off what's possible.
-My current favorite example because i have been using it a lot is the [`servant`](https://docs.servant.dev) library.
+My current favorite example because I have been using it a lot is the [`servant`](https://docs.servant.dev) library.
 
 I found learning C++ template meta programming very hard in the beginning because it's completely different than *normal* programming. But once you get there, it's really enlightening and helps in cleaner thinking about and designing of what your programs are actually supposed to do.
-Trying to do the same things and even more in Haskell, i found the following books and blog articles extremely helpful:
+Trying to do the same things and even more in Haskell, I found the following books and blog articles extremely helpful:
 
 - Book: [**"Thinking with Types"** by Sandy Maguire](https://leanpub.com/thinking-with-types)
 - Book: [**"Haskell Design Patterns"** by Ryan Lemmer](https://www.packtpub.com/product/haskell-design-patterns/9781783988723)
 - Blog: [**"Taming Heterogeneous Lists in Haskell"** by Hengchu Zhang](https://hengchu.github.io/posts/2018-05-09-type-lists-and-type-classes.lhs.html)
 
-However, after getting some inspiration what fascinating things some libraries do at the type level, i wanted to give it a try myself and came up with some private hobby challenge that i wanted to try myself.
-While trying to hack on the type level, i found the available books and blogs super helpful.
+However, after getting some inspiration what fascinating things some libraries do at the type level, I wanted to give it a try myself and came up with some private hobby challenge that I wanted to try myself.
+While trying to hack on the type level, I found the available books and blogs super helpful.
 But as so often the case, books/articles often tend to explain the simple things simple, then switch to much more complicated examples, but there is quite some gap between the simple and the (maybe too) advanced examples.
-I got lost there unfortunately and came up with a solution to a sub-problem of my hobby challenge that i wanted to share to fill up that gap.
+I got lost there unfortunately and came up with a solution to a sub-problem of my hobby challenge that I wanted to share to fill up that gap.
 
 This blog article shows how to:
 
@@ -203,14 +203,14 @@ Fine. Off to the more complicated things now.
 
 All the examples on the internet first show how to write functions on hlists: First, implement a type class and then all the relevant instances for them. These are usually not too hard to understand and write, because the output type does not really depend on the inputs - just like our `Show` instance from before.
 
-Having understood that, the next thing that i found hard to achieve was *reversing* a heterogeneous list.
+Having understood that, the next thing that I found hard to achieve was *reversing* a heterogeneous list.
 The reason is, that the return type of a reverse function would completely depend on the input:
 
 ```haskell
 aReverserFunction :: Hlist '[ A, B, C ] -> HList '[ C, B, A ]
 ```
 
-But how to express that programmatically? Implementing the type class would be easy, but i would need to programmatically calculate the output type from the input type.
+But how to express that programmatically? Implementing the type class would be easy, but I would need to programmatically calculate the output type from the input type.
 Without knowing the resulting return type in advance, the type class would be of no use.
 Afterward, we can implement the type class that uses this calculated type.
 
@@ -365,7 +365,7 @@ The strange `@inputList` notation is called [*type application*](https://ghc.git
 Often enough such hints are not needed (in this specific case the code will compile without), but they also make it easier to read the code due to its explicitness.
 
 That the output type is `HList (Reverse inputList)` is the simpler part of this function.
-But that i have to write down the `ReversedHList inputList '[] (Reverse inputList)` class constraint is something that i didn't get for a long time.
+But that I have to write down the `ReversedHList inputList '[] (Reverse inputList)` class constraint is something that I didn't get for a long time.
 If you leave that away, the compiler will give you the following feedback:
 
 ```
@@ -375,10 +375,10 @@ If you leave that away, the compiler will give you the following feedback:
       In an equation for ‘rev’: rev i = rev' @inputList @'[] @(Reverse inputList) i HNil
 ```
 
-I understand this as "Just because you're using `rev'` does not mean that i can automatically require the user's input types to be instances of this class. Please write down this requirement explicitly."
+I understand this as "Just because you're using `rev'` does not mean that I can automatically require the user's input types to be instances of this class. Please write down this requirement explicitly."
 Thinking about it a bit longer, it does help reading the rest of the code because it explains which type instance it will select first.
 
-Afterall, the function works just as expected:
+After all, the function works just as expected:
 
 
 ```haskell
@@ -1285,7 +1285,7 @@ instance UniqueHList '[] uniqueList uniqueList dontCare where
   ulr' _ x = x
 ```
 
-In all of the following instances, i used some very much abbreviated type variable names:
+In all of the following instances, I used some very much abbreviated type variable names:
 `is` stands for **i**nput item**s**", `as` for "**a**ccumulator item**s**", and `us` for "**u**nique item**s**".
 
 The `'False` value in the `nextElementIsContainedAlready` argument says that this instance is for the cases where the next input list item is not yet contained by the accumulator.
@@ -1326,8 +1326,8 @@ ulr' @'[A, B, A, C] @'[] @(Uniques (Reverse '[A, B, A, C])) @'False (A 1 :# B 2 
     C 4 :# B 2 :# A 1 :# HNil
 
 It works, but what struck me was the fact that the output is the unique list of the reverse input list.
-I am pretty sure that if i was smarter, i could construct the whole thing to work more intuitively.
-After playing around with the implementation trying to make it nicer without nice results, i concluded that this may be a quest for another day.
+I am pretty sure that if I was smarter, I could construct the whole thing to work more intuitively.
+After playing around with the implementation trying to make it nicer without nice results, I concluded that this may be a quest for another day.
 I was already happy that it works at all, so let's continue describing the working state.
 
 Building on the working example input, the function `ulr` hides all the type hints from the user and calls our class function with the right arguments:
@@ -1344,7 +1344,7 @@ ulr x = ulr' @inputList @'[] @(Uniques (Reverse inputList)) @'False x HNil
 As the user would not expect a reversed output list, let's concatenate our `rev` function with the new `ulr` function to provide the expected results.
 
 The implementation is really simple but writing down the types turned out a bit ugly.
-It is surely somehow possible to tell the compiler that `Reverse (Uniques (Reverse x))` is really the same as `Uniques x`, but at this time i don't know how to do it.
+It is surely somehow possible to tell the compiler that `Reverse (Uniques (Reverse x))` is really the same as `Uniques x`, but at this time I don't know how to do it.
 
 
 ```haskell
@@ -1392,10 +1392,10 @@ Happiness.
 
 ## Summary
 
-This is now a big bunch of special purpose code that reinvents multiple wheels, but it really helped my personal understanding, and i hope it also helps yours.
+This is now a big bunch of special purpose code that reinvents multiple wheels, but it really helped my personal understanding, and I hope it also helps yours.
 The next step would be to use libraries which do all of this better, so we don't need so much code.
 There is for example [`HList`](https://hackage.haskell.org/package/HList) which is really elegant and is so much more comprehensible once we understand more type-level programming.
 
-I've done a type-level programming in C++ before (have a look at the older articles in this blog) and i find it very interesting how similar it really is.
-In haskell, it is more frustrating in the beginning because the kind system is complicated.
+I've done a type-level programming in C++ before (have a look at the older articles in this blog) and I find it very interesting how similar it really is.
+In Haskell, it is more frustrating in the beginning because the kind system is complicated.
 As soon as the basic mechanisms are understood, it is nice to see that Haskell's type system is much more intelligent than C++ templates and there's much more control over everything.
