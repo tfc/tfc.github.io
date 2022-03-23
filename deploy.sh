@@ -16,8 +16,7 @@ git clone --depth 1 git@github.com:tfc/tfc.github.io.git "$tmpDir"
 cd "$tmpDir"
 git checkout master
 
-rm -rf "$tmpDir/"*
-cp -r "$blogRelease/"* .
+cp -r "$blogRelease"/* .
 
 chmod -R 755 .
 touch .nojekyll
