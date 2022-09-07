@@ -46,11 +46,10 @@
       {
         packages = {
           inherit blog-generator release;
+          default = release;
         };
 
-        defaultPackage = release;
-
-        devShell = haskellPackages.shellFor {
+        devShells.default = haskellPackages.shellFor {
           packages = _: [ blog-generator ];
           buildInputs = with pkgs; [
             cabal-install
