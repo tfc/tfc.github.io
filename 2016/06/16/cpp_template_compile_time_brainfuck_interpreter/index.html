@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -40,11 +38,13 @@
 <p>This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.</p>
 <!--more-->
 <blockquote>
-<p>The code in this article depends largely on the code in <a href="../../../../2016/05/08/compile_time_type_lists">the article about type lists</a>, <a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">the article about character type list transformations</a>, and <a href="../../../../2016/05/15/turing_tape_with_type_lists">the article about implementing a Turing tape</a>. There is also <a href="../../../../2016/05/05/template_meta_programming_basics">the article about template meta-programming 101 things</a>.</p>
+<p>The code in this article depends largely on the code in <a href="../../../../2016/05/08/compile_time_type_lists">the article about type lists</a>, <a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">the article about character type list transformations</a>, and <a href="../../../../2016/05/15/turing_tape_with_type_lists">the article about implementing a Turing tape</a>.
+There is also <a href="../../../../2016/05/05/template_meta_programming_basics">the article about template meta-programming 101 things</a>.</p>
 </blockquote>
 <h2 id="first-things-first-what-is-brainfuck">First Things First: What is Brainfuck?</h2>
 <p>Brainfuck is a fun programming language and was created in 1993 by Urban Müller. <a href="https://en.wikipedia.org/wiki/Brainfuck">Wikipedia Link</a></p>
-<p>Brainfuck programs are composed of only 8 operators and assume to operate on a <em>Brainfuck Machine</em>. A Brainfuck machine looks like a Turing machine: It has a cursor which sits on a tape consisting of infinitely many memory cells.</p>
+<p>Brainfuck programs are composed of only 8 operators and assume to operate on a <em>Brainfuck Machine</em>.
+A Brainfuck machine looks like a Turing machine: It has a cursor which sits on a tape consisting of infinitely many memory cells.</p>
 <table>
 <colgroup>
 <col style="width: 12%" />
@@ -104,10 +104,15 @@
 <p><em>Output</em>:</p>
 <pre><code>Hello World!</code></pre>
 <h2 id="implementation-in-c-template-meta-language">Implementation in C++ Template Meta Language</h2>
-<p>Ok, let us implement that. We will start with adapting the <a href="../../../../2016/05/15/turing_tape_with_type_lists">Turing Tape</a> from the previous article in order to represent the state of a Brainfuck Machine.</p>
+<p>Ok, let us implement that.
+We will start with adapting the <a href="../../../../2016/05/15/turing_tape_with_type_lists">Turing Tape</a> from the previous article in order to represent the state of a Brainfuck Machine.</p>
 <h2 id="adapting-the-turing-tape">Adapting the Turing Tape</h2>
-<p>The state of a Turing machine is based on the Turing tape it works on. We have implemented such a tape before, but need to add a little adaption:</p>
-<p>When the tape is switched left or right, and a new cell is created which we did not read/write before, a new empty one is created. How an <em>empty</em> cell looks like, is not really defined, as it just contains a <code>null_t</code> type. There is no proper rule to which value a <em>formerly untouched</em> brainfuck cell shall be initialized. I decided to initialize such cells to the value <code>0</code>.</p>
+<p>The state of a Turing machine is based on the Turing tape it works on.
+We have implemented such a tape before, but need to add a little adaption:</p>
+<p>When the tape is switched left or right, and a new cell is created which we did not read/write before, a new empty one is created.
+How an <em>empty</em> cell looks like, is not really defined, as it just contains a <code>null_t</code> type.
+There is no proper rule to which value a <em>formerly untouched</em> brainfuck cell shall be initialized.
+I decided to initialize such cells to the value <code>0</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Tape<span class="op">&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="kw">struct</span> null_to_0<span class="op">;</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a></span>
@@ -120,9 +125,12 @@
 <span id="cb4-10"><a href="#cb4-10"></a></span>
 <span id="cb4-11"><a href="#cb4-11"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Tape<span class="op">&gt;</span> <span class="kw">using</span> <span class="dt">null_to_0_t</span> <span class="op">=</span> </span>
 <span id="cb4-12"><a href="#cb4-12"></a>                               <span class="kw">typename</span> null_to_0<span class="op">&lt;</span>Tape<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
-<p>Instead of subclassing the Turing tape or similar, we will just use the function <code>null_to_0_t</code>, which transforms empty cell elements to <code>0</code> elements, and leaves others untouched. Whenever the list is altered for moving, this function is applied to it, and then this is set as the new list state.</p>
+<p>Instead of subclassing the Turing tape or similar, we will just use the function <code>null_to_0_t</code>, which transforms empty cell elements to <code>0</code> elements, and leaves others untouched.
+Whenever the list is altered for moving, this function is applied to it, and then this is set as the new list state.</p>
 <h2 id="the-brainfuck-machine-state">The Brainfuck Machine State</h2>
-<p>A Turing machine tape is enough to represent the state of the whole brainfuck machine. We define a type <code>machine</code>, which carries a tape state as template parameter, and provides functions to read and alter the state. This way the user does not need to know about any implementation details:</p>
+<p>A Turing machine tape is enough to represent the state of the whole brainfuck machine.
+We define a type <code>machine</code>, which carries a tape state as template parameter, and provides functions to read and alter the state.
+This way the user does not need to know about any implementation details:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> Tape<span class="op">&gt;</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="kw">struct</span> machine <span class="op">{</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a>    <span class="kw">using</span> move_left  <span class="op">=</span> machine<span class="op">&lt;</span><span class="dt">null_to_0_t</span><span class="op">&lt;</span></span>
@@ -189,8 +197,11 @@
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="dt">make_t</span> <span class="op">=</span> machine<span class="op">&lt;</span><span class="dt">tt_make_t</span><span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="dv">0</span><span class="op">&gt;&gt;&gt;;</span></span></code></pre></div>
 <p>Note the additional helper <code>make_t</code>, which just returns a fresh initialized brainfuck machine.</p>
 <h2 id="the-brainfuck-machine-plus-io-bundle">The Brainfuck Machine plus IO Bundle</h2>
-<p>By now, we have a specialized Turing tape, or let’s say <em>Brainfuck Machine Tape</em>, which can in principle perform the operations <code>+</code>, <code>-</code>, <code>&lt;</code>, <code>&gt;</code>, <code>.</code>, and <code>,</code>. The functions providing these operations, return a new Brainfuck Machine Tape. This is enough to represent a single naked Brainfuck Machine.</p>
-<p>However, we still have to feed it with commands by hand. Some example lines show how to do that:</p>
+<p>By now, we have a specialized Turing tape, or let’s say <em>Brainfuck Machine Tape</em>, which can in principle perform the operations <code>+</code>, <code>-</code>, <code>&lt;</code>, <code>&gt;</code>, <code>.</code>, and <code>,</code>.
+The functions providing these operations, return a new Brainfuck Machine Tape.
+This is enough to represent a single naked Brainfuck Machine.</p>
+<p>However, we still have to feed it with commands by hand.
+Some example lines show how to do that:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> empty_bfm    <span class="op">=</span> <span class="dt">make_t</span><span class="op">;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> a_bfm        <span class="op">=</span> <span class="dt">set_t</span><span class="op">&lt;</span>empty_bfm<span class="op">,</span> <span class="ch">'a'</span><span class="op">&gt;;</span></span>
@@ -205,18 +216,30 @@
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> bc_bfm_state <span class="op">=</span> <span class="dt">set_t</span><span class="op">&lt;</span><span class="dt">move_left_t</span><span class="op">&lt;</span><span class="dt">increment_t</span><span class="op">&lt;</span><span class="dt">set_t</span><span class="op">&lt;</span><span class="dt">make_t</span><span class="op">,</span> <span class="ch">'a'</span><span class="op">&gt;</span> <span class="op">&gt;</span> <span class="op">&gt;,</span> <span class="ch">'c'</span><span class="op">&gt;;</span></span></code></pre></div>
 <p>What we want it to do: It shall automatically interpret a brainfuck script.</p>
 <p>In order to implement that, we will couple a brainfuck machine together with input and output.</p>
-<p>The input is a type list, which contains all characters which the user <em>will</em> enter. Usually, brainfuck interpreters ask for input values, when they step on a <code>,</code> operator, but as soon as the C++ compiler is running, we cannot ask for input any longer. Therefore the user character input must be defined as an input list <em>before</em> the compiler is started.</p>
-<p>The output is also a type list. Before executing the brainfuck program, it is empty. After executing the program it is hopefully filled with meaningful output.</p>
-<p>Operators can change any sub state in the state tuple <code>(BFM state, input, output)</code>. We will push around this bundle throughout the whole brainfuck program and alter it step by step. The output list will grow, while the program is executed (assuming it outputs something). The input list will shrink, as characters are consumed (assuming it reads from input), one-by-one.</p>
+<p>The input is a type list, which contains all characters which the user <em>will</em> enter.
+Usually, brainfuck interpreters ask for input values, when they step on a <code>,</code> operator, but as soon as the C++ compiler is running, we cannot ask for input any longer.
+Therefore the user character input must be defined as an input list <em>before</em> the compiler is started.</p>
+<p>The output is also a type list.
+Before executing the brainfuck program, it is empty.
+After executing the program it is hopefully filled with meaningful output.</p>
+<p>Operators can change any sub state in the state tuple <code>(BFM state, input, output)</code>.
+We will push around this bundle throughout the whole brainfuck program and alter it step by step.
+The output list will grow, while the program is executed (assuming it outputs something).
+The input list will shrink, as characters are consumed (assuming it reads from input), one-by-one.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> BFM<span class="op">,</span> <span class="kw">class</span> Inlist<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> io_bfm <span class="op">{</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> output <span class="op">=</span> OutList<span class="op">;</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> state  <span class="op">=</span> BFM<span class="op">;</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>Being a purely functional programming novice, i found the fact that the state is never a structure member, but a template parameter, most unusual. Our I/O brainfuck machine bundle is represented by the tuple <code>(machine state, input program, output list)</code>, and these all are template parameters. The member type <code>using</code> clauses of struct <code>io_bfm</code> are just comfortable <em>getters</em> to the machine state and the output.</p>
-<p>This is now the main vehicle for representing the state of the brainfuck machine and the remaining brainfuck program, as well with its output. The following code, which does the bulk of program interpretation, will stepwise renew this state by altering it in the right manner.</p>
+<p>Being a purely functional programming novice, i found the fact that the state is never a structure member, but a template parameter, most unusual.
+Our I/O brainfuck machine bundle is represented by the tuple <code>(machine state, input program, output list)</code>, and these all are template parameters.
+The member type <code>using</code> clauses of struct <code>io_bfm</code> are just comfortable <em>getters</em> to the machine state and the output.</p>
+<p>This is now the main vehicle for representing the state of the brainfuck machine and the remaining brainfuck program, as well with its output.
+The following code, which does the bulk of program interpretation, will stepwise renew this state by altering it in the right manner.</p>
 <h2 id="interpreting-brainfuck-code-the-simple-part">Interpreting Brainfuck Code, the Simple Part</h2>
-<p>At first, we will implement a function which accepts an <code>io_bfm</code> state as its first parameter, and one brainfuck command. Its result is the new state of the brainfuck machine, which results from applying that command. Mapping brainfuck command character mnemonics to brainfuck machine state manipulating commands is simple for most commands:</p>
+<p>At first, we will implement a function which accepts an <code>io_bfm</code> state as its first parameter, and one brainfuck command.
+Its result is the new state of the brainfuck machine, which results from applying that command.
+Mapping brainfuck command character mnemonics to brainfuck machine state manipulating commands is simple for most commands:</p>
 <table>
 <colgroup>
 <col style="width: 21%" />
@@ -255,7 +278,9 @@
 </tr>
 </tbody>
 </table>
-<p>This is the simple part. The <code>[</code> and <code>]</code> commands which define loop structures are missing. We will get at those just after the other command implementations:</p>
+<p>This is the simple part.
+The <code>[</code> and <code>]</code> commands which define loop structures are missing.
+We will get at those just after the other command implementations:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> IOBFM<span class="op">,</span> <span class="dt">char</span> InputChar<span class="op">&gt;</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="kw">struct</span> interpret_step<span class="op">;</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a></span>
@@ -309,10 +334,15 @@
 <span id="cb9-51"><a href="#cb9-51"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> IOBFM<span class="op">,</span> <span class="dt">char</span> InputChar<span class="op">&gt;</span></span>
 <span id="cb9-52"><a href="#cb9-52"></a><span class="kw">using</span> <span class="dt">interpret_step_t</span> <span class="op">=</span> </span>
 <span id="cb9-53"><a href="#cb9-53"></a>          <span class="kw">typename</span> interpret_step<span class="op">&lt;</span>IOBFM<span class="op">,</span> InputChar<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
-<p>In this lengthy list of ugly definitions you will find no if-else control structures. The function call flow is completely controlled by <em>pattern matching</em>. It would have been possible to work with <code>if_else_t</code> functions, but pattern matching is great for cases like this one. Every operator has its own function body, which nicely separates its semantics.</p>
-<p>For each brainfuck command, there is one <code>struct interpret_step&lt;io_bfm&lt;BFM, InList, OutList&gt;, XXX&gt;</code> definition, where <code>XXX</code> is the command. Each command then returns, what the table before just described.</p>
+<p>In this lengthy list of ugly definitions you will find no if-else control structures.
+The function call flow is completely controlled by <em>pattern matching</em>.
+It would have been possible to work with <code>if_else_t</code> functions, but pattern matching is great for cases like this one.
+Every operator has its own function body, which nicely separates its semantics.</p>
+<p>For each brainfuck command, there is one <code>struct interpret_step&lt;io_bfm&lt;BFM, InList, OutList&gt;, XXX&gt;</code> definition, where <code>XXX</code> is the command.
+Each command then returns, what the table before just described.</p>
 <h2 id="interpreting-brainfuck-code-the-complicated-part-loops">Interpreting Brainfuck Code, the Complicated Part (Loops)</h2>
-<p>Unfortunately, loops are not as simple as the other commands, because they do not lead to simple state changes. Whenever the BFM trips on a <code>[</code> command, it will…</p>
+<p>Unfortunately, loops are not as simple as the other commands, because they do not lead to simple state changes.
+Whenever the BFM trips on a <code>[</code> command, it will…</p>
 <ol type="1">
 <li>Check if the value at cursor position is equal to 0.</li>
 <li>If it is <strong>equal</strong> to 0, then <strong>advance</strong> the whole program list to the <em>closing</em> <code>]</code> bracket.</li>
@@ -331,9 +361,12 @@
 <li><code>+++[&gt;+++[.-]&lt;]</code></li>
 <li><code>+++[&gt;+++[&gt;+++[.-]&lt;]&lt;]</code></li>
 </ul>
-<p>Obviously, one cannot just choose the next closing <code>]</code> bracket, because that would be the closing bracket of a completely different loop. Therefore we have to <strong>count</strong>, how many loop we have seen beginning (by counting <code>[</code> commands).</p>
+<p>Obviously, one cannot just choose the next closing <code>]</code> bracket, because that would be the closing bracket of a completely different loop.
+Therefore we have to <strong>count</strong>, how many loop we have seen beginning (by counting <code>[</code> commands).</p>
 <p>Solution:</p>
-<p>Whenever we see an opening <code>[</code> bracket, we <em>increment</em> a bracket counter, and whenever we see a closing <code>]</code> bracket, we <em>decrement</em> it again. Assuming we start at value <code>1</code>, because the first opening bracket denotes the beginning of the first loop. The next closing <code>]</code> bracket we see, while the counter is back at value <code>1</code>, is then the right loop end.</p>
+<p>Whenever we see an opening <code>[</code> bracket, we <em>increment</em> a bracket counter, and whenever we see a closing <code>]</code> bracket, we <em>decrement</em> it again.
+Assuming we start at value <code>1</code>, because the first opening bracket denotes the beginning of the first loop.
+The next closing <code>]</code> bracket we see, while the counter is back at value <code>1</code>, is then the right loop end.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">......[......[......[.....]....].....]......</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>      <span class="ex">1</span>      2      3     2    1     X</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>      </span>
@@ -400,8 +433,12 @@
 <span id="cb11-59"><a href="#cb11-59"></a>                        <span class="dt">append_t</span><span class="op">&lt;</span>OutList<span class="op">,</span> <span class="dt">char_t</span><span class="op">&lt;</span>C<span class="op">&gt;&gt;,</span></span>
 <span id="cb11-60"><a href="#cb11-60"></a>                        N<span class="op">&gt;</span></span>
 <span id="cb11-61"><a href="#cb11-61"></a><span class="op">{};</span></span></code></pre></div>
-<p>Reading this function implementation it becomes apparent, that each implementation does not <em>return</em> some type, apart from the final case. They do rather <em>inherit</em> from the next matching function structure. I chose to do it this way, because this is a comfortable way to forward the altered <code>(in list, out list, counter)</code> states. As the final case contains <em>two</em> return values (the inner-loop program part, and the rest of the program after the loop), these are reached back as public members of the initially called structure.</p>
-<p>So if <code>A</code> inherits from <code>B</code>, and <code>B</code> inherits from <code>C</code>, and <code>C</code> defines some member type definitions, these are also available in <code>A</code>. That is what is useful in this specific case, too.</p>
+<p>Reading this function implementation it becomes apparent, that each implementation does not <em>return</em> some type, apart from the final case.
+They do rather <em>inherit</em> from the next matching function structure.
+I chose to do it this way, because this is a comfortable way to forward the altered <code>(in list, out list, counter)</code> states.
+As the final case contains <em>two</em> return values (the inner-loop program part, and the rest of the program after the loop), these are reached back as public members of the initially called structure.</p>
+<p>So if <code>A</code> inherits from <code>B</code>, and <code>B</code> inherits from <code>C</code>, and <code>C</code> defines some member type definitions, these are also available in <code>A</code>.
+That is what is useful in this specific case, too.</p>
 <h3 id="back-to-the-loop-command-implementation">Back to the Loop Command Implementation</h3>
 <p>Ok, after having done the homework, we can finally implement the loop control code, maybe the most complicated part of this whole compile time brainfuck story.</p>
 <p>The following code consists of two blocks:</p>
@@ -411,7 +448,8 @@
 </ol>
 <p>The second block is so complicated, because it contains the loop execution decision:</p>
 <blockquote>
-<p>If the cursor value is nonzero, execute the loop body, and then look at the beginning of the loop again, doing this decision again. If the cursor value is zero, skip the whole loop, and continue with the rest of the program.</p>
+<p>If the cursor value is nonzero, execute the loop body, and then look at the beginning of the loop again, doing this decision again.
+If the cursor value is zero, skip the whole loop, and continue with the rest of the program.</p>
 </blockquote>
 <p>In order to do that decision, the interpreter will:</p>
 <ol type="1">
@@ -477,7 +515,8 @@
 <span id="cb12-51"><a href="#cb12-51"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> IOBFM<span class="op">,</span> <span class="kw">class</span> ProgList<span class="op">&gt;</span></span>
 <span id="cb12-52"><a href="#cb12-52"></a><span class="kw">using</span> <span class="dt">run_tm_t</span> <span class="op">=</span> <span class="kw">typename</span> run_tm<span class="op">&lt;</span>IOBFM<span class="op">,</span> ProgList<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
 <h2 id="play">Play</h2>
-<p>Wow, we have everything together. We can now execute brainfuck programs at compile time, and produce binaries, which already contain the program’s output, and no trace of brainfuck itself.</p>
+<p>Wow, we have everything together.
+We can now execute brainfuck programs at compile time, and produce binaries, which already contain the program’s output, and no trace of brainfuck itself.</p>
 <p>Let’s throw all the code into a .cpp file and write a <code>main()</code> function, which will print our compile time results.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The program input is provided by a string provider.</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">// The type list transformation article explains, how these work.</span></span>
@@ -514,8 +553,12 @@
 <span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>Using the compile time BFM is not as ugly as writing it. To play with it yourself, and to completely understand it, i suggest looking at the real code. I created <a href="https://github.com/tfc/cpp_template_meta_brainfuck_interpreter">a github repository which contains the whole compile time brainfuck interpreter</a>.</p>
-<p>The code in the repository does encapsulate input string and program string into preprocessor define macros. This way it is possible to feed different sets of input and BF programs via the command line. In the end, it looks like this:</p>
+<p>Using the compile time BFM is not as ugly as writing it.
+To play with it yourself, and to completely understand it, i suggest looking at the real code.
+I created <a href="https://github.com/tfc/cpp_template_meta_brainfuck_interpreter">a github repository which contains the whole compile time brainfuck interpreter</a>.</p>
+<p>The code in the repository does encapsulate input string and program string into preprocessor define macros.
+This way it is possible to feed different sets of input and BF programs via the command line.
+In the end, it looks like this:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Jacek.Galowicz</span> ~/src/tmp_brainfuck $ g++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-DPROGRAM_STR</span><span class="op">=</span><span class="st">'&quot;++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.&gt;.+++.------.--------.&gt;+.&gt;.+++.&quot;'</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Jacek.Galowicz</span> ~/src/tmp_brainfuck $ ./main</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span></code></pre></div>
@@ -533,7 +576,9 @@
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="ex">Makefile:3:</span> recipe for target <span class="st">'default'</span> failed</span>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="ex">make:</span> <span class="pp">***</span> [default] Error 1</span></code></pre></div>
 <h2 id="summary">Summary</h2>
-<p>Implementing a Brainfuck Interpreter which works at compile time, is more a toy than actually a useful program. But it combines several template meta-programming techniques, and therefore i regard it as a great <em>learning vehicle</em>. And this is a nice insight into the Turing completeness of the C++ template language.</p></div>
+<p>Implementing a Brainfuck Interpreter which works at compile time, is more a toy than actually a useful program.
+But it combines several template meta-programming techniques, and therefore i regard it as a great <em>learning vehicle</em>.
+And this is a nice insight into the Turing completeness of the C++ template language.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
 var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/06/16/cpp_template_compile_time_brainfuck_interpreter/';

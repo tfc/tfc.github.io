@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,11 +35,18 @@
 </div>
 <div class="content container"><h1>How to Use the CRTP to Reduce Duplication</h1>
 <div class="post"><span class="post-date">February 26, 2016</span>
-<p>Some objects have different interfaces for doing the same thing in a different way. One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>. Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>. Classes should sometimes provide multiple kinds to express the same thing to let the user decide which way to express something is more readable in a specific context. But that does not mean, that the class developer has to express everything multiple times. This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
+<p>Some objects have different interfaces for doing the same thing in a different way.
+One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>.
+Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>.
+Classes should sometimes provide multiple kinds to express the same thing to let the user decide which way to express something is more readable in a specific context.
+But that does not mean, that the class developer has to express everything multiple times.
+This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
 <!--more-->
 <h2 id="the-example">The Example</h2>
-<p>Let’s consider a class <code>Foo</code>, which enables its instances to be compared against each other. <code>Foo</code>s can be equal, different, smaller, smaller-equal, larger, larger-equal, etc.</p>
-<p>To keep the example very simple, class <code>Foo</code> does just contain a trivially comparable integer member. All function parameters are non-<code>const</code> and by value, to not bloat the example code for the eye.</p>
+<p>Let’s consider a class <code>Foo</code>, which enables its instances to be compared against each other.
+<code>Foo</code>s can be equal, different, smaller, smaller-equal, larger, larger-equal, etc.</p>
+<p>To keep the example very simple, class <code>Foo</code> does just contain a trivially comparable integer member.
+All function parameters are non-<code>const</code> and by value, to not bloat the example code for the eye.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> x<span class="op">;</span></span>
@@ -60,7 +65,8 @@
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// More repetitive lines of code</span></span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>This is not really bad yet. It is now possible to compare <code>Foo</code> instances with integers, which is fine.</p>
+<p>This is not really bad yet.
+It is now possible to compare <code>Foo</code> instances with integers, which is fine.</p>
 <h2 id="comparison-the-other-way-around">Comparison, The Other Way Around</h2>
 <p>But as soon as this code gets used, it becomes apparent, that the <code>Foo</code> instance must always be at the left side of the comparison, and the integer must always be at the right side of the comparison.</p>
 <p>To fix this, one has to implement more operators:</p>
@@ -75,9 +81,12 @@
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="kw">operator</span><span class="op">&gt;=(</span><span class="dt">int</span> x<span class="op">,</span> Foo foo<span class="op">)</span> <span class="op">{</span> <span class="cf">return</span> foo <span class="op">&lt;=</span> x<span class="op">;</span> <span class="op">}</span></span></code></pre></div>
 <p>At this stage, one maybe realized that <code>x &lt;= y</code> is the same as <code>!(x &gt; y)</code> (same applies to <code>&lt;</code> and <code>!(&gt;=)</code>), and there is already some code duplication by providing a special implementation for it…</p>
 <h2 id="the-fat-friend-who-likes-eating">The Fat Friend Who Likes Eating</h2>
-<p>Implementing such a ridiculous amount of operator definitions is tedious and error prone. (<em>Every single one</em> of them needs to be tested to be sure that they are correct)</p>
+<p>Implementing such a ridiculous amount of operator definitions is tedious and error prone.
+(<em>Every single one</em> of them needs to be tested to be sure that they are correct)</p>
 <p>What if one could just inherit from some kind of <em>comparison helper</em> class, in order to additionally define a minimum amount of code, and the helper class would implement all the other bloaty operator lines in terms of this minimum of code?</p>
-<p>That is exactly where CRTP comes to the rescue. CRTP stands for <em><strong>C</strong>uriously <strong>R</strong>ecurring <strong>T</strong>emplate <strong>P</strong>attern</em>. There are multiple things which can be done with it, and they basically look like the following:</p>
+<p>That is exactly where CRTP comes to the rescue.
+CRTP stands for <em><strong>C</strong>uriously <strong>R</strong>ecurring <strong>T</strong>emplate <strong>P</strong>attern</em>.
+There are multiple things which can be done with it, and they basically look like the following:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> INHERITOR_TYPE<span class="op">&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> bla_base_functionality</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -102,9 +111,12 @@
 <blockquote>
 <p>There is also an article <a href="../../../../2016/02/27/static_polymorphy">which explains static polymorphy using CRTP</a></p>
 </blockquote>
-<p>Class <code>Foo</code> just implements a specific part of some more generic function. The rest is implemented in class <code>bla_base_functionality</code>. This of course looks over-engineered, unless there are some more classes which derive from it and specialize its behaviour.</p>
+<p>Class <code>Foo</code> just implements a specific part of some more generic function.
+The rest is implemented in class <code>bla_base_functionality</code>.
+This of course looks over-engineered, unless there are some more classes which derive from it and specialize its behaviour.</p>
 <p>This pattern is a little bit strange in the beginning, but as soon as one gets his head around it, it is a very useful tool.</p>
-<p>A specialized version of this is the <em>Barton-Nackman Trick</em>, and that is what helps out with the comparison operator mess. The whole lot of operator definitions can be defined <em>once</em> in a CRTP base class, and then one can inherit from that in order to just implement the really needed minimum of code:</p>
+<p>A specialized version of this is the <em>Barton-Nackman Trick</em>, and that is what helps out with the comparison operator mess.
+The whole lot of operator definitions can be defined <em>once</em> in a CRTP base class, and then one can inherit from that in order to just implement the really needed minimum of code:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> comparison_impl</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -125,7 +137,9 @@
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> U<span class="op">&gt;</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> <span class="kw">operator</span><span class="op">&lt;=(</span><span class="at">const</span> U<span class="op">&amp;</span> o<span class="op">)</span> <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> <span class="op">!(</span>thisT<span class="op">()</span> <span class="op">&gt;</span>  o<span class="op">);</span> <span class="op">}</span></span>
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>This is a super generic variant using a type <code>T</code> for the class which will inherit from this, and another type <code>U</code>. Type <code>U</code> could be hardcoded to <code>T</code>, but then it would only allow for comparing the class with instances of <em>same type</em>. Instead, it could also be another class-template parameter (<code>template &lt;typename T, typename U&gt; class comparison_impl {...};</code>), which would allow to compare with <em>any</em> type, but then it would still be a single type to which <code>T</code> could be compared.</p>
+<p>This is a super generic variant using a type <code>T</code> for the class which will inherit from this, and another type <code>U</code>.
+Type <code>U</code> could be hardcoded to <code>T</code>, but then it would only allow for comparing the class with instances of <em>same type</em>.
+Instead, it could also be another class-template parameter (<code>template &lt;typename T, typename U&gt; class comparison_impl {...};</code>), which would allow to compare with <em>any</em> type, but then it would still be a single type to which <code>T</code> could be compared.</p>
 <p>The current version allows to make <code>T</code> comparable with multiple types at the same time:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">:</span> <span class="kw">public</span> comparison_impl<span class="op">&lt;</span>Foo<span class="op">&gt;</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -136,10 +150,13 @@
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> <span class="kw">operator</span><span class="op">==(</span><span class="at">const</span> Foo <span class="op">&amp;</span>o<span class="op">)</span> <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> x <span class="op">==</span> o<span class="op">.</span>x<span class="op">;</span> <span class="op">}</span></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> <span class="kw">operator</span><span class="op">==(</span><span class="dt">int</span>        o<span class="op">)</span> <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> x <span class="op">==</span> o<span class="op">;</span> <span class="op">}</span></span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p><code>Foo</code> is now comparable with other <code>Foo</code> instances and with integers directly, using the <code>==</code> and <code>!=</code> operators. In order to enable this, only the equality operator had to be implemented. The other one is inherited from class <code>comparison_impl</code>.</p>
+<p><code>Foo</code> is now comparable with other <code>Foo</code> instances and with integers directly, using the <code>==</code> and <code>!=</code> operators.
+In order to enable this, only the equality operator had to be implemented.
+The other one is inherited from class <code>comparison_impl</code>.</p>
 <p>The other operators are not implemented, but that is fine as long as anything which <code>comparison_impl</code> implements in terms of those remains unused.</p>
 <h2 id="comparison-the-other-way-around-reloaded">Comparison, The Other Way Around, Reloaded</h2>
-<p>There is again that limitation, that <code>Foo</code> must be at the left side of the comparison, and the other type must be at the right side of it. In order to solve that, there needs to be some more code accompanying the header file which defines <code>comparison_impl</code>:</p>
+<p>There is again that limitation, that <code>Foo</code> must be at the left side of the comparison, and the other type must be at the right side of it.
+In order to solve that, there needs to be some more code accompanying the header file which defines <code>comparison_impl</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> U<span class="op">,</span> <span class="kw">typename</span> T<span class="op">&gt;</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="kw">operator</span><span class="op">==(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span> </span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -153,9 +170,17 @@
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">// same for the others...</span></span></code></pre></div>
-<p>It is strange, that these operator signatures match with <code>comparison_impl&lt;T&gt;</code> at the right side, but then cast it to T. Why the hell is <em>that</em>? If that operator would just match with <code>T</code> and <code>U</code> types as left and right operands, it would match pretty much <em>everything</em>, which is bad. These operators shall only be used on types, which inherit from <code>comparison_impl</code>, so this is the right type for the right comparison operand. Then it is casted to the inheriting type <code>T</code>, because that is the one actually implementing the operator.</p>
-<p>One could now implement all the operators, and forever just always inherit from <code>comparison_impl</code> and save a lot of work and error potential. But we are not done, yet.</p>
-<p>This implementation has a major flaw: What if we compare an instance <code>Foo</code> with another instance <code>Foo</code>? The compiler will see <code>Foo::operator==(const Foo&amp;)</code>, and also the freestanding <code>operator==(const U &amp;lhs, const comparison_impl&lt;T&gt; &amp;rhs)</code>, and both match. It will error-out, telling us that these are two <em>ambiguous</em> implementations, which is true:</p>
+<p>It is strange, that these operator signatures match with <code>comparison_impl&lt;T&gt;</code> at the right side, but then cast it to T.
+Why the hell is <em>that</em>?
+If that operator would just match with <code>T</code> and <code>U</code> types as left and right operands, it would match pretty much <em>everything</em>, which is bad.
+These operators shall only be used on types, which inherit from <code>comparison_impl</code>, so this is the right type for the right comparison operand.
+Then it is casted to the inheriting type <code>T</code>, because that is the one actually implementing the operator.</p>
+<p>One could now implement all the operators, and forever just always inherit from <code>comparison_impl</code> and save a lot of work and error potential.
+But we are not done, yet.</p>
+<p>This implementation has a major flaw:
+What if we compare an instance <code>Foo</code> with another instance <code>Foo</code>?
+The compiler will see <code>Foo::operator==(const Foo&amp;)</code>, and also the freestanding <code>operator==(const U &amp;lhs, const comparison_impl&lt;T&gt; &amp;rhs)</code>, and both match.
+It will error-out, telling us that these are two <em>ambiguous</em> implementations, which is true:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tfc@graviton</span> comparison_impl $ clang++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">main.cpp:80:8:</span> error: use of overloaded operator <span class="st">'!='</span> is ambiguous <span class="er">(</span><span class="ex">with</span> operand types <span class="st">'Foo'</span> and <span class="st">'Foo'</span><span class="kw">)</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">(</span><span class="ex">f</span> != Foo<span class="er">(</span><span class="ex">1</span><span class="kw">));</span></span>
@@ -170,7 +195,8 @@
 <blockquote>
 <p>If you are not familiar with <em>SFINAE</em>, have a look at the article which <a href="../../../../2016/02/19/how_do_sfinae_traits_work">describes how SFINAE works</a>.</p>
 </blockquote>
-<p>In case class <code>Foo</code> already implements the operation, the right freestanding operator shall better not be <em>visible</em> for the compiler. This can be done using <em>SFINAE</em> magic, using <code>enable_if</code>:</p>
+<p>In case class <code>Foo</code> already implements the operation, the right freestanding operator shall better not be <em>visible</em> for the compiler.
+This can be done using <em>SFINAE</em> magic, using <code>enable_if</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> U<span class="op">,</span> <span class="kw">typename</span> T<span class="op">&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">typename</span> <span class="bu">std::</span>enable_if<span class="op">&lt;!</span><span class="bu">std::</span>is_same<span class="op">&lt;</span>U<span class="op">,</span> T<span class="op">&gt;::</span>value<span class="op">,</span> <span class="dt">bool</span><span class="op">&gt;::</span>type</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">operator</span><span class="op">==(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span> </span>
@@ -185,10 +211,14 @@
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">!(</span><span class="kw">static_cast</span><span class="op">&lt;</span><span class="at">const</span> T<span class="op">&amp;&gt;(</span>rhs<span class="op">)</span> <span class="op">==</span> lhs<span class="op">);</span></span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Maybe we just arrived at level “That’s <em>exactly</em> why i don’t get all this template bloat.”</p>
-<p>What happened, is that the return type <code>bool</code> of both functions was substituted by an SFINAE type trait. <code>typename std::enable_if&lt;condition, bool&gt;::type</code> is a template type, which contains a type definition <code>type</code> in case <code>condition</code> is <code>true</code>. If <code>condition</code> is <code>false</code>, then this type trait contains nothing, hence the return type of the whole function cannot be deduced. Following SFINAE principles, the compiler drops this operator implementation from the candidate list in the <code>false</code> case, and this is exactly the desired behaviour in the <em>ambiguous overload</em> problem.</p>
+<p>What happened, is that the return type <code>bool</code> of both functions was substituted by an SFINAE type trait.
+<code>typename std::enable_if&lt;condition, bool&gt;::type</code> is a template type, which contains a type definition <code>type</code> in case <code>condition</code> is <code>true</code>.
+If <code>condition</code> is <code>false</code>, then this type trait contains nothing, hence the return type of the whole function cannot be deduced.
+Following SFINAE principles, the compiler drops this operator implementation from the candidate list in the <code>false</code> case, and this is exactly the desired behaviour in the <em>ambiguous overload</em> problem.</p>
 <p>The condition is “<code>U</code> is not the same type as <code>some T&gt;</code>”, and can be expressed in template type trait language like this: <code>!std::is_same&lt;U, T&gt;::value</code>.</p>
 <h2 id="what-we-got">What We Got</h2>
-<p><code>comparison_impl</code> is now a useful helper, which can be used for any class which represents something which can be compared to itself or to other types. The only operators which need to be implemented to exhaust the full support of <code>comparison_impl</code> are the following:</p>
+<p><code>comparison_impl</code> is now a useful helper, which can be used for any class which represents something which can be compared to itself or to other types.
+The only operators which need to be implemented to exhaust the full support of <code>comparison_impl</code> are the following:</p>
 <ul>
 <li><code>operator==</code></li>
 <li><code>operator&lt;</code></li>

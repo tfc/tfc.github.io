@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,7 +35,9 @@
 </div>
 <div class="content container"><h1>ON_EXIT - Combining Automatic Destruction and Lambdas</h1>
 <div class="post"><span class="post-date">February 21, 2016</span>
-<p>When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can’t easily stick with the <em>RAII</em> principle. Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again. When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.</p>
+<p>When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can’t easily stick with the <em>RAII</em> principle.
+Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again.
+When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.</p>
 <!--more-->
 <h2 id="c-style-example">C-Style Example</h2>
 <p>The following example shall illustrate the problem:</p>
@@ -76,8 +76,12 @@
 <span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    release_b<span class="op">(</span>b<span class="op">);</span></span>
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    release_a<span class="op">(</span>a<span class="op">);</span></span>
 <span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This example looks ugly and repetitive. The programmer needs to write code manually which behaves correctly in all cases. Half of the function looks very repetitive, and deals with boring details. It is even quite error prone, if the programmer forgets one release somewhere, or messes up the correct order.</p>
-<p>Another way to do this is using <code>goto</code>. This looks more elegant, but for good reasons, using <code>goto</code> is also discouraged in the majority of projects/companies/communities.</p>
+<p>This example looks ugly and repetitive.
+The programmer needs to write code manually which behaves correctly in all cases.
+Half of the function looks very repetitive, and deals with boring details.
+It is even quite error prone, if the programmer forgets one release somewhere, or messes up the correct order.</p>
+<p>Another way to do this is using <code>goto</code>.
+This looks more elegant, but for good reasons, using <code>goto</code> is also discouraged in the majority of projects/companies/communities.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">()</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> ret<span class="op">;</span></span>
@@ -103,9 +107,12 @@
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>rel_a<span class="op">:</span></span>
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    release_a<span class="op">(</span>a<span class="op">);</span></span>
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>There are actually a lot of possible ways to implement, some safer and less error prone than the other. Have a look at <a href="http://codedgers.com/blog/2009/apr/8/3/">this blog post, which shows more variants</a>. The point is, that they are all ugly, and C++ provides syntax which can help fix that.</p>
+<p>There are actually a lot of possible ways to implement, some safer and less error prone than the other.
+Have a look at <a href="http://codedgers.com/blog/2009/apr/8/3/">this blog post, which shows more variants</a>.
+The point is, that they are all ugly, and C++ provides syntax which can help fix that.</p>
 <h2 id="the-nicely-looking-version">The Nicely Looking Version</h2>
-<p>It would be much nicer to express “As soon as a resource is instantiated, it is also initialized.”, and “As soon as a resource instance goes out of scope, it is released.”, without doing anything else than instantiating it explicit. This principle is indeed very usual within the C++ community, and it is called <strong>RAII</strong>, as in <em><strong>R</strong>esource <strong>A</strong>llocation <strong>I</strong>s <strong>I</strong>nitialization</em>.</p>
+<p>It would be much nicer to express “As soon as a resource is instantiated, it is also initialized.”, and “As soon as a resource instance goes out of scope, it is released.”, without doing anything else than instantiating it explicit.
+This principle is indeed very usual within the C++ community, and it is called <strong>RAII</strong>, as in <em><strong>R</strong>esource <strong>A</strong>llocation <strong>I</strong>s <strong>I</strong>nitialization</em>.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">()</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> ret<span class="op">;</span></span>
@@ -127,11 +134,15 @@
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    do_whatever_those_resources_were_acquired_for<span class="op">(</span>c<span class="op">);</span></span>
 <span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This version does exactly that. The macro <code>ON_EXIT</code> saves some code, and executes it, as soon as the current scope is left by returning from the procedure. This version does also respect that the resources must be released in the opposite order of their allocation.</p>
+<p>This version does exactly that.
+The macro <code>ON_EXIT</code> saves some code, and executes it, as soon as the current scope is left by returning from the procedure.
+This version does also respect that the resources must be released in the opposite order of their allocation.</p>
 <blockquote>
 <p>Please note that this is ideally mixed with <code>shared_ptr</code>/<code>unique_ptr</code> with custom deleters. Please also have a look at this article, which describes <a href="../../../../2016/02/21/automatic_resource_release_with_sdl">how to use smart pointers with custom delete procedures to automatically manage resources</a>.</p>
 </blockquote>
-<p>The implementation is pretty simple: <code>ON_EXIT</code> represents an anonymous class instance which contains a lambda expression, which is provided by the user. The lambda expression (which contains the resource release code) will be executed by the anonymous object’s destructor:</p>
+<p>The implementation is pretty simple:
+<code>ON_EXIT</code> represents an anonymous class instance which contains a lambda expression, which is provided by the user.
+The lambda expression (which contains the resource release code) will be executed by the anonymous object’s destructor:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> F<span class="op">&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> OnExit</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -150,13 +161,17 @@
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    OnExit<span class="op">&lt;</span>F<span class="op">&gt;</span> <span class="kw">operator</span><span class="op">+(</span>F <span class="op">&amp;&amp;</span>f<span class="op">)</span> <span class="at">const</span> <span class="op">{</span><span class="cf">return</span> <span class="op">{</span><span class="bu">std::</span>forward<span class="op">&lt;</span>F<span class="op">&gt;(</span>f<span class="op">)};</span> <span class="op">}</span></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
 <p><code>OnExit</code> is the object which will be automatically put on the stack and calls the custom resource releasing lambda, as soon as it is deallocated again.</p>
-<p><code>OnExitHelper</code> is just there for syntax sugar: Without any other macros, it is already possible to write <code>auto inst = OnExit() + [](){ release_code(); };</code>. This already takes away the burden of having to define template types by hand, but it is not pretty, yet.</p>
+<p><code>OnExitHelper</code> is just there for syntax sugar:
+Without any other macros, it is already possible to write <code>auto inst = OnExit() + [](){ release_code(); };</code>.
+This already takes away the burden of having to define template types by hand, but it is not pretty, yet.</p>
 <p>It is still necessary to express the declaration and initialization of a new variable, <em>name</em> it, and then initialize it with an expression which adds the <code>OnExit</code> helper with the lambda expression.</p>
 <p>A short macro can help doing all that automatically:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define COMBINE1</span><span class="op">(</span>x<span class="op">,</span><span class="pp"> </span>y<span class="op">)</span><span class="pp"> </span>x<span class="pp">##</span>y</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define COMBINE</span><span class="op">(</span>x<span class="op">,</span><span class="pp"> </span>y<span class="op">)</span><span class="pp"> </span>COMBINE1<span class="op">(</span>x<span class="op">,</span><span class="pp"> </span>y<span class="op">)</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ON_EXIT </span><span class="at">const</span><span class="pp"> </span><span class="kw">auto</span><span class="pp"> </span>COMBINE<span class="op">(</span>onexit<span class="op">,</span><span class="pp"> </span><span class="ot">__LINE__</span><span class="op">)</span><span class="pp"> </span><span class="op">=</span><span class="pp"> </span>OnExitHelper<span class="op">()</span><span class="pp"> </span><span class="op">+</span><span class="pp"> </span><span class="op">[&amp;]()</span></span></code></pre></div>
-<p>The strange combination of <code>COMBINE</code> preprocessor calls creates a new symbol name which is concatenated from <code>onexit</code> and the line number where the macro is used. This symbol name is then guaranteed to be unique within the function/procedure scope. The new symbol will then be visible in the binary as <code>onexit123</code>, if it was instanciated at line 123 of the source file.</p>
+<p>The strange combination of <code>COMBINE</code> preprocessor calls creates a new symbol name which is concatenated from <code>onexit</code> and the line number where the macro is used.
+This symbol name is then guaranteed to be unique within the function/procedure scope.
+The new symbol will then be visible in the binary as <code>onexit123</code>, if it was instanciated at line 123 of the source file.</p>
 <p>Additionally, the macro reduces the rest of the syntax to the absolute minimum, so the user does not even have to specialize the lambda capture mode etc.</p>
 <h2 id="conditional-execution">Conditional Execution</h2>
 <p>A version of this macro, which only executes in the success/error case, would be extremely useful in many situations.</p>
@@ -179,7 +194,8 @@
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    delete_file<span class="op">(</span>source<span class="op">);</span></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The first version is much more elegant, because the code just expresses <em>what</em> needs to happen, and not <em>how</em> the error handling code shall look like.</p>
-<p>I learned about an addition to the C++ standard which enables for such code at <a href="http://cppcon.org">CPPCON</a> in 2015. Andrei Alexandrescu presented this extremely useful idea (<a href="https://youtu.be/WjTrfoiB0MQ">This talk is available on Youtube</a>).</p></div>
+<p>I learned about an addition to the C++ standard which enables for such code at <a href="http://cppcon.org">CPPCON</a> in 2015.
+Andrei Alexandrescu presented this extremely useful idea (<a href="https://youtu.be/WjTrfoiB0MQ">This talk is available on Youtube</a>).</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
 var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/02/21/on_exit_macro/';

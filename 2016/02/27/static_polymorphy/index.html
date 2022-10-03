@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,10 +35,15 @@
 </div>
 <div class="content container"><h1>Static Polymorphy in C++</h1>
 <div class="post"><span class="post-date">February 27, 2016</span>
-<p>In order to use <em>polymorphy</em>, virtual functions are the way to go in C++. They are nice and easy to use. However, polymorphy is not always needed at actual runtime. If it is only used to separate generic from specific functionality in order to have a common interface and avoid code duplication, the cost of having indirection introduced by <em>vtables</em> might not be desired. This article shows how to use the CRTP in order to get the compile time advantages of polymorphy, without using virtual methods.</p>
+<p>In order to use <em>polymorphy</em>, virtual functions are the way to go in C++.
+They are nice and easy to use.
+However, polymorphy is not always needed at actual runtime.
+If it is only used to separate generic from specific functionality in order to have a common interface and avoid code duplication, the cost of having indirection introduced by <em>vtables</em> might not be desired.
+This article shows how to use the CRTP in order to get the compile time advantages of polymorphy, without using virtual methods.</p>
 <!--more-->
 <h2 id="the-example">The example</h2>
-<p>A very typical example for polymorphy are objects which represent animals, where every animal is expected to make a typical animal sound. Different kinds of animals like cats and dogs would then inherit the animal interface from the abstract class <code>Animal</code>:</p>
+<p>A very typical example for polymorphy are objects which represent animals, where every animal is expected to make a typical animal sound.
+Different kinds of animals like cats and dogs would then inherit the animal interface from the abstract class <code>Animal</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Animal</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
@@ -104,10 +107,16 @@
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">{</span><span class="st">&quot;Meow&quot;</span><span class="op">};</span></span>
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>The casting part within class <code>Animal</code> is the interesting detail here (Which happens in <code>thisT()</code>). So class <code>Animal</code> still implements the generic part of making an animal noise, but then does not call a virtual function on itself any longer, but it calls a function which itself does not declare at all. Instead of calling a virtual function which the inheriting class <code>T</code> (or <code>Cat</code> and <code>Dog</code>) is forced to implement, it just <em>assumes</em> that <code>T</code> implements a normal function with signature <code>Sound T::get_sound() const</code>. If <code>T</code> does not provide that, the compiler would error out as soon as it tries to compile code which calls <code>make_sound()</code>.</p>
+<p>The casting part within class <code>Animal</code> is the interesting detail here (Which happens in <code>thisT()</code>).
+So class <code>Animal</code> still implements the generic part of making an animal noise, but then does not call a virtual function on itself any longer, but it calls a function which itself does not declare at all.
+Instead of calling a virtual function which the inheriting class <code>T</code> (or <code>Cat</code> and <code>Dog</code>) is forced to implement, it just <em>assumes</em> that <code>T</code> implements a normal function with signature <code>Sound T::get_sound() const</code>.
+If <code>T</code> does not provide that, the compiler would error out as soon as it tries to compile code which calls <code>make_sound()</code>.</p>
 <p>If <code>make_sound()</code> where static functions, then it would not even be necessary to cast the <code>this</code> pointer, as it would be possible to directly call <code>T::make_sound()</code> (Which would also be the cleaner software design in this case, as producing a dog/cat sound does not actually involve a particular instance - but this is just example code after all).</p>
-<p>Class <code>Animal</code> does not implement any <code>get_sound</code> function, so the compiler will not find that without casting. By static casting <code>this</code> to <code>T*</code> (Which is safe, as the compiler would refuse to <code>static_cast</code> if those types were not related by inheritance), the function <code>get_sound</code> becomes visible to the compiler and it will happily digest the code.</p>
-<p>Another cool detail is, that nothing constraints <code>get_sound</code> to return an actual <code>Sound</code> type. If <code>flux_compensator_sound_machine</code>’s stream operator accepts it, it can be any type. Realizing that with virtual functions could also be done, but as the type <code>Sound</code> is fixed, this would be a little bit more complicated.</p>
+<p>Class <code>Animal</code> does not implement any <code>get_sound</code> function, so the compiler will not find that without casting.
+By static casting <code>this</code> to <code>T*</code> (Which is safe, as the compiler would refuse to <code>static_cast</code> if those types were not related by inheritance), the function <code>get_sound</code> becomes visible to the compiler and it will happily digest the code.</p>
+<p>Another cool detail is, that nothing constraints <code>get_sound</code> to return an actual <code>Sound</code> type.
+If <code>flux_compensator_sound_machine</code>’s stream operator accepts it, it can be any type.
+Realizing that with virtual functions could also be done, but as the type <code>Sound</code> is fixed, this would be a little bit more complicated.</p>
 <h2 id="pros-and-cons">PROs and CONs</h2>
 <h3 id="dynamic-polymorphy">Dynamic Polymorphy</h3>
 <p>PRO:</p>

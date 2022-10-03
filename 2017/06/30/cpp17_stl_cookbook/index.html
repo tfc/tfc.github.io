@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,15 +35,21 @@
 </div>
 <div class="content container"><h1>C++17 STL Cookbook</h1>
 <div class="post"><span class="post-date">June 30, 2017</span>
-<p>This article is about the <a href="https://www.packtpub.com/application-development/c17-stl-cookbook"><strong>C++17 STL Cookbook</strong></a>, which got published this week. After about 6 months of writing, I am happy that it is out the door and hope it helps and inspires its readers to write modern C++ code.</p>
+<p>This article is about the <a href="https://www.packtpub.com/application-development/c17-stl-cookbook"><strong>C++17 STL Cookbook</strong></a>, which got published this week.
+After about 6 months of writing, I am happy that it is out the door and hope it helps and inspires its readers to write modern C++ code.</p>
 <!--more-->
 <p><img align="left" style="margin: 0px 30px 10px 0px;" src="../../../../images/cpp17_stl_cookbook_cover.png"></p>
 <h2 id="why-did-i-write-this-book">Why did I write this book?</h2>
-<p>Some day in October 2016, I was messaged by an acquisition editor of the British publishing company <em>PACKT Publishing</em> via LinkedIn. He asked me if I was interested in writing a book with the title <em>“C++17 STL Cookbook”</em>.</p>
-<p>Two months earlier, my former employer shut down the whole office site together with the project and team I have been working on/with. Having been still unemployed and on the search for a new nice job, I had plenty of time thinking about the possible content of the book.</p>
-<p>The <em>frame/format</em> of the book was fixed already because it should be part of the <em>PACKT “Cookbook”</em> franchise. Such cookbooks contain a lot of short <em>recipes</em> that explain how to solve very practical problems. This makes a lot of sense, because many other books first teach all the important aspects of their topic, and then let the user puzzle together themselves how to combine these in real life.</p>
+<p>Some day in October 2016, I was messaged by an acquisition editor of the British publishing company <em>PACKT Publishing</em> via LinkedIn.
+He asked me if I was interested in writing a book with the title <em>“C++17 STL Cookbook”</em>.</p>
+<p>Two months earlier, my former employer shut down the whole office site together with the project and team I have been working on/with.
+Having been still unemployed and on the search for a new nice job, I had plenty of time thinking about the possible content of the book.</p>
+<p>The <em>frame/format</em> of the book was fixed already because it should be part of the <em>PACKT “Cookbook”</em> franchise.
+Such cookbooks contain a lot of short <em>recipes</em> that explain how to solve very practical problems.
+This makes a lot of sense, because many other books first teach all the important aspects of their topic, and then let the user puzzle together themselves how to combine these in real life.</p>
 <h2 id="what-is-the-general-idea-behind-the-book">What is the general idea behind the book?</h2>
-<p>I made the general observation, that most C++ programmers write code that could rather be called <em>C with classes</em> than C++. Such programmers are happy to use data structures like <code>std::vector</code>, <code>std::list</code>, <code>std::map</code>, and so on, but when it comes to implementing standard tasks like for example <em>filtering</em>, <em>accumulating</em>, and so on, they fall back to handcrafted <code>for</code> loops.</p>
+<p>I made the general observation, that most C++ programmers write code that could rather be called <em>C with classes</em> than C++.
+Such programmers are happy to use data structures like <code>std::vector</code>, <code>std::list</code>, <code>std::map</code>, and so on, but when it comes to implementing standard tasks like for example <em>filtering</em>, <em>accumulating</em>, and so on, they fall back to handcrafted <code>for</code> loops.</p>
 <p>So in real life, people rather write code like this:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> sum <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> my_vector<span class="op">.</span>length<span class="op">();</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
@@ -53,15 +57,24 @@
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>… instead of this:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> sum <span class="op">=</span> accumulate<span class="op">(</span>begin<span class="op">(</span>my_vector<span class="op">),</span> end<span class="op">(</span>my_vector<span class="op">),</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
-<p>The <code>for</code> loop variant is <em>not faster</em> and <em>not shorter</em>, but it comes with the disadvantage that it is hardwired to arrays and vectors. If one wanted to do the same with lists, it would be necessary to <em>rewrite</em> this piece of code. The <code>accumulate</code> function has a data structure agnostic interface and just <em>“does the right thing”</em>. (Since C++17, there is also <code>reduce(begin(my_vector), end(my_vector))</code>, which does the same thing.) In contrast to the <code>for</code> loop, one does not have to “mentally execute it” in order to understand it.</p>
-<p>A very interesting perk of C++17 is that it adds <a href="http://en.cppreference.com/w/cpp/experimental/parallelism"><strong>execution policies</strong></a> to a lot of STL algorithms. That means that it is now possible to trivially parallelize code that already uses STL algorithms just with one extra parameter. It would, therefore, make sense if C++ programmers would finally get used to all the carefully crafted and already tested helpers the STL has already been providing for decades now.</p>
-<p>I regret that many C++ programmers ignore the vast possibilities that the STL provides. Especially in the embedded C++ area, people regularly fall back to “C with classes”.</p>
+<p>The <code>for</code> loop variant is <em>not faster</em> and <em>not shorter</em>, but it comes with the disadvantage that it is hardwired to arrays and vectors.
+If one wanted to do the same with lists, it would be necessary to <em>rewrite</em> this piece of code.
+The <code>accumulate</code> function has a data structure agnostic interface and just <em>“does the right thing”</em>.
+(Since C++17, there is also <code>reduce(begin(my_vector), end(my_vector))</code>, which does the same thing.)
+In contrast to the <code>for</code> loop, one does not have to “mentally execute it” in order to understand it.</p>
+<p>A very interesting perk of C++17 is that it adds <a href="http://en.cppreference.com/w/cpp/experimental/parallelism"><strong>execution policies</strong></a> to a lot of STL algorithms.
+That means that it is now possible to trivially parallelize code that already uses STL algorithms just with one extra parameter.
+It would, therefore, make sense if C++ programmers would finally get used to all the carefully crafted and already tested helpers the STL has already been providing for decades now.</p>
+<p>I regret that many C++ programmers ignore the vast possibilities that the STL provides.
+Especially in the embedded C++ area, people regularly fall back to “C with classes”.</p>
 <p>A very old, but ironically still very applicable quote that I read in <a href="http://wwwusers.di.uniroma1.it/~lpara/LETTURE/backus.pdf">John Backus’ publication “Can Programming Be Liberated from the von Neumann Style?”</a>:</p>
 <blockquote>
 <p>[…] programming […] must always start again at square one, writing “for i := …” and “for j := …” followed by assignment statements sprinkled with i’s and j’s.</p>
 </blockquote>
-<p>In 1977, he was talking about FORTRAN code, but his observation still applies to a lot of C++ code from today. Another very inspiring talk about the “C with classes” vs. “Modern C++” topic is <a href="https://channel9.msdn.com/Events/GoingNative/2013/Cpp-Seasoning">Sean Parent’s talk where he presents his <code>gather</code> algorithm which is only an STL two-liner</a>.</p>
-<p>The <strong>C++17 STL Cookbook</strong> is obviously about <strong>C++17</strong> and the <strong>STL</strong>. While the first chapter concentrates solely on the most interesting new language features and syntax sugar that were introduced with the new C++17 standard, I aimed to spread a lot of <em>modern C++ philosophy</em> with the rest of the book:</p>
+<p>In 1977, he was talking about FORTRAN code, but his observation still applies to a lot of C++ code from today.
+Another very inspiring talk about the “C with classes” vs. “Modern C++” topic is <a href="https://channel9.msdn.com/Events/GoingNative/2013/Cpp-Seasoning">Sean Parent’s talk where he presents his <code>gather</code> algorithm which is only an STL two-liner</a>.</p>
+<p>The <strong>C++17 STL Cookbook</strong> is obviously about <strong>C++17</strong> and the <strong>STL</strong>.
+While the first chapter concentrates solely on the most interesting new language features and syntax sugar that were introduced with the new C++17 standard, I aimed to spread a lot of <em>modern C++ philosophy</em> with the rest of the book:</p>
 <p>All recipes try to solve problems <em>the STL way</em>.</p>
 <h2 id="the-content">The content</h2>
 <p>In roughly 500 pages, the book covers the following topics:</p>
@@ -95,7 +108,8 @@
 <p>The book will soon be available in <strong>printed form</strong>, but the <strong>ebook</strong> can be ordered already.</p>
 <p>If you want a <strong>DRM-free</strong> version of it, you should order it <a href="https://www.packtpub.com/application-development/c17-stl-cookbook">directly from PACKT</a>. Of course, <a href="http://amzn.to/2hqAyFX">Amazon has the book</a>, too.</p>
 <h2 id="thank-you">Thank you</h2>
-<p>The best thing that can happen to you while writing a book is having <a href="https://arne-mertz.de/">Arne Mertz</a> as the reviewer! No book comes without mistakes, but he did a <strong>great job</strong> finding even the most subtle, but critical ones.</p>
+<p>The best thing that can happen to you while writing a book is having <a href="https://arne-mertz.de/">Arne Mertz</a> as the reviewer!
+No book comes without mistakes, but he did a <strong>great job</strong> finding even the most subtle, but critical ones.</p>
 <p>Not to forget the <a href="https://www.meetup.com/de-DE/C-User-Group-Hannover/">C++ user group Hannover</a>, where I got a lot of valuable feedback and inspiration.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

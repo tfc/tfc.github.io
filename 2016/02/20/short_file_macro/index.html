@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,10 +35,14 @@
 </div>
 <div class="content container"><h1>A __FILE__ Macro Which Does Not Contain the Whole Source File Path</h1>
 <div class="post"><span class="post-date">February 20, 2016</span>
-<p>The <code>__FILE__</code> macro expands to the current source file name at compile time. It is not really useful if the source file paths which the build system uses, are very long, as this would bloat log output with long path names. It would be useful to have a shortened version, which only contains the file name without the whole path. This article describes how to implement a <code>__SHORT_FILE__</code> macro, that does not add any run time overhead.</p>
+<p>The <code>__FILE__</code> macro expands to the current source file name at compile time.
+It is not really useful if the source file paths which the build system uses, are very long, as this would bloat log output with long path names.
+It would be useful to have a shortened version, which only contains the file name without the whole path.
+This article describes how to implement a <code>__SHORT_FILE__</code> macro, that does not add any run time overhead.</p>
 <!--more-->
 <h2 id="making-strings-shorter-at-compile-time">Making Strings shorter at Compile Time</h2>
-<p>It is of course easy, to find the last slash in a string like <code>/home/user/src/project/src/file.cpp</code>, and return a pointer to the token <code>file.cpp</code>. This could be done at run time, and the overhead would most probably be neglibible in most thinkable situations, but it is no hassle to do it at compile time with C++11 using a <code>constexpr</code> function:</p>
+<p>It is of course easy, to find the last slash in a string like <code>/home/user/src/project/src/file.cpp</code>, and return a pointer to the token <code>file.cpp</code>.
+This could be done at run time, and the overhead would most probably be neglibible in most thinkable situations, but it is no hassle to do it at compile time with C++11 using a <code>constexpr</code> function:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> cstr <span class="op">=</span> <span class="at">const</span> <span class="dt">char</span> <span class="op">*</span> <span class="at">const</span><span class="op">;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="kw">constexpr</span> cstr past_last_slash<span class="op">(</span>cstr str<span class="op">,</span> cstr last_slash<span class="op">)</span></span>
@@ -55,7 +57,11 @@
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> </span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> past_last_slash<span class="op">(</span>str<span class="op">,</span> str<span class="op">);</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This is certainly not the most elegant way to express a substring search. A nicer way would be to search for the last slash in a loop, or simply use library functions. In this context, however, it would not be possible to execute such code at compile time. This function in the presented form can be executed by a C++11 compiler at compile time, and then it is possible to directly embed the returned substring in the binary. (With C++14, it is possible to express this the easier to read loop way)</p>
+<p>This is certainly not the most elegant way to express a substring search.
+A nicer way would be to search for the last slash in a loop, or simply use library functions.
+In this context, however, it would not be possible to execute such code at compile time.
+This function in the presented form can be executed by a C++11 compiler at compile time, and then it is possible to directly embed the returned substring in the binary.
+(With C++14, it is possible to express this the easier to read loop way)</p>
 <p>One could now write <code>printf</code> or <code>std::cout</code> (or whatever) to print just the file name via <code>past_last_slash(__FILE__)</code>, which is nice, but has two flaws:</p>
 <ol type="1">
 <li>It is still not as comfortable as a macro would be, i.e. <code>__SHORT_FILE__</code></li>
@@ -66,15 +72,22 @@
 <div class="sourceCode" id="cb2"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>callq	__ZL15past_last_slashPKc <span class="op">##</span> past_last_slash<span class="op">(</span>char const<span class="op">*)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">movq</span>	<span class="op">%</span><span class="kw">rax</span><span class="op">,</span> <span class="op">%</span><span class="kw">rdi</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>callq	<span class="bn">0x100000f58</span>             <span class="op">##</span> symbol stub for<span class="op">:</span> _puts</span></code></pre></div>
-<p>In order to obtain the short version of <code>__FILE__</code>, a function is called. This function is also called without parameters, which means that the compiler generated a function which is hard coded to this specific string. When compiling with <code>-O2</code>, this code disappeared, but there is no guarantee for that.</p>
+<p>In order to obtain the short version of <code>__FILE__</code>, a function is called.
+This function is also called without parameters, which means that the compiler generated a function which is hard coded to this specific string.
+When compiling with <code>-O2</code>, this code disappeared, but there is no guarantee for that.</p>
 <p>Important: <em>The return values of functions marked <code>constexpr</code> are only guaranteed to be calculated at compile time, if they are put into variables which are also marked <code>constexpr</code>.</em></p>
 <p>The following macro, which looks strange, fixes both:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define __SHORT_FILE__ </span><span class="op">({</span><span class="kw">constexpr</span><span class="pp"> </span>cstr<span class="pp"> </span>sf__<span class="pp"> </span><span class="op">{</span>past_last_slash<span class="op">(</span><span class="ot">__FILE__</span><span class="op">)};</span><span class="pp"> </span>sf__<span class="op">;})</span></span></code></pre></div>
-<p>This macro uses a <code>{}</code> scope, to instantiate a new helper variable on the fly, in order to force the return value of the helper function into a <code>constexpr</code> variable. At this point it is guaranteed, that the compiler will embed the return value into the binary, without generating a run time function call. The parentheses around that allow for transforming this scope block into an expression. <code>({int x = f(a, b); ...; x})</code> will just return the value of x, which was determined inbetween.</p>
-<p>It is now possible to put this macro into any expression which would also accept <code>__FILE__</code> for logging, or printing. The assembly of the example program also looks better:</p>
+<p>This macro uses a <code>{}</code> scope, to instantiate a new helper variable on the fly, in order to force the return value of the helper function into a <code>constexpr</code> variable.
+At this point it is guaranteed, that the compiler will embed the return value into the binary, without generating a run time function call.
+The parentheses around that allow for transforming this scope block into an expression.
+<code>({int x = f(a, b); ...; x})</code> will just return the value of x, which was determined inbetween.</p>
+<p>It is now possible to put this macro into any expression which would also accept <code>__FILE__</code> for logging, or printing.
+The assembly of the example program also looks better:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>leaq	<span class="bn">0x45</span><span class="op">(%</span>rip<span class="op">),</span> <span class="op">%</span><span class="kw">rdi</span>        <span class="op">##</span> literal pool for<span class="op">:</span> <span class="st">&quot;main.cpp&quot;</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>callq	<span class="bn">0x100000f54</span>             <span class="op">##</span> symbol stub for<span class="op">:</span> _puts</span></code></pre></div>
-<p>I found this macro pretty cool, as it reduces binary- and code size. And it even does this if optimization flags are disabled, in order to have a close look at the assembly while debugging.</p></div>
+<p>I found this macro pretty cool, as it reduces binary- and code size.
+And it even does this if optimization flags are disabled, in order to have a close look at the assembly while debugging.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
 var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/02/20/short_file_macro/';

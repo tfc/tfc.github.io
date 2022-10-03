@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -42,7 +40,12 @@
 </strong>
 </p>
 
-<p>Some objects have different interfaces for doing the same thing in a different way. One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>. Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>. Classes should sometimes provide multiple kinds to express the same thing to let the user decide which way to express something is more readable in a specific context. But that does not mean, that the class developer has to express everything multiple times. This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
+<p>Some objects have different interfaces for doing the same thing in a different way.
+One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>.
+Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>.
+Classes should sometimes provide multiple kinds to express the same thing to let the user decide which way to express something is more readable in a specific context.
+But that does not mean, that the class developer has to express everything multiple times.
+This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/26/how_to_use_crtp_to_reduce_duplication" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -57,7 +60,9 @@
 </strong>
 </p>
 
-<p>When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can’t easily stick with the <em>RAII</em> principle. Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again. When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.</p>
+<p>When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can’t easily stick with the <em>RAII</em> principle.
+Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again.
+When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/21/on_exit_macro" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -72,7 +77,10 @@
 </strong>
 </p>
 
-<p>SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way. Unfortunately, they are extremely bloaty to implement. The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive. This article shows a nice one-liner approach to define new SFINAE type traits.</p>
+<p>SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way.
+Unfortunately, they are extremely bloaty to implement.
+The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive.
+This article shows a nice one-liner approach to define new SFINAE type traits.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/21/if_compiles_type_traits" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -87,7 +95,12 @@
 </strong>
 </p>
 
-<p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL. SDL is easy to use and portable, but it is a C-style library. Because of that C nature, the library does not really help the user to write elegant, modern code. Acquiring and Releasing SDL resources often ends up in ugly old school resource management. It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases. The approach is easily extendable to other kinds of resources, too.</p>
+<p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL.
+SDL is easy to use and portable, but it is a C-style library.
+Because of that C nature, the library does not really help the user to write elegant, modern code.
+Acquiring and Releasing SDL resources often ends up in ugly old school resource management.
+It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases.
+The approach is easily extendable to other kinds of resources, too.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/21/automatic_resource_release_with_sdl" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -102,7 +115,10 @@
 </strong>
 </p>
 
-<p>The <code>__FILE__</code> macro expands to the current source file name at compile time. It is not really useful if the source file paths which the build system uses, are very long, as this would bloat log output with long path names. It would be useful to have a shortened version, which only contains the file name without the whole path. This article describes how to implement a <code>__SHORT_FILE__</code> macro, that does not add any run time overhead.</p>
+<p>The <code>__FILE__</code> macro expands to the current source file name at compile time.
+It is not really useful if the source file paths which the build system uses, are very long, as this would bloat log output with long path names.
+It would be useful to have a shortened version, which only contains the file name without the whole path.
+This article describes how to implement a <code>__SHORT_FILE__</code> macro, that does not add any run time overhead.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/20/short_file_macro" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -117,7 +133,8 @@
 </strong>
 </p>
 
-<p>C++ type traits can be implemented using an interesting technique which uses the <em>SFINAE</em> principle. This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.</p>
+<p>C++ type traits can be implemented using an interesting technique which uses the <em>SFINAE</em> principle.
+This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/19/how_do_sfinae_traits_work" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -132,7 +149,8 @@
 </strong>
 </p>
 
-<p>This article explains, how so called <em>type traits</em> in C++ work. Type traits have been there for quite a long time now. They are a meta programming technique which appears to use types and their sub types like functions at compile time, to control what the compiler actually compiles.</p>
+<p>This article explains, how so called <em>type traits</em> in C++ work.
+Type traits have been there for quite a long time now. They are a meta programming technique which appears to use types and their sub types like functions at compile time, to control what the compiler actually compiles.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/18/what_is_a_type_trait" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>

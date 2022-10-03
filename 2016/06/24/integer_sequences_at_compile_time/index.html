@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,7 +35,8 @@
 </div>
 <div class="content container"><h1>Generating Integer Sequences at Compile Time</h1>
 <div class="post"><span class="post-date">June 24, 2016</span>
-<p>In some situations, it can be useful ot generate sequences of numbers at compile time. This article shows how to generate integer sequences with C++ templates, and gives an example how to use it.</p>
+<p>In some situations, it can be useful ot generate sequences of numbers at compile time.
+This article shows how to generate integer sequences with C++ templates, and gives an example how to use it.</p>
 <!--more-->
 <h2 id="compile-time-integer-sequences">Compile Time Integer Sequences</h2>
 <p>We are going to build integer sequences, which will look like the following:</p>
@@ -69,7 +68,9 @@
 <span id="cb1-25"><a href="#cb1-25"></a></span>
 <span id="cb1-26"><a href="#cb1-26"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> N<span class="op">&gt;</span></span>
 <span id="cb1-27"><a href="#cb1-27"></a><span class="kw">using</span> <span class="dt">sequence_t</span> <span class="op">=</span> <span class="kw">typename</span> seq_gen<span class="op">&lt;</span>N<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
-<p><code>sequence_t</code>’s purpose is solely carrying number sequences. Note that it is an empty class which is actually <em>defined</em> (because it has an empty <code>{}</code> definition body). This is important, because in some use cases it is going to be instantiated.</p>
+<p><code>sequence_t</code>’s purpose is solely carrying number sequences.
+Note that it is an empty class which is actually <em>defined</em> (because it has an empty <code>{}</code> definition body).
+This is important, because in some use cases it is going to be instantiated.</p>
 <p><code>seq_gen</code> is used to recursively generate the integer sequence.</p>
 <p><code>sequence_t</code> is the <code>using</code> clause which represents the interface for the end user. Writing <code>sequence_t&lt;10&gt;</code> evaluates to the initial example with the numeric range going from 0 to 9.</p>
 <h2 id="usage-example-unpacking-tuples-for-function-calls">Usage Example: Unpacking Tuples for Function Calls</h2>
@@ -79,10 +80,12 @@
 <p><code>std::tuple&lt;double, float, int&gt; tup</code>.</p>
 <p>In order to call <code>f</code> with the values in <code>tup</code>, one can write the following code:</p>
 <p><code>f(std::get&lt;0&gt;(tup), std::get&lt;1&gt;(tup), std::get&lt;2&gt;(tup))</code></p>
-<p>This is not too nice to read, and it is error prone, because it’s possible to use wrong indices. Such mistakes would even compile, if the type at the wrong index is the same, as the type at the right index.</p>
+<p>This is not too nice to read, and it is error prone, because it’s possible to use wrong indices.
+Such mistakes would even compile, if the type at the wrong index is the same, as the type at the right index.</p>
 <p>It would be nicer to have a function wrapper which has semantics like “<em>Use this function and this tuple. Then automatically take all the tuple values out of the tuple, in order call the function with them.</em>”:</p>
 <p><code>unpack_and_call(f, tup);</code></p>
-<p>This is indeed possible since C++11. Let’s have a look how to implement that:</p>
+<p>This is indeed possible since C++11.
+Let’s have a look how to implement that:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="pp">#include </span><span class="im">&lt;tuple&gt;</span></span>
 <span id="cb2-3"><a href="#cb2-3"></a></span>
@@ -120,8 +123,11 @@
 <span id="cb2-35"><a href="#cb2-35"></a>    tuple<span class="op">&lt;</span><span class="dt">double</span><span class="op">,</span> <span class="dt">float</span><span class="op">,</span> <span class="dt">int</span><span class="op">&gt;</span> tup <span class="op">{</span><span class="fl">1.0</span><span class="op">,</span> <span class="fl">2.0</span><span class="op">,</span> <span class="dv">3</span><span class="op">};</span></span>
 <span id="cb2-36"><a href="#cb2-36"></a>    tuple_call<span class="op">(</span>func<span class="op">,</span> tup<span class="op">);</span> <span class="co">// same effect</span></span>
 <span id="cb2-37"><a href="#cb2-37"></a><span class="op">}</span></span></code></pre></div>
-<p><code>func</code> is the example function with its own specific signature. It has no knowledge about tuples at all. It could even be a legacy C function.</p>
-<p><code>tuple_call</code> is the helper function which automatically unwraps all values from a tuple in order to feed them directly into the function <code>func</code>. It works in two steps:</p>
+<p><code>func</code> is the example function with its own specific signature.
+It has no knowledge about tuples at all.
+It could even be a legacy C function.</p>
+<p><code>tuple_call</code> is the helper function which automatically unwraps all values from a tuple in order to feed them directly into the function <code>func</code>.
+It works in two steps:</p>
 <ol type="1">
 <li>Using <em>pattern matching</em>, the type list of the tuple is extracted into the template parameter pack <code>Ts</code>.</li>
 <li>Using <code>sizeof...(tup)</code>, the number of parameters is determined, and an integer sequence type is created from this.</li>

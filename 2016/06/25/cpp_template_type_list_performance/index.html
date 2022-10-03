@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,30 +35,59 @@
 </div>
 <div class="content container"><h1>Type List Compile Time Performance</h1>
 <div class="post"><span class="post-date">June 25, 2016</span>
-<p>Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times. I came up with rules of thumb like “<em>Prefer pattern matching over if_else_t</em>”, and “<em>Prefer nested type lists over variadic type lists</em>”. But i did not know how much faster which pattern is, i just knew about tendencies. Finally, i sat down to write some compile time benchmarks, and this blog posts presents the results.</p>
+<p>Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times.
+I came up with rules of thumb like “<em>Prefer pattern matching over if_else_t</em>”, and “<em>Prefer nested type lists over variadic type lists</em>”.
+But i did not know how much faster which pattern is, i just knew about tendencies.
+Finally, i sat down to write some compile time benchmarks, and this blog posts presents the results.</p>
 <!--more-->
 <h1 id="creating-lists">Creating Lists</h1>
-<p>A fundamental thing to measure are <strong>lists</strong>. Everything else which can grow to arbitrary sizes, will somehow be implemented using lists. There are different possible ways to implement lists. I present measurements of nested and variadic type lists. This article does not explain how to implement them, but there is an <a href="../../../../2016/05/08/compile_time_type_lists">article about C++ template type lists</a> already.</p>
-<p>The first benchmark just creates lists of rising sizes, and measures how much time that takes. The lists are generated from integer sequences, just like those from <a href="../../../../2016/06/24/integer_sequences_at_compile_time">this article which explains how to generate integer sequences at compile time</a>.</p>
-<p>I present graphs for doing this inside <a href="http://metashell.org/">Metashell</a>, and also using real compilers. Metashell is a great tool for debugging meta programs, or playing around with expressions. It is basically what <code>ghci</code> is to Haskell, an interactive shell for programming.</p>
-<p>Since Metashell does also provide a profiling feature, it is tempting to measure performance with it. This turns out to be a bad idea when comparing such performance numbers with real compiler performance: Not only are compilers significantly faster than meta shell, but they also do generate <em>completely different</em> numbers.</p>
-<p>It is generally fine, that Metashell instantiates templates slower than compilers do. Metashell is meant as a development tool, and not as a high performance compiler. However, using it to compare the performance of different algorithms can result in very misleading numbers.</p>
+<p>A fundamental thing to measure are <strong>lists</strong>.
+Everything else which can grow to arbitrary sizes, will somehow be implemented using lists.
+There are different possible ways to implement lists.
+I present measurements of nested and variadic type lists.
+This article does not explain how to implement them, but there is an <a href="../../../../2016/05/08/compile_time_type_lists">article about C++ template type lists</a> already.</p>
+<p>The first benchmark just creates lists of rising sizes, and measures how much time that takes.
+The lists are generated from integer sequences, just like those from <a href="../../../../2016/06/24/integer_sequences_at_compile_time">this article which explains how to generate integer sequences at compile time</a>.</p>
+<p>I present graphs for doing this inside <a href="http://metashell.org/">Metashell</a>, and also using real compilers.
+Metashell is a great tool for debugging meta programs, or playing around with expressions.
+It is basically what <code>ghci</code> is to Haskell, an interactive shell for programming.</p>
+<p>Since Metashell does also provide a profiling feature, it is tempting to measure performance with it.
+This turns out to be a bad idea when comparing such performance numbers with real compiler performance:
+Not only are compilers significantly faster than meta shell, but they also do generate <em>completely different</em> numbers.</p>
+<p>It is generally fine, that Metashell instantiates templates slower than compilers do.
+Metashell is meant as a development tool, and not as a high performance compiler.
+However, using it to compare the performance of different algorithms can result in very misleading numbers.</p>
 <h2 id="metashell">Metashell</h2>
 <figure>
-<img src="../../../../images/compile_time_type_list_creation_benchmark_metashell.png" alt="Metashell: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists" /><figcaption aria-hidden="true">Metashell: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists</figcaption>
+<img src="../../../../images/compile_time_type_list_creation_benchmark_metashell.png" alt="Metashell: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists" />
+<figcaption aria-hidden="true">Metashell: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists</figcaption>
 </figure>
-<p>The graphs both have fitted polygonal function overlays. The runtime of generating lists, both nested and variadic types, is obviously within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>. This is usually something which would be considered having <em>linear</em> runtime, because the lists grow linearly.</p>
+<p>The graphs both have fitted polygonal function overlays.
+The runtime of generating lists, both nested and variadic types, is obviously within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>.
+This is usually something which would be considered having <em>linear</em> runtime, because the lists grow linearly.</p>
 <p>These numbers turn out to be completely different when measured on real compilers like Clang and GCC:</p>
 <h2 id="compilers">Compilers</h2>
-<p>To my knowledge it is not possible to measure only the actual template instantiation time when using a compiler. Hence i just measured how long it takes the compiler to start, instantiate the template code, and exit again. These numbers are inherently more noisy than the metashell numbers.</p>
+<p>To my knowledge it is not possible to measure only the actual template instantiation time when using a compiler.
+Hence i just measured how long it takes the compiler to start, instantiate the template code, and exit again.
+These numbers are inherently more noisy than the metashell numbers.</p>
 <figure>
-<img src="../../../../images/compile_time_type_list_creation_benchmark_compilers.png" alt="GCC/Clang: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists" /><figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists</figcaption>
+<img src="../../../../images/compile_time_type_list_creation_benchmark_compilers.png" alt="GCC/Clang: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists" />
+<figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists</figcaption>
 </figure>
-<p>Both GCC and Clang are much faster in instantiating large variadic lists, compared to Metashell. But what is most obvious on this graph, is that nested type lists in turn are <strong>much</strong> faster than variadic type lists.</p>
-<p>Variadic type lists are easier to read and write for programmers, but this performance penalty makes their use inpractiable for algorithms. Hence, variadic type lists can nicely be used as input/output interface to the user (the coder). But inbetween, they should be converted to type lists, in order to work efficiently on the data they convey. <a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">This article explains how to convert between different type list formats</a>.</p>
-<p>The performance numbers of GCC and Clang when instantiating nested type lists, look really similar in this diagram. They actually are, and i do not provide another diagram showing only these two graphs. A comparison between them based on this data would not be too fair, as these graphs are really noisy. It would be easier to compare with even larger type lists, but i experienced compiler <em>crashes</em> with even higher numbers.</p>
+<p>Both GCC and Clang are much faster in instantiating large variadic lists, compared to Metashell.
+But what is most obvious on this graph, is that nested type lists in turn are <strong>much</strong> faster than variadic type lists.</p>
+<p>Variadic type lists are easier to read and write for programmers, but this performance penalty makes their use inpractiable for algorithms.
+Hence, variadic type lists can nicely be used as input/output interface to the user (the coder).
+But inbetween, they should be converted to type lists, in order to work efficiently on the data they convey.
+<a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">This article explains how to convert between different type list formats</a>.</p>
+<p>The performance numbers of GCC and Clang when instantiating nested type lists, look really similar in this diagram.
+They actually are, and i do not provide another diagram showing only these two graphs.
+A comparison between them based on this data would not be too fair, as these graphs are really noisy.
+It would be easier to compare with even larger type lists, but i experienced compiler <em>crashes</em> with even higher numbers.</p>
 <h1 id="filtering-lists">Filtering Lists</h1>
-<p>The next thing to measure after creating lists, is applying operations on them. I chose to measure how long it takes to apply a <strong>filter</strong> on a list. The filter itself is rather cheap: I implemented functions which take a list of integer sequences, and return a list of integer sequences, but inbetween <em>remove</em> all <em>even</em> numbers.</p>
+<p>The next thing to measure after creating lists, is applying operations on them.
+I chose to measure how long it takes to apply a <strong>filter</strong> on a list.
+The filter itself is rather cheap: I implemented functions which take a list of integer sequences, and return a list of integer sequences, but inbetween <em>remove</em> all <em>even</em> numbers.</p>
 <p>I wrote one benchmark measuring different implementations (a code snippet appendix follows at the end of the article):</p>
 <ul>
 <li>Filtering the even numbers out using the <code>if_else_t</code> construct</li>
@@ -68,35 +95,49 @@
 <li>Generating lists which do not contain even numbers from the beginning</li>
 </ul>
 <p>Comparing the same algorithm using <code>if_else_t</code> vs. <em>pattern matching</em> is interesting, because there are obvious performance differences.</p>
-<p>I tried to do a <em>fair</em> comparison between filtering nested and variadic type lists. To ensure this, i implemented the if-else/pattern-matching variants <em>once</em> in a way that the same implementation works on both kinds of lists.</p>
-<p>All these algorithms are applied to both nested and variadic type lists. As the list creation benchmark already suggests, the nested variants of these algorithms will be faster. This time, the differences between Clang and GCC are more significant when looking at the nested variants, hence i present another diagram plotting only these.</p>
+<p>I tried to do a <em>fair</em> comparison between filtering nested and variadic type lists.
+To ensure this, i implemented the if-else/pattern-matching variants <em>once</em> in a way that the same implementation works on both kinds of lists.</p>
+<p>All these algorithms are applied to both nested and variadic type lists.
+As the list creation benchmark already suggests, the nested variants of these algorithms will be faster.
+This time, the differences between Clang and GCC are more significant when looking at the nested variants, hence i present another diagram plotting only these.</p>
 <figure>
-<img src="../../../../images/compile_time_type_list_filter_benchmark.png" alt="GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested vs. variadic type lists" /><figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested vs. variadic type lists</figcaption>
+<img src="../../../../images/compile_time_type_list_filter_benchmark.png" alt="GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested vs. variadic type lists" />
+<figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested vs. variadic type lists</figcaption>
 </figure>
 <p>There are three obvious clusters in this diagram:</p>
 <h3 id="variadic-list-operations-on-gcc">Variadic list operations on GCC</h3>
-<p>This cluster shows very nicely, that the performance using <code>if_else_t</code> for filtering items is worst, compared to all other variants. Applying pattern matching is indeed faster.</p>
-<p>The most performant variant is assembling an already filtered list. This effectively removes the overhead of at first generating a full sequence, and filtering it afterwards.</p>
+<p>This cluster shows very nicely, that the performance using <code>if_else_t</code> for filtering items is worst, compared to all other variants.
+Applying pattern matching is indeed faster.</p>
+<p>The most performant variant is assembling an already filtered list.
+This effectively removes the overhead of at first generating a full sequence, and filtering it afterwards.</p>
 <h3 id="variadic-list-operations-on-clang">Variadic list operations on Clang</h3>
-<p>Here, we see a generally similar pattern compared to the variadic-GCC-cluster before, but it is a bit faster with this compiler. Clang handles variadic type lists faster than GCC does.</p>
-<p>Apart from that, the pattern matching style filter operation on the type list is faster, than creating an already filtered list. For some reason. I don’t know.</p>
+<p>Here, we see a generally similar pattern compared to the variadic-GCC-cluster before, but it is a bit faster with this compiler.
+Clang handles variadic type lists faster than GCC does.</p>
+<p>Apart from that, the pattern matching style filter operation on the type list is faster, than creating an already filtered list.
+For some reason.
+I don’t know.</p>
 <h3 id="nested-list-operations-on-clanggcc">Nested list operations on Clang/GCC</h3>
 <p>All of these transformations on nested type lists are <strong>generally</strong> faster, and they are <strong>much</strong> faster.</p>
 <p>Because the differences are not obvious on the first diagram, they are extracted and plotted on a nested-only diagram:</p>
 <figure>
-<img src="../../../../images/compile_time_type_list_filter_benchmark_recursive_only.png" alt="GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested type lists" /><figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested type lists</figcaption>
+<img src="../../../../images/compile_time_type_list_filter_benchmark_recursive_only.png" alt="GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested type lists" />
+<figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring list filter performance of integer sequence nested type lists</figcaption>
 </figure>
 <p>These numbers are very noisy, because they are near to the general process start time of the compiler executable in the shell.</p>
 <p>Apart from that, the two different implementations of list filter operations, and manual filtered list creation have the same performance characteristics like before, when compared to each other.</p>
-<p>Interestingly, clang seems to be slower for small type lists, because the time it takes to launch and return to shell is larger. For large type lists (which means they contain about 500 and more items), clang takes over and compiles faster.</p>
-<p>The most important observation here is, that the runtime of these algorithms on nested type lists seems to be within <span class="math inline">𝒪(<em>n</em>)</span>. Creating variadic type lists alone is already <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>.</p>
+<p>Interestingly, clang seems to be slower for small type lists, because the time it takes to launch and return to shell is larger.
+For large type lists (which means they contain about 500 and more items), clang takes over and compiles faster.</p>
+<p>The most important observation here is, that the runtime of these algorithms on nested type lists seems to be within <span class="math inline">𝒪(<em>n</em>)</span>.
+Creating variadic type lists alone is already <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>.</p>
 <h1 id="the-implementations">The Implementations</h1>
-<p>This section shows the implementations of <em>what</em> i actually measured. There’s not much explanation how this works, because i wrote other articles covering that:</p>
+<p>This section shows the implementations of <em>what</em> i actually measured.
+There’s not much explanation how this works, because i wrote other articles covering that:</p>
 <ul>
 <li>To understand basics like <code>if_else_t</code>, and pattern matching, have a look at <a href="../../../../2016/05/05/template_meta_programming_basics">the template meta programming basics 101 article</a>.</li>
 <li>To understand, how type lists work, please have a look at <a href="../../../../2016/05/08/compile_time_type_lists">the type list article</a>.</li>
 </ul>
-<p>Both list filter implementations remove even numbers from the input type list. They are implemented in a way that they can handle both variadic and nested type lists.</p>
+<p>Both list filter implementations remove even numbers from the input type list.
+They are implemented in a way that they can handle both variadic and nested type lists.</p>
 <p>Only for creating already filtered lists, there are two different implementations for the different types of type lists.</p>
 <p>For all functions, at the very <em>bottom</em> of every example, there is an <code>odds_t</code> using clause, which represents the actual user interface.</p>
 <h2 id="if_else_t">if_else_t</h2>

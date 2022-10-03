@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,12 +35,18 @@
 </div>
 <div class="content container"><h1>Managing libraries with Nix</h1>
 <div class="post"><span class="post-date">February 27, 2018</span>
-<p>While learning Haskell and using its really smart library dependency management tools (<a href="https://www.haskell.org/cabal/"><code>cabal</code></a> and <a href="https://docs.haskellstack.org/en/stable/README/"><code>stack</code></a>), i realized that the C++ eco system has a problem: There are no handy <em>established</em> tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way. <a href="https://nixos.org/nix/"><code>Nix</code></a> however convinced me to be more versatile and powerful than <a href="https://www.conan.io/">Conan</a> and handier than <a href="https://www.docker.com/">Docker</a>, <a href="https://www.vagrantup.com/">Vagrant</a>, etc. (although it’s fair to say that i am mixing use cases here a little bit!) In this article, i am going to showcase this great tool a little bit.</p>
+<p>While learning Haskell and using its really smart library dependency management tools (<a href="https://www.haskell.org/cabal/"><code>cabal</code></a> and <a href="https://docs.haskellstack.org/en/stable/README/"><code>stack</code></a>), i realized that the C++ eco system has a problem:
+There are no handy <em>established</em> tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way.
+<a href="https://nixos.org/nix/"><code>Nix</code></a> however convinced me to be more versatile and powerful than <a href="https://www.conan.io/">Conan</a> and handier than <a href="https://www.docker.com/">Docker</a>, <a href="https://www.vagrantup.com/">Vagrant</a>, etc. (although it’s fair to say that i am mixing use cases here a little bit!)
+In this article, i am going to showcase this great tool a little bit.</p>
 <!--more-->
-<p>This article is rather long (mostly because of many command line excerpts). Feel free to jump to the end, where we will compile and run the same project with 3 different compilers just by changing the command line a bit.</p>
+<p>This article is rather long (mostly because of many command line excerpts).
+Feel free to jump to the end, where we will compile and run the same project with 3 different compilers just by changing the command line a bit.</p>
 <h2 id="use-case-example">Use case example</h2>
 <p>So i have been developing a little library to see if i can implement a handy parser library in C++ that models how you build parsers in Haskell using the <a href="https://hackage.haskell.org/package/parsec"><code>parsec</code> library</a>.</p>
-<p>The project can be checked out on <a href="https://github.com/tfc/attoparsecpp">github.com/tfc/attoparsecpp</a>. It is however not important to look into it. This article is not at all about parsers, Haskell, or my specific library. My little project shall just serve as an example project that has unit tests and benchmarks.</p>
+<p>The project can be checked out on <a href="https://github.com/tfc/attoparsecpp">github.com/tfc/attoparsecpp</a>. It is however not important to look into it.
+This article is not at all about parsers, Haskell, or my specific library.
+My little project shall just serve as an example project that has unit tests and benchmarks.</p>
 <p>For libraries it is important that they build warning-free with:</p>
 <ul>
 <li>different compilers</li>
@@ -54,16 +58,27 @@
 <li><a href="https://github.com/catchorg/Catch2"><code>catch</code></a> for building the unit tests</li>
 <li><a href="https://github.com/google/benchmark"><code>benchmark</code> (from Google)</a> for building the benchmarks</li>
 </ul>
-<p>That means: in order to build this project you need to install those. Some developers just install them the oldschool way or they pull them in as git submodules and then embedd them into the <code>Makefile</code> (or <code>cmake</code> pendants etc.). Some other developers would define Docker images (or Vagrant etc.). There is also the Conan package manager which enables the developer to just define which libraries are needed.</p>
+<p>That means: in order to build this project you need to install those.
+Some developers just install them the oldschool way or they pull them in as git submodules and then embedd them into the <code>Makefile</code> (or <code>cmake</code> pendants etc.).
+Some other developers would define Docker images (or Vagrant etc.).
+There is also the Conan package manager which enables the developer to just define which libraries are needed.</p>
 <h2 id="installing-nix">Installing Nix</h2>
 <p>Let us now completely concentrate on Nix. What is it? <a href="https://nixos.org/nix/">The Nix homepage</a> states:</p>
 <blockquote>
-<p>Nix is a powerful package manager for Linux and other Unix systems that makes package management reliable and reproducible. It provides atomic upgrades and rollbacks, side-by-side installation of multiple versions of a package, multi-user package management and easy setup of build environments. …</p>
+<p>Nix is a powerful package manager for Linux and other Unix systems that makes package management reliable and reproducible.
+It provides atomic upgrades and rollbacks, side-by-side installation of multiple versions of a package, multi-user package management and easy setup of build environments.
+…</p>
 </blockquote>
-<p>Nix can be installed on Linux, Mac, and other Unixes. (I guess it can be installed in the Linux-Subsystem on Windows, but i am not sure as i am no Windows user). Just as a side note: There is even a <a href="https://nixos.org/">Linux distribution called “NixOS”</a>.</p>
-<p>The installation of Nix is really simple. Please first study the content of <a href="https://nixos.org/nix/install"><code>https://nixos.org/nix/install</code></a> and then run the following command in the bash (Or run the parts of the script you like. It is interesting how about 90% of the critisizm on Nix concentrate on this shell command.):</p>
+<p>Nix can be installed on Linux, Mac, and other Unixes.
+(I guess it can be installed in the Linux-Subsystem on Windows, but i am not sure as i am no Windows user).
+Just as a side note: There is even a <a href="https://nixos.org/">Linux distribution called “NixOS”</a>.</p>
+<p>The installation of Nix is really simple.
+Please first study the content of <a href="https://nixos.org/nix/install"><code>https://nixos.org/nix/install</code></a> and then run the following command in the bash (Or run the parts of the script you like. It is interesting how about 90% of the critisizm on Nix concentrate on this shell command.):</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> curl https://nixos.org/nix/install <span class="kw">|</span> <span class="fu">sh</span></span></code></pre></div>
-<p>The installation script will download and extract a large tarball into the <code>/nix</code> folder on your system. In addition to that, it will activate a build daemon and create some user accounts in order to isolate things while building packages. After the installation, there will never be any need to use <code>sudo</code> in combination with nix calls again. It is generally possible to install nix on systems where even creating <code>/nix</code> is not allowed (see the <a href="https://nixos.wiki/wiki/Nix_Installation_Guide">installation guide</a> for more details).</p>
+<p>The installation script will download and extract a large tarball into the <code>/nix</code> folder on your system.
+In addition to that, it will activate a build daemon and create some user accounts in order to isolate things while building packages.
+After the installation, there will never be any need to use <code>sudo</code> in combination with nix calls again.
+It is generally possible to install nix on systems where even creating <code>/nix</code> is not allowed (see the <a href="https://nixos.wiki/wiki/Nix_Installation_Guide">installation guide</a> for more details).</p>
 <h2 id="installing-project-dependencies">Installing project dependencies</h2>
 <p>After cloning the C++ project on a mac where only <code>git</code> and <code>clang++</code>, we will have trouble building the project without installing the libraries:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd test <span class="kw">&amp;&amp;</span> <span class="fu">make</span></span>
@@ -73,9 +88,11 @@
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>         <span class="ex">^~~~~~~~~~~~~~~~~</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> error generated.</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">make:</span> <span class="pp">***</span> [main.o] Error 1</span></code></pre></div>
-<p>For the unit tests, we only need the <code>catch</code> library. That’s easy, as the Nix repository has that.</p>
+<p>For the unit tests, we only need the <code>catch</code> library.
+That’s easy, as the Nix repository has that.</p>
 <blockquote>
-<p>Another “catch” is that the <code>make</code> call ended up invoking <code>c++</code>, which is our Mac system compiler that is not really prepared to be used with Nix-installations of packages. This is part of some mechanics which the Nix docs cover much better.</p>
+<p>Another “catch” is that the <code>make</code> call ended up invoking <code>c++</code>, which is our Mac system compiler that is not really prepared to be used with Nix-installations of packages.
+This is part of some mechanics which the Nix docs cover much better.</p>
 </blockquote>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-env <span class="at">-qaP</span> <span class="at">--description</span> <span class="kw">|</span> <span class="fu">grep</span> catch</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nixpkgs.catch</span>               catch-1.9.6               A multi-paradigm automated test framework for C++ and Objective-C <span class="er">(</span><span class="ex">and,</span> maybe, C<span class="kw">)</span></span>
@@ -92,11 +109,16 @@
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/gsklw95pxb9npyqpfpczagchk8kdsgzb-catch-1.9.6/include/catch/catch.hpp:11450:9:</span> note: macro <span class="st">'REQUIRE'</span> defined here</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#define REQUIRE( expr ) INTERNAL_CATCH_TEST( &quot;REQUIRE&quot;, Catch::ResultDisposition::Normal, expr  )</span></span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span></code></pre></div>
-<p>Ok, the compiler can find the <code>catch.hpp</code> header, but it does not compile. The problem here is that i wrote the unit tests with <code>catch2</code> and the package in the Nix repo is a little bit too old. I learned Nix the hard way by doing the following:</p>
+<p>Ok, the compiler can find the <code>catch.hpp</code> header, but it does not compile.
+The problem here is that i wrote the unit tests with <code>catch2</code> and the package in the Nix repo is a little bit too old.
+I learned Nix the hard way by doing the following:</p>
 <h2 id="writing-our-own-nix-expressions">Writing our own Nix expressions</h2>
-<p>The Nix ecosystem provides a rich database of packages for everything which does not only include libraries, but also applications. In this case however, the library is too old and we need a more current one.</p>
-<p>While the <code>catch</code> library just consists of a single header that is really easy to download, it is also a really simple example for building a Nix derivation that automatically obtains it from github and provides it for building. So let’s do that here. We will also install a newer google benchmark library (which is a bit more complicated as it is not header-only) this way later.</p>
-<p>A Nix derivation is kind of a cooking recipe that tells where to get what and what to do with it in order to make it useful. In order to get catch version 2.1.2, we create a file <code>catch.nix</code> in the project folder:</p>
+<p>The Nix ecosystem provides a rich database of packages for everything which does not only include libraries, but also applications.
+In this case however, the library is too old and we need a more current one.</p>
+<p>While the <code>catch</code> library just consists of a single header that is really easy to download, it is also a really simple example for building a Nix derivation that automatically obtains it from github and provides it for building.
+So let’s do that here. We will also install a newer google benchmark library (which is a bit more complicated as it is not header-only) this way later.</p>
+<p>A Nix derivation is kind of a cooking recipe that tells where to get what and what to do with it in order to make it useful.
+In order to get catch version 2.1.2, we create a file <code>catch.nix</code> in the project folder:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode numberSource numberLines"><code class="sourceCode"><span id="cb5-1"><a href="#cb5-1"></a># file: catch.nix</span>
 <span id="cb5-2"><a href="#cb5-2"></a>{ stdenv, fetchurl }:</span>
 <span id="cb5-3"><a href="#cb5-3"></a></span>
@@ -123,7 +145,9 @@
 <span id="cb5-24"><a href="#cb5-24"></a>    homepage = http://catch-lib.net;</span>
 <span id="cb5-25"><a href="#cb5-25"></a>  };</span>
 <span id="cb5-26"><a href="#cb5-26"></a>}</span></code></pre></div>
-<p>There is a lot of <em>voodoo</em> going on here for anyone who does not know Nix. Nix is its own scripting language (a purely functional one), that is why it that script initially looks so complicated. The important parts are:</p>
+<p>There is a lot of <em>voodoo</em> going on here for anyone who does not know Nix.
+Nix is its own scripting language (a purely functional one), that is why it that script initially looks so complicated.
+The important parts are:</p>
 <ul>
 <li>lines 8-11, <code>fetchurl</code>:
 <ul>
@@ -157,7 +181,9 @@
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="ex">unpacking</span> source archive /nix/store/4nx2d1j5jnnb9zqlmpl45g68msqycfjy-catch.hpp</span>
 <span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
 <span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="ex">patching</span> script interpreter paths in /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</span></code></pre></div>
-<p>There was a lot going on after firing that command: Nix even installed <code>curl</code> and all its dependencies, because it needs a tool to download the header file. The last line tells us that there is now something in <code>/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</code>. Let’s have a look into it:</p>
+<p>There was a lot going on after firing that command: Nix even installed <code>curl</code> and all its dependencies, because it needs a tool to download the header file.
+The last line tells us that there is now something in <code>/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</code>.
+Let’s have a look into it:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~/Desktop/p]$</span> ls <span class="at">-lsa</span> /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2/include/catch/catch.hpp</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">428</span> <span class="at">-r--r--r--</span> 1 root wheel 435409 Jan  1  1970 /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2/include/catch/catch.hpp</span></code></pre></div>
 <p>Ok, so whenever we add this strange path to the compiler command line using <code>-I/nix/store/...</code>, then our tests will compile.</p>
@@ -177,19 +203,21 @@
 <blockquote>
 <p>(The <code>-I/nix/store/...</code> parameter was handled for us implicitly) by the Nix-installed compiler</p>
 </blockquote>
-<p>It is however pretty ugly to call <code>nix-shell</code> with all those arguments that are hard to memorize. For this purpose we can define a <code>default.nix</code> file that will be automatically sourced by Nix:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode nix"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># file: default.nix</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">{</span> <span class="ex">pkgs</span> <span class="pp">?</span> import <span class="op">&lt;</span>nixpkgs<span class="op">&gt;</span> {}, }:</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">rec</span> {</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">myProject</span> = pkgs.stdenv.mkDerivation {</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">name</span> = <span class="st">&quot;attoparsecpp&quot;</span><span class="kw">;</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="ex">version</span> = <span class="st">&quot;dev-0.1&quot;</span><span class="kw">;</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="ex">buildInputs</span> = with pkgs<span class="kw">;</span> <span class="bu">[</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      <span class="er">(</span>callPackage ./catch.nix { <span class="er">})</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">]</span><span class="kw">;</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">};</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
-<p>There’s again some voodoo for Nix-novices, but the important part is that we call our package <code>catch.nix</code> in the context of a standard build environment (<code>stdenv</code>). With <code>stdenv</code> we don’t need to reference the compiler explicitly any longer.</p>
+<p>It is however pretty ugly to call <code>nix-shell</code> with all those arguments that are hard to memorize.
+For this purpose we can define a <code>default.nix</code> file that will be automatically sourced by Nix:</p>
+<pre class="nix"><code># file: default.nix
+{ pkgs ? import &lt;nixpkgs&gt; {}, }:
+rec {
+  myProject = pkgs.stdenv.mkDerivation {
+    name = &quot;attoparsecpp&quot;;
+    version = &quot;dev-0.1&quot;;
+    buildInputs = with pkgs; [
+      (callPackage ./catch.nix { })
+    ];
+  };
+}</code></pre>
+<p>There’s again some voodoo for Nix-novices, but the important part is that we call our package <code>catch.nix</code> in the context of a standard build environment (<code>stdenv</code>).
+With <code>stdenv</code> we don’t need to reference the compiler explicitly any longer.</p>
 <p>Now, we can do the following:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--command</span> <span class="st">&quot;cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-c</span> main.cpp</span>
@@ -199,7 +227,8 @@
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="ex">===============================================================================</span></span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> tests passed <span class="er">(</span><span class="ex">172</span> assertions in 11 test cases<span class="kw">)</span></span></code></pre></div>
 <p>Nix finds our <code>default.nix</code> file and gets everything in order.</p>
-<p>Ok, great. How about running benchmarks?</p>
+<p>Ok, great.
+How about running benchmarks?</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--command</span> <span class="st">&quot;cd benchmark &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include main.cpp <span class="at">-o</span> main <span class="at">-lbenchmark</span> <span class="at">-lpthread</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">main.cpp:7:10:</span> fatal error: <span class="st">'benchmark/benchmark.h'</span> file not found</span>
@@ -207,7 +236,9 @@
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>         <span class="ex">^~~~~~~~~~~~~~~~~~~~~~~</span></span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> error generated.</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="ex">make:</span> <span class="pp">***</span> [Makefile:8: main] Error 1</span></code></pre></div>
-<p>Seems like we need to install google benchmark, too. There is a <code>gbenchmark</code> package, but it’s again too old. Nothing we couldn’t fix with our own Nix expression, though:</p>
+<p>Seems like we need to install google benchmark, too.
+There is a <code>gbenchmark</code> package, but it’s again too old.
+Nothing we couldn’t fix with our own Nix expression, though:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode numberSource numberLines"><code class="sourceCode"><span id="cb12-1"><a href="#cb12-1"></a># file googlebench.nix</span>
 <span id="cb12-2"><a href="#cb12-2"></a>{ stdenv, fetchFromGitHub, cmake }:</span>
 <span id="cb12-3"><a href="#cb12-3"></a></span>
@@ -228,8 +259,12 @@
 <span id="cb12-18"><a href="#cb12-18"></a>    description = &quot;google benchmark&quot;;</span>
 <span id="cb12-19"><a href="#cb12-19"></a>  };</span>
 <span id="cb12-20"><a href="#cb12-20"></a>}</span></code></pre></div>
-<p>Building the benchmark library involves compiling it with <code>cmake</code>, as it is more than just headers. Luckily, the Nix expression language came with its own library installed. It has handy little helpers like <code>fetchFromGitHub</code> that accepts some arguments needed to construct a download link from it and automatically unpack it!</p>
-<p>The line <code>nativeBuildInputs</code> instructs Nix to install <code>cmake</code> for building this package. Everything else is automatically deduced. After adding this Nix derivation to our <code>default.nix</code> file, it will build google benchmark for us before we can run our own makefile:</p>
+<p>Building the benchmark library involves compiling it with <code>cmake</code>, as it is more than just headers.
+Luckily, the Nix expression language came with its own library installed.
+It has handy little helpers like <code>fetchFromGitHub</code> that accepts some arguments needed to construct a download link from it and automatically unpack it!</p>
+<p>The line <code>nativeBuildInputs</code> instructs Nix to install <code>cmake</code> for building this package.
+Everything else is automatically deduced.
+After adding this Nix derivation to our <code>default.nix</code> file, it will build google benchmark for us before we can run our own makefile:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--command</span> <span class="st">&quot;cd benchmark &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> derivations will be built:</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/vbi7a7kjxz24zmq7lwaa044735hdlmb3-benchmark-v1.3.0-src.drv</span></span>
@@ -255,8 +290,10 @@
 <span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_vector_filling/10</span>              457 ns        455 ns    1683712</span>
 <span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_vector_filling/100</span>            2282 ns       2279 ns     305181</span>
 <span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span></code></pre></div>
-<p>Yes, that’s some successful benchmark output! This time it even installed <code>unzip</code> in case we don’t have it, yet.</p>
-<p>However, we do not have to care about anything library-related other than linking. The Makefile does not reflect any knowledge of Nix or the install location of our dependencies:</p>
+<p>Yes, that’s some successful benchmark output!
+This time it even installed <code>unzip</code> in case we don’t have it, yet.</p>
+<p>However, we do not have to care about anything library-related other than linking.
+The Makefile does not reflect any knowledge of Nix or the install location of our dependencies:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat benchmark/Makefile</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">default:</span> main</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -293,7 +330,8 @@
 <li>line 7: Now we use <code>stdenv.mkDerivation</code> instead of <code>pkgs.stdenv.mkDerivation</code>.</li>
 <li>line 12: If our <code>stdenv</code> changes, this change is also forwarded into the <code>googlebench.nix</code> derivation. (Which then needs to be built just for this compiler, too)</li>
 </ul>
-<p>With this change, we can now build and execute our tests with different compilers just by changing varying <code>nix-shell</code> arguments. Let’s try GCC now:</p>
+<p>With this change, we can now build and execute our tests with different compilers just by changing varying <code>nix-shell</code> arguments.
+Let’s try GCC now:</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="dt">\</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>  --command <span class="st">&quot;</span><span class="dt">\$</span><span class="st">CXX --version &amp;&amp; cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span> <span class="dt">\</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>  --arg stdenv <span class="st">&quot;with (import &lt;nixpkgs&gt; {}); gccStdenv&quot;</span></span>
@@ -315,7 +353,8 @@
 <span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-o</span> main main.o test.o math_expression.o</span>
 <span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="ex">===============================================================================</span></span>
 <span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> tests passed <span class="er">(</span><span class="ex">172</span> assertions in 11 test cases<span class="kw">)</span></span></code></pre></div>
-<p>The magic <code>--arg stdenv "with (import &lt;nixpkgs&gt; {}); gccStdenv"</code> line pushed a GCC build environment into the <code>stdenv</code> variable. The <code>$CXX --version</code> command in the <code>--command</code> part of the command line shows that it’s really GCC 6.4.0 now (instead of clang).</p>
+<p>The magic <code>--arg stdenv "with (import &lt;nixpkgs&gt; {}); gccStdenv"</code> line pushed a GCC build environment into the <code>stdenv</code> variable.
+The <code>$CXX --version</code> command in the <code>--command</code> part of the command line shows that it’s really GCC 6.4.0 now (instead of clang).</p>
 <p>We can do the same with GCC 7:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="dt">\</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--command</span> <span class="st">&quot;</span><span class="dt">\$</span><span class="st">CXX --version &amp;&amp; cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span> <span class="dt">\</span></span>
@@ -340,9 +379,14 @@
 <span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="ex">===============================================================================</span></span>
 <span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> tests passed <span class="er">(</span><span class="ex">172</span> assertions in 11 test cases<span class="kw">)</span></span></code></pre></div>
 <p>Easy. It downloads <em>another</em> GCC and uses that for building.</p>
-<p>Using the same strategy, we can also run our benchmarks with all these compilers. We could even write a Nix derivation that actually does this and generates a nice GNUPlot chart from all benchmark runs.</p>
+<p>Using the same strategy, we can also run our benchmarks with all these compilers.
+We could even write a Nix derivation that actually does this and generates a nice GNUPlot chart from all benchmark runs.</p>
 <h2 id="fallout">Fallout</h2>
-<p>While playing around, we installed at least 3 different compilers and recompiled the google benchmark library for each of them. A nice thing about this is that this all needs to be done only once. The resulting packages can then be used again on the next invocation of a <code>nix-shell</code> environment. Even better: if another project happens to need the same compiler/libraries, then they are in place already! These things are shared system wide now:</p>
+<p>While playing around, we installed at least 3 different compilers and recompiled the google benchmark library for each of them.
+A nice thing about this is that this all needs to be done only once.
+The resulting packages can then be used again on the next invocation of a <code>nix-shell</code> environment.
+Even better: if another project happens to need the same compiler/libraries, then they are in place already!
+These things are shared system wide now:</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> find /nix/store <span class="dt">\(</span> <span class="at">-name</span> <span class="st">&quot;*googlebench*&quot;</span> <span class="at">-or</span> <span class="at">-name</span> <span class="st">&quot;*gcc*&quot;</span> <span class="at">-or</span> <span class="at">-name</span> <span class="st">&quot;*catch*&quot;</span> or <span class="at">-name</span> <span class="st">&quot;*clang*&quot;</span> <span class="dt">\)</span> <span class="at">-type</span> d <span class="at">-maxdepth</span> 1</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</span></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/2bz86w853wz8q036armrqzds1wh41l2d-googlebench-1.3.0</span></span>
@@ -356,10 +400,13 @@
 <span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/nknfwhafb2cwlrrwxh5dcwbdznf1fzq1-gcc-7.2.0</span></span>
 <span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/27mxffxnw9q070wqfzhpn3p32h0kafws-gcc-7.2.0-lib</span></span>
 <span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/xxb7a4i2y7mn6y0mkkzgy2cgnd78hahp-gcc-wrapper-7.2.0</span></span></code></pre></div>
-<p>So we can see that we have one version of clang, two versions of GCC, just one version of catch and three versions of googlebench. There is of course only one version of catch becasue it is just a header that does not need to be recompiled for different compilers.</p>
+<p>So we can see that we have one version of clang, two versions of GCC, just one version of catch and three versions of googlebench.
+There is of course only one version of catch becasue it is just a header that does not need to be recompiled for different compilers.</p>
 <p>But how does Nix know which googlebench installation belongs to which clang/GCC?</p>
-<p>The long cryptic prefix of every package folder is the <em>hash of its build configuration</em>! The compiler choice is part of the build configuration, of course.</p>
-<p>If another project has dependencies that overlap with ours in the sense that some dependency turns out to have the same configuraiton hash for the same package, then it will be shared. As soon as the configuration changes a little bit - another package is created.</p>
+<p>The long cryptic prefix of every package folder is the <em>hash of its build configuration</em>!
+The compiler choice is part of the build configuration, of course.</p>
+<p>If another project has dependencies that overlap with ours in the sense that some dependency turns out to have the same configuraiton hash for the same package, then it will be shared.
+As soon as the configuration changes a little bit - another package is created.</p>
 <p>We can now delete everything with one command:</p>
 <div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-collect-garbage <span class="at">-d</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">removing</span> old generations of profile /nix/var/nix/profiles/per-user/tfc/profile</span>
@@ -369,7 +416,8 @@
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="ex">deleting</span> unused links...</span>
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="ex">note:</span> currently hard linking saves 0.00 MiB</span>
 <span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="ex">606</span> store paths deleted, 358.10 MiB freed</span></code></pre></div>
-<p>That’s it. Our system is free of everything what was installed just for this project.</p>
+<p>That’s it.
+Our system is free of everything what was installed just for this project.</p>
 <h2 id="purity">Purity</h2>
 <p>By running <code>nix-shell --pure</code>, it is possible to <em>hide</em> everything which was not explicitly declared to be available:</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--pure</span> <span class="at">-p</span> gcc7</span>
@@ -383,7 +431,8 @@
 <span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~]$</span> g++</span>
 <span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="ex">bash:</span> g++: command not found</span></code></pre></div>
-<p>Using <code>--pure</code>, we can check if our <code>default.nix</code> <em>really</em> contains the complete list of dependencies. That feature is something most other dependency management tools don’t do for us.</p>
+<p>Using <code>--pure</code>, we can check if our <code>default.nix</code> <em>really</em> contains the complete list of dependencies.
+That feature is something most other dependency management tools don’t do for us.</p>
 <p>This way it cannot happen that a project builds on one computer, but not on the other, just because someone forgot to install something else that is implicitly needed.</p>
 <h2 id="summary">Summary</h2>
 <p>Nix just helped us with:</p>
@@ -393,9 +442,17 @@
 <li>managing all those dependencies without interference</li>
 <li>getting rid of it again</li>
 </ul>
-<p>Maybe Conan would also have been able to do that (apart from the <code>--pure</code> feature). Nix however does not only work for C/C++ projects: It can be used for Rust, Haskell, Python, Ruby, etc. etc. - because it is a <em>universal</em> dependency manager.</p>
-<p>Writing your own Nix derivations is only necessary if custom- or extremely new package versions are needed. It is also not hard to do. Existing packages can be rebuilt with different configurations, too.</p>
-<p>Being completely amazed, i also installed NixOS on my laptop. What’s great there is that i am now able to configure the whole system with just one <code>.nix</code> configuration file. When that file changes, Nix automatically restarts only the affected services. If it does not work, then it is possible to roll the system back to a previous configuration. (Remember all the stuff in <code>/nix/store/...</code>? It’s still there until it’s garbage-collected!) The same system configuration could be used to clone the system elsewhere, etc.</p>
+<p>Maybe Conan would also have been able to do that (apart from the <code>--pure</code> feature).
+Nix however does not only work for C/C++ projects:
+It can be used for Rust, Haskell, Python, Ruby, etc. etc. - because it is a <em>universal</em> dependency manager.</p>
+<p>Writing your own Nix derivations is only necessary if custom- or extremely new package versions are needed.
+It is also not hard to do.
+Existing packages can be rebuilt with different configurations, too.</p>
+<p>Being completely amazed, i also installed NixOS on my laptop.
+What’s great there is that i am now able to configure the whole system with just one <code>.nix</code> configuration file.
+When that file changes, Nix automatically restarts only the affected services.
+If it does not work, then it is possible to roll the system back to a previous configuration. (Remember all the stuff in <code>/nix/store/...</code>? It’s still there until it’s garbage-collected!)
+The same system configuration could be used to clone the system elsewhere, etc.</p>
 <p>This article is really just scratching the surface of Nix/NixOS’s possibilities.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

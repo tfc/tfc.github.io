@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,10 +35,14 @@
 </div>
 <div class="content container"><h1>Wrapping Algorithms into Iterators</h1>
 <div class="post"><span class="post-date">September  4, 2016</span>
-<p>Sometimes there is the requirement to generate a range of numbers from some algorithm. Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever. Some calculations can be optimized by <em>memorizing</em> some values for the calculation of the next number, just as this applies for <strong>fibonacci numbers</strong>. This article shows how to wrap such calculations into <strong>iterators</strong> in order to have performant, and nicely encapsulated algorithms.</p>
+<p>Sometimes there is the requirement to generate a range of numbers from some algorithm.
+Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever.
+Some calculations can be optimized by <em>memorizing</em> some values for the calculation of the next number, just as this applies for <strong>fibonacci numbers</strong>.
+This article shows how to wrap such calculations into <strong>iterators</strong> in order to have performant, and nicely encapsulated algorithms.</p>
 <!--more-->
 <h1 id="fibonacci-numbers">Fibonacci Numbers</h1>
-<p>The fibonacci number sequence is widely known. Generating those numbers is often used as a typical example for recursions, but at least in standard imperative programming languages, the iterative version is more performant:</p>
+<p>The fibonacci number sequence is widely known.
+Generating those numbers is often used as a typical example for recursions, but at least in standard imperative programming languages, the iterative version is more performant:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> fib<span class="op">(</span><span class="dt">size_t</span> n<span class="op">)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> a <span class="op">{</span><span class="dv">0</span><span class="op">};</span></span>
@@ -54,16 +56,21 @@
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> b<span class="op">;</span></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This way it is easy to generate any fibonacci number. But if all fibonacci numbers up to a certain limit need to be generated for some purpose, this implementation is not too handy any longer. When counting fibonacci number <code>N</code>, and then <code>N+1</code>, the content of the variables <code>a</code> and <code>b</code> could be reused, because the next fibonacci number is just the sum of the last two fibonacci numbers.</p>
+<p>This way it is easy to generate any fibonacci number.
+But if all fibonacci numbers up to a certain limit need to be generated for some purpose, this implementation is not too handy any longer.
+When counting fibonacci number <code>N</code>, and then <code>N+1</code>, the content of the variables <code>a</code> and <code>b</code> could be reused, because the next fibonacci number is just the sum of the last two fibonacci numbers.</p>
 <p>In this sense, it would be useful to have a class, which manages some <em>fibonacci state</em> in order to be able to quickly calculate just the next number.</p>
-<p>A lot of people would just implement a class <code>fibonacci_number</code> which has some <code>next()</code> method and a <code>current()</code> method and use that. This is fine, but i propose to go a step further by realizing that this is how <strong><em>iterators</em></strong> work. By implementing this functionality in terms of iterators, it can be used in combination with the STL, boosting up the code readability.</p>
+<p>A lot of people would just implement a class <code>fibonacci_number</code> which has some <code>next()</code> method and a <code>current()</code> method and use that.
+This is fine, but i propose to go a step further by realizing that this is how <strong><em>iterators</em></strong> work.
+By implementing this functionality in terms of iterators, it can be used in combination with the STL, boosting up the code readability.</p>
 <h1 id="iterators">Iterators</h1>
 <p>What do we need in order to implement the simplest possible iterator?</p>
 <p>Let us have a look at what the C++ compiler asks for if we want to iterate over a container class:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="at">const</span> <span class="kw">auto</span> <span class="op">&amp;</span>item <span class="op">:</span> vector<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* loop body */</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This kind of loop declaration exists since C++11. The compiler will expand this to the following equivalent code:</p>
+<p>This kind of loop declaration exists since C++11.
+The compiler will expand this to the following equivalent code:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> it  <span class="op">(</span><span class="bu">std::</span>begin<span class="op">(</span>vector<span class="op">));</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> end <span class="op">(</span><span class="bu">std::</span>end<span class="op">(</span>vector<span class="op">));</span></span>
@@ -73,10 +80,13 @@
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">/* loop body */</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Looking at the expanded loop, it is pretty obvious what needs to be implemented. First, we need to distinguish between two kinds of objects: <code>vector</code> is the <strong>iterable range</strong>, and <code>it</code> is the <strong>iterator</strong>.</p>
-<p>The <strong>iterable range</strong> needs to implement a <code>begin()</code> and an <code>end()</code> function. These functions return iterator objects.</p>
+<p>Looking at the expanded loop, it is pretty obvious what needs to be implemented.
+First, we need to distinguish between two kinds of objects: <code>vector</code> is the <strong>iterable range</strong>, and <code>it</code> is the <strong>iterator</strong>.</p>
+<p>The <strong>iterable range</strong> needs to implement a <code>begin()</code> and an <code>end()</code> function.
+These functions return iterator objects.</p>
 <blockquote>
-<p>Note that this code sample does not call <code>vector.begin()</code> and <code>vector.end()</code>, but <code>std::begin(vector)</code> and <code>std::end(vector)</code>. Those STL functions do actually call <code>vector.begin()</code> and <code>end()</code>, but they are more generic, i.e. they also work on raw arrays and automatically do the right thing in order to obtain begin/end iterators.</p>
+<p>Note that this code sample does not call <code>vector.begin()</code> and <code>vector.end()</code>, but <code>std::begin(vector)</code> and <code>std::end(vector)</code>.
+Those STL functions do actually call <code>vector.begin()</code> and <code>end()</code>, but they are more generic, i.e. they also work on raw arrays and automatically do the right thing in order to obtain begin/end iterators.</p>
 </blockquote>
 <p>The <strong>iterator</strong> class needs to implement the following:</p>
 <ul>
@@ -84,7 +94,8 @@
 <li>operator <code>++</code> (prefix), which increments the iterator to the next item</li>
 <li>operator <code>!=</code>, which is necessary in order to check if the loop shall terminate because <code>it</code> reached the same position as <code>end</code> denotes.</li>
 </ul>
-<p>In order to implement any kind of algorithm-generated range, we would first implement an iterator which basically hides variables and the algorithm itself in the <code>operator++</code> implementation. An iterable class would then just provide a begin and end iterator as needed, in order to enable for C++11 style <code>for</code> loops.</p>
+<p>In order to implement any kind of algorithm-generated range, we would first implement an iterator which basically hides variables and the algorithm itself in the <code>operator++</code> implementation.
+An iterable class would then just provide a begin and end iterator as needed, in order to enable for C++11 style <code>for</code> loops.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> iterator</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... state variables ...</span></span>
@@ -98,7 +109,8 @@
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> <span class="kw">operator</span><span class="op">!=</span> <span class="at">const</span> <span class="op">(</span><span class="at">const</span> iterator<span class="op">&amp;</span> o<span class="op">)</span> <span class="op">{</span> <span class="co">/* compare states */</span> <span class="op">}</span></span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in <code>operator++</code> and return the integer in <code>operator*</code>. <code>operator!=</code> would then just compare this number with the number of another iterator.</p>
+<p>The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in <code>operator++</code> and return the integer in <code>operator*</code>.
+<code>operator!=</code> would then just compare this number with the number of another iterator.</p>
 <p>But now let us continue with the fibonacci iterator.</p>
 <h1 id="fibonacci-iterator">Fibonacci Iterator</h1>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> fibit</span>
@@ -160,7 +172,8 @@
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> num <span class="op">&lt;&lt;</span> <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span><span class="op">;</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>… which will print the first 10 fibonacci numbers.</p>
-<p>What does the function <code>fibit_at</code> do? This function is a <code>constexpr</code> function, which advances a fibonacci iterator at <em>compile time</em> if possible, in order to push the iterator towards the fibonacci number which the user wants:</p>
+<p>What does the function <code>fibit_at</code> do?
+This function is a <code>constexpr</code> function, which advances a fibonacci iterator at <em>compile time</em> if possible, in order to push the iterator towards the fibonacci number which the user wants:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> fibit fibit_at<span class="op">(</span><span class="dt">size_t</span> n<span class="op">)</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    fibit it<span class="op">;</span></span>
@@ -180,19 +193,27 @@
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Do whatever</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <h1 id="combine-the-fibonacci-iterator-with-stl-algorithms">Combine the Fibonacci Iterator with STL algorithms</h1>
-<p>Imagine we need a vector with the first 1000 fibonacci numbers. Having the fibonacci algorithm already wrapped into a handy iterator class, we can now use it with any STL algorithm from namespace <code>std</code>:</p>
+<p>Imagine we need a vector with the first 1000 fibonacci numbers.
+Having the fibonacci algorithm already wrapped into a handy iterator class, we can now use it with any STL algorithm from namespace <code>std</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">size_t</span><span class="op">&gt;</span> fib_nums<span class="op">;</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fib_nums<span class="op">.</span>resize<span class="op">(</span><span class="dv">1000</span><span class="op">);</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="at">const</span> fib_range first1000 <span class="op">{</span><span class="dv">1000</span><span class="op">};</span></span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>copy<span class="op">(</span><span class="bu">std::</span>begin<span class="op">(</span>first1000<span class="op">),</span> <span class="bu">std::</span>end<span class="op">(</span>first1000<span class="op">),</span> <span class="bu">std::</span>begin<span class="op">(</span>fib_nums<span class="op">));</span></span></code></pre></div>
-<p>This is pretty neat and useful. However, with the current example code provided as is, this will not compile (yet), because we did not provide an iterator tag. Providing it is simple: Just make <code>fibit</code> publicly inherit from <code>std::iterator&lt;std::forward_iterator_tag, size_t&gt;</code>.</p>
-<p><code>std::iterator</code> as a base class for our <code>fibit</code> class will only add some typedefs which help STL algorithms identify which kind of iterator this is. For certain iterator types in certain situations, the STL algorithms have different implementations which contain performance optimizations (Which is elegantly hidden from the user!).</p>
+<p>This is pretty neat and useful.
+However, with the current example code provided as is, this will not compile (yet), because we did not provide an iterator tag.
+Providing it is simple: Just make <code>fibit</code> publicly inherit from <code>std::iterator&lt;std::forward_iterator_tag, size_t&gt;</code>.</p>
+<p><code>std::iterator</code> as a base class for our <code>fibit</code> class will only add some typedefs which help STL algorithms identify which kind of iterator this is.
+For certain iterator types in certain situations, the STL algorithms have different implementations which contain performance optimizations (Which is elegantly hidden from the user!).</p>
 <p>The <code>std::forward_iterator</code> tag states, that this is an iterator which can just be advanced step by step, and that it only advances forward, not backward.</p>
 <h1 id="summary">Summary</h1>
-<p>A lot of algorithms which generate numeric ranges, can be implemented in terms of iterators, which is a natural fit. C++ provides nice syntax sugar for iterators, which makes them a natural interface for abstractions.</p>
+<p>A lot of algorithms which generate numeric ranges, can be implemented in terms of iterators, which is a natural fit.
+C++ provides nice syntax sugar for iterators, which makes them a natural interface for abstractions.</p>
 <p>In combination with STL algorithms and any STL compatible data structures, they promote for easy to read, easy to test, easy to maintain, and performant code.</p>
-<p>This article described a kind of iterator, which is not a plain pointer to <em>data</em>. It is an algorithm implementation in the sense, that the <em>increment</em> step does actually calculate something more complex than just a new internal pointer position to some next item. Interestingly, this way one can instantiate some kind of <em>iterable</em> object, which defines a range, which involves a lot of computation - but that computation is not executed until someone actually asks for the result (And the code which asks for the result does not even need to know what kind of algorithm it is implicitly executing, as this is all hidden behind a simple iterator interface). This kind of programming style goes towards <a href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a>, which is a powerful and elegant principle known from purely functional programming languages.</p></div>
+<p>This article described a kind of iterator, which is not a plain pointer to <em>data</em>.
+It is an algorithm implementation in the sense, that the <em>increment</em> step does actually calculate something more complex than just a new internal pointer position to some next item.
+Interestingly, this way one can instantiate some kind of <em>iterable</em> object, which defines a range, which involves a lot of computation - but that computation is not executed until someone actually asks for the result (And the code which asks for the result does not even need to know what kind of algorithm it is implicitly executing, as this is all hidden behind a simple iterator interface).
+This kind of programming style goes towards <a href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a>, which is a powerful and elegant principle known from purely functional programming languages.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
 var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/09/04/algorithms_in_iterators/';

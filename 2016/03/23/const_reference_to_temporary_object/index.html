@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,7 +35,8 @@
 </div>
 <div class="content container"><h1>Const References to Temporary Objects</h1>
 <div class="post"><span class="post-date">March 23, 2016</span>
-<p>In both C and C++, it is not a sane idea to hold a reference (or a pointer in C) to a temporarily created object, as the reference is quickly dangling as soon as the assignment is done. But actually, C++ provides an interesting feature, where the life time of a temporary object can be extended to the life time of the reference which points to it.</p>
+<p>In both C and C++, it is not a sane idea to hold a reference (or a pointer in C) to a temporarily created object, as the reference is quickly dangling as soon as the assignment is done.
+But actually, C++ provides an interesting feature, where the life time of a temporary object can be extended to the life time of the reference which points to it.</p>
 <!--more-->
 <h2 id="the-situation">The Situation</h2>
 <p>Referencing a temporarily created object looks like the following:</p>
@@ -53,7 +52,8 @@
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> int_ref <span class="op">&lt;&lt;</span> <span class="ch">'</span><span class="sc">\n</span><span class="ch">'</span><span class="op">;</span></span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>When <code>int_ref</code> is evaluated in the <code>cout</code> statement, its position on the stack is most probably not yet overwritten, hence <code>123</code> is printed. If we run any kind of code between obtaining the reference, and printing its referenced value, then the value is destroyed, and it’s not longer printing <code>123</code>.</p>
+<p>When <code>int_ref</code> is evaluated in the <code>cout</code> statement, its position on the stack is most probably not yet overwritten, hence <code>123</code> is printed.
+If we run any kind of code between obtaining the reference, and printing its referenced value, then the value is destroyed, and it’s not longer printing <code>123</code>.</p>
 <p>Of course, the compiler has been warning us about this all the time:</p>
 <pre><code>main.cpp:20:32: warning: reference to stack memory associated with local variable 'a' returned
       [-Wreturn-stack-address]
@@ -83,7 +83,8 @@
 <p>A temporary created to hold a reference initializer persists until the end of its reference’s scope.</p>
 </blockquote>
 <p>(Please note that this does <em>not</em> apply to const reference class members, only to local const references!)</p>
-<p>If we were not dealing with trivial ints here, but with complex objects which have constructors and destructors, the question arises which destructor is called. Interestingly, exactly the destructor which would be called for destroying the temporary without this feature, is called.</p>
+<p>If we were not dealing with trivial ints here, but with complex objects which have constructors and destructors, the question arises which destructor is called.
+Interestingly, exactly the destructor which would be called for destroying the temporary without this feature, is called.</p>
 <p>This brings us to another interesting detail:</p>
 <h2 id="the-more-interesting-example">The More Interesting Example</h2>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
@@ -108,13 +109,16 @@
 <span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">const</span> Base <span class="op">&amp;</span>b <span class="op">{</span>return_foo<span class="op">()};</span></span>
 <span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>We have class <code>Base</code>, and class <code>Foo</code>, which inherits from <code>Base</code>. If we called <code>delete</code> on a <code>Base</code>-typed pointer to a <code>Foo</code> instance, we would incorrectly only call the destructor of <code>Base</code>, because the destructors of these classes are <em>not virtual</em>.</p>
-<p>However, in this code snippet, we’re taking a const reference of type <code>Base</code> to a temporary object of type <code>Foo</code>. This should also result in a <code>Base</code> destructor being called afterwards, regardless of the life time extension thing.</p>
+<p>We have class <code>Base</code>, and class <code>Foo</code>, which inherits from <code>Base</code>.
+If we called <code>delete</code> on a <code>Base</code>-typed pointer to a <code>Foo</code> instance, we would incorrectly only call the destructor of <code>Base</code>, because the destructors of these classes are <em>not virtual</em>.</p>
+<p>However, in this code snippet, we’re taking a const reference of type <code>Base</code> to a temporary object of type <code>Foo</code>.
+This should also result in a <code>Base</code> destructor being called afterwards, regardless of the life time extension thing.</p>
 <p>Let’s have a look at the program output:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clang++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Foo</span> dtor</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Base</span> dtor</span></code></pre></div>
-<p>Wow, it’s actually calling the correct <code>Foo</code> destructor (which in turn calls the <code>Base</code> destructor). This means that we just got polymorphy for free, without using <code>virtual</code> destructors!</p>
+<p>Wow, it’s actually calling the correct <code>Foo</code> destructor (which in turn calls the <code>Base</code> destructor).
+This means that we just got polymorphy for free, without using <code>virtual</code> destructors!</p>
 <p>Andrei Alexandrescu put this feature to use in his interesting <a href="http://www.drdobbs.com/cpp/generic-change-the-way-you-write-excepti/184403758">Article about ScopeGuards</a> for nicer exception-safe programming.</p>
 <p>More than a decade later, this does also work with rvalue references like <code>Base &amp;&amp;ref {return_foo()};</code>, which gives us nice new use cases.</p></div>
 <div id="disqus_thread"></div>

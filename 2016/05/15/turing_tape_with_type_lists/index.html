@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,16 +35,23 @@
 </div>
 <div class="content container"><h1>Implementing a Turing Tape for Use at Compile Time</h1>
 <div class="post"><span class="post-date">May 15, 2016</span>
-<p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table. Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages. It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++. As a preparation for the next article, i will show how to implement a turing tape based on type lists, usable at compile time.</p>
+<p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table.
+Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages.
+It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++.
+As a preparation for the next article, i will show how to implement a turing tape based on type lists, usable at compile time.</p>
 <!--more-->
 <blockquote>
 <p>The code in this article depends largely on the code in <a href="../../../../2016/05/08/compile_time_type_lists%20%%7D">the article about type lists</a>, and <a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">the article about character type list transformations</a>.</p>
 </blockquote>
-<p>The tape is implemented as a data structure containing two type lists and a cursor type. This structure embodies the idea that, when looking at a turing tape, there is a <em>current</em> cell, which is represented by the cursor type. Left and right of the current cell is the rest of the tape, which is represented by those two lists.</p>
+<p>The tape is implemented as a data structure containing two type lists and a cursor type.
+This structure embodies the idea that, when looking at a turing tape, there is a <em>current</em> cell, which is represented by the cursor type.
+Left and right of the current cell is the rest of the tape, which is represented by those two lists.</p>
 <p>Easy enough, this is the template type signature of the turing tape:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> LList<span class="op">,</span> <span class="kw">class</span> Cursor<span class="op">,</span> <span class="kw">class</span> RList<span class="op">&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> tape<span class="op">;</span></span></code></pre></div>
-<p>Just as described previously, it contains a list representing the left part of the tape, a list representing the right part of the tape, and the cursor is located just between them. In theory, the turing tape is infinitely long. Representing it with lists, it is very easy to make it virtually infinitely long, because it is possible to attach new cells to it on demand, as soon as it seems to end.</p>
+<p>Just as described previously, it contains a list representing the left part of the tape, a list representing the right part of the tape, and the cursor is located just between them.
+In theory, the turing tape is infinitely long.
+Representing it with lists, it is very easy to make it virtually infinitely long, because it is possible to attach new cells to it on demand, as soon as it seems to end.</p>
 <p>The operations which can be applied to a turing tape, are:</p>
 <ul>
 <li><strong>Get</strong>: Read the value from the cell at the cursor</li>
@@ -54,7 +59,8 @@
 <li><strong>Shift Left</strong>: Move the cursor to the <em>left</em> neighbor of the current one</li>
 <li><strong>Shift Right</strong>: Move the cursor to the <em>right</em> neighbor of the current one</li>
 </ul>
-<p>In imperative programming, the data structure containing the turing tape state would just be modified in trivial ways. In purely functional programming, we would create a completely new data structure instance, which differs from the old one in so far that it contains the desired modification.</p>
+<p>In imperative programming, the data structure containing the turing tape state would just be modified in trivial ways.
+In purely functional programming, we would create a completely new data structure instance, which differs from the old one in so far that it contains the desired modification.</p>
 <p>Implementing the <code>tape</code> template class has a simple base case, and three special cases:</p>
 <ul>
 <li>Case 1: The tape consists of non-empty left and right lists</li>
@@ -91,14 +97,18 @@
 <span id="cb2-25"><a href="#cb2-25"></a><span class="op">};</span></span></code></pre></div>
 <p><br></p>
 <ul>
-<li><strong>Lines 5-7</strong> match only on turing tape instances, which do not consist of empty lists at the left or right. An empty list is a <code>null_t</code>, and will not match on <code>tl&lt;LHead, LTail&gt;</code>. After having successfully matched a non-empty list, the template variables <code>LHead</code> and <code>LTail</code> hold the head, and the rest (tail) of the left list. Same applies to the right list with its respective template variables <code>RHead</code> and <code>RTail</code>.</li>
+<li><strong>Lines 5-7</strong> match only on turing tape instances, which do not consist of empty lists at the left or right.
+An empty list is a <code>null_t</code>, and will not match on <code>tl&lt;LHead, LTail&gt;</code>.
+After having successfully matched a non-empty list, the template variables <code>LHead</code> and <code>LTail</code> hold the head, and the rest (tail) of the left list.
+Same applies to the right list with its respective template variables <code>RHead</code> and <code>RTail</code>.</li>
 <li><strong>Line 9</strong> defines the <strong><em>get</em></strong> function. It just trivially returns the matched <code>Cursor</code> type.</li>
 <li><strong>Line 12</strong> defines the <strong><em>set</em></strong> function. This one looks a little more complicated, because it is a templated <code>using</code> clause within a template class, but of course it needs a type parameter,which shall be the new cursor type. That is <code>T</code>. It just constructs and returns a new tape instance, which consists of the same left and right list as before, but holds the new cursor value in the middle.</li>
 <li><strong>Line 17</strong> implements the <strong><em>shift left</em></strong>. When shifting to the left, the tip (head) of the left list moves to the cursor position, which makes the left list also shorter. At the same time, the right list grows, because the former cursor position cell becomes the new tip (head) of the right list. The newly constructed tape contains newly constructed lists following that rule.</li>
 <li><strong>Line 21</strong> implements the <strong><em>shift right</em></strong>, and works identically, but just in a mirrored sense.</li>
 </ul>
 <h3 id="case-2-the-tape-only-consists-of-the-cursor-item-left-and-right-list-are-empty">Case 2: The tape only consists of the cursor item (Left and right list are empty)</h3>
-<p>This case is very simple. The <strong>get</strong> and <strong>set</strong> functions work just equal to the one before.</p>
+<p>This case is very simple.
+The <strong>get</strong> and <strong>set</strong> functions work just equal to the one before.</p>
 <p>When moving the tape left or right, there are no list heads/tails in both directions.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Cursor<span class="op">&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="kw">struct</span> tape<span class="op">&lt;</span></span>
@@ -119,10 +129,15 @@
 <span id="cb3-17"><a href="#cb3-17"></a>                           <span class="dt">null_t</span><span class="op">,</span> </span>
 <span id="cb3-18"><a href="#cb3-18"></a>                           <span class="dt">null_t</span><span class="op">&gt;;</span></span>
 <span id="cb3-19"><a href="#cb3-19"></a><span class="op">};</span></span></code></pre></div>
-<p>When shifting the tape to the <em>left</em>, the cursor becomes the tip. It is then the only element in the previously empty right list. There are no items coming from the left list, so it is still empty. The cursor is just set to <code>null_t</code>, representing an empty cell.</p>
+<p>When shifting the tape to the <em>left</em>, the cursor becomes the tip.
+It is then the only element in the previously empty right list.
+There are no items coming from the left list, so it is still empty.
+The cursor is just set to <code>null_t</code>, representing an empty cell.</p>
 <p>When this list is later used with specific payload types, this situation needs to be fixed in the sense, that empty cells should be initialized to some <em>default type</em>.</p>
 <h3 id="case-3-the-left-list-is-empty-the-right-one-is-non-empty">Case 3: The left list is empty, the right one is non-empty</h3>
-<p>I leave case 3 and 4 mostly uncommented. They are kind of <em>hybrids</em> of case 1 and 2, because they match in cases where one list is empty, and the list on the other side is non-empty. That means that shift left or shift right are actually shifting the respective non-empty list like case 1 does, but then create a new empty item of the other empty list, just like case 2 does.</p>
+<p>I leave case 3 and 4 mostly uncommented.
+They are kind of <em>hybrids</em> of case 1 and 2, because they match in cases where one list is empty, and the list on the other side is non-empty.
+That means that shift left or shift right are actually shifting the respective non-empty list like case 1 does, but then create a new empty item of the other empty list, just like case 2 does.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Cursor<span class="op">,</span> </span>
 <span id="cb4-2"><a href="#cb4-2"></a>          <span class="kw">class</span> RHead<span class="op">,</span> <span class="kw">class</span> RTail<span class="op">&gt;</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="kw">struct</span> tape<span class="op">&lt;</span></span>
@@ -169,7 +184,8 @@
 <span id="cb5-22"><a href="#cb5-22"></a>                           <span class="dt">null_t</span><span class="op">&gt;;</span></span>
 <span id="cb5-23"><a href="#cb5-23"></a><span class="op">};</span></span></code></pre></div>
 <h2 id="adding-convenient-using-clause-helpers">Adding Convenient <code>using</code> Clause Helpers</h2>
-<p>The <code>tape</code> class can already be easily accessed in order to perform all four defined actions on it. However, this would also be followed by the typical clumsy <code>typename</code> keywords.</p>
+<p>The <code>tape</code> class can already be easily accessed in order to perform all four defined actions on it.
+However, this would also be followed by the typical clumsy <code>typename</code> keywords.</p>
 <p>Therefore we define some <code>using</code> clause helpers:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Tape<span class="op">&gt;</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="dt">get_t</span> <span class="op">=</span> <span class="kw">typename</span> Tape<span class="op">::</span>get<span class="op">;</span></span>
@@ -200,7 +216,8 @@
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Or in just one line:</span></span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> foobar_tape <span class="op">=</span> <span class="dt">set_t</span><span class="op">&lt;</span><span class="dt">move_left_t</span><span class="op">&lt;</span><span class="dt">make_t</span><span class="op">&lt;</span>Foo<span class="op">&gt;&gt;,</span> Bar<span class="op">&gt;;</span></span></code></pre></div>
 <h2 id="summary">Summary</h2>
-<p>What we’ve got now is a <code>tape</code> structure, which can be instantiated, shifted around and inbetween its empty cells can be filled with values. A turing machine or any other system for which it would be of use, would wrap around that type and add some more functionality.</p>
+<p>What we’ve got now is a <code>tape</code> structure, which can be instantiated, shifted around and inbetween its empty cells can be filled with values.
+A turing machine or any other system for which it would be of use, would wrap around that type and add some more functionality.</p>
 <p>When implementing this, being in the role of a novice template meta programmer, i found this to be a nice exercise for <em>pattern matching</em>.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

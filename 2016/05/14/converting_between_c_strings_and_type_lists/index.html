@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,15 +35,22 @@
 </div>
 <div class="content container"><h1>Transformations between User Input/Output and Type Lists</h1>
 <div class="post"><span class="post-date">May 14, 2016</span>
-<p>Type lists are an important way to represent ordered and unordered sets of types at compile time. These types can be real structure- or class types bundling runtime algorithms etc., but they can also convey actual data at compile time. In order to apply certain compile time processing to data, this data needs to be transformed from and to other representations, which can be provided by the programmer and consumed by run time programs. This article shows how to transform back and forth between strings and character type lists.</p>
+<p>Type lists are an important way to represent ordered and unordered sets of types at compile time.
+These types can be real structure- or class types bundling runtime algorithms etc., but they can also convey actual data at compile time.
+In order to apply certain compile time processing to data, this data needs to be transformed from and to other representations, which can be provided by the programmer and consumed by run time programs.
+This article shows how to transform back and forth between strings and character type lists.</p>
 <!--more-->
 <h2 id="wrapping-characters-into-type-lists">Wrapping characters into Type Lists</h2>
-<p>At first, a type is needed which can carry one actual character, without having to instantiate it. This is the requirement for all value-carrying types in order to be able to use them at compile time. Using that type, it is possible to compose character type lists, which carry whole strings.</p>
+<p>At first, a type is needed which can carry one actual character, without having to instantiate it.
+This is the requirement for all value-carrying types in order to be able to use them at compile time.
+Using that type, it is possible to compose character type lists, which carry whole strings.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">char</span> val<span class="op">&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="dt">char_t</span> <span class="op">{</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="at">const</span> <span class="kw">constexpr</span> <span class="dt">char</span> value <span class="op">{</span>val<span class="op">};</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p><code>char_t</code>‘s only template parameter is an actual character. To carry the character ’a’, one just instanciates it like this: <code>char_t&lt;'a'&gt;</code>. The character can now be accessed via the <code>value</code> member of the structure type, both at compile- and at run time:</p>
+<p><code>char_t</code>‘s only template parameter is an actual character.
+To carry the character ’a’, one just instanciates it like this: <code>char_t&lt;'a'&gt;</code>.
+The character can now be accessed via the <code>value</code> member of the structure type, both at compile- and at run time:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Define the character 'a' carrying type</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> my_char <span class="op">=</span> <span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'a'</span><span class="op">&gt;;</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -59,7 +64,8 @@
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This type is now fundamental to character type lists.</p>
 <h2 id="converting-from-strings-to-type-lists">Converting from Strings to Type Lists</h2>
-<p>Using type lists, these can now easily be chained together, using the <code>make_t</code> helper from the previous article. (Link to <a href="../../../../2016/05/08/compile_time_type_lists">the article which explains how to create type lists</a>)</p>
+<p>Using type lists, these can now easily be chained together, using the <code>make_t</code> helper from the previous article.
+(Link to <a href="../../../../2016/05/08/compile_time_type_lists">the article which explains how to create type lists</a>)</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> my_abc_string <span class="op">=</span> <span class="dt">make_t</span><span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'a'</span><span class="op">&gt;,</span> <span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'b'</span><span class="op">&gt;,</span> <span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'c'</span><span class="op">&gt;&gt;;</span></span></code></pre></div>
 <p>Although <code>make_t</code>’s purpose is to make type list creation less clumsy, this does not look optimal.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">char</span> c<span class="op">,</span> <span class="dt">char</span> <span class="op">...</span> chars<span class="op">&gt;</span></span>
@@ -89,7 +95,8 @@
 </ul>
 <p>Character type lists can now be instantiated like this:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> my_abc_string <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">'a'</span><span class="op">,</span> <span class="ch">'b'</span><span class="op">,</span> <span class="ch">'c'</span><span class="op">&gt;;</span></span></code></pre></div>
-<p>This is already a significant improvement over what we had before. Pretty nice, but the <em><strong>real</strong> optimum</em> would be a transformation from an actual C-string in the form <code>"abc"</code> to a type list.</p>
+<p>This is already a significant improvement over what we had before.
+Pretty nice, but the <em><strong>real</strong> optimum</em> would be a transformation from an actual C-string in the form <code>"abc"</code> to a type list.</p>
 <p>Of course, that is also possible:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Str<span class="op">,</span> <span class="dt">size_t</span> Pos<span class="op">,</span> <span class="dt">char</span> C<span class="op">&gt;</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="kw">struct</span> string_list<span class="op">;</span></span>
@@ -120,13 +127,15 @@
 <li><strong>line 2</strong> Declares our function which takes a string provider, a position index, and the character at the current position. The user will later only provide the string provider. The position index as well as the character are for internal use. <code>string_list_t</code> adds them automatically (line 20).</li>
 </ul>
 <p>Before continuing with the following lines of code: <strong>What</strong> is a <em>string provider?</em></p>
-<p>A string, or a string pointer, cannot just be used as template parameters directly. Therefore a type carrying a string as payload and provides static access to it is needed:</p>
+<p>A string, or a string pointer, cannot just be used as template parameters directly.
+Therefore a type carrying a string as payload and provides static access to it is needed:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> my_string_provider <span class="op">{</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>   <span class="at">static</span> <span class="kw">constexpr</span> <span class="at">const</span> <span class="dt">char</span> <span class="op">*</span> str<span class="op">()</span> <span class="op">{</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> <span class="st">&quot;foo bar string&quot;</span><span class="op">;</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>   <span class="op">}</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>This type can now be used as a template parameter by template classes, and the template code can access its static string member. Because of this additional, but necessary, indirection it is called a <em>string provider</em>.</p>
+<p>This type can now be used as a template parameter by template classes, and the template code can access its static string member.
+Because of this additional, but necessary, indirection it is called a <em>string provider</em>.</p>
 <ul>
 <li><strong>line 5</strong> defines the recursion which advances through the string step by step, while appending each character to the result type list. This is basically the same as in the example where we used variadic character type lists, but some more mechanics are needed to iterate the string provider.</li>
 <li><strong>line 15</strong> defines the recursion abort step. As soon as we trip on the zero character which terminates the string, we also terminate the list.</li>
@@ -139,11 +148,14 @@
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> my_abc_string <span class="op">=</span> <span class="dt">string_list_t</span><span class="op">&lt;</span>abc_string_provider<span class="op">&gt;;</span></span></code></pre></div>
-<p>This is as easy as it gets. Having to define a string provider around every simple string is still a lot of scaffolding, but this is still the only reasonable way to convert long C-strings into type lists.</p>
+<p>This is as easy as it gets.
+Having to define a string provider around every simple string is still a lot of scaffolding, but this is still the only reasonable way to convert long C-strings into type lists.</p>
 <h2 id="converting-from-type-lists-to-c-strings">Converting from Type Lists to C-Strings</h2>
 <p>Imagine a type list with character payload as the result after the execution of some meta programming algorithm.</p>
-<p>In some cases the wanted output form is a C-string. This is the exact reverse operation from what we just implemented before.</p>
-<p>The generic idea is to convert a type list to a variadic character template parameter list. That variadic list can be used to initialize a character array, which can then be provided to the user:</p>
+<p>In some cases the wanted output form is a C-string.
+This is the exact reverse operation from what we just implemented before.</p>
+<p>The generic idea is to convert a type list to a variadic character template parameter list.
+That variadic list can be used to initialize a character array, which can then be provided to the user:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> typelist<span class="op">,</span> <span class="dt">char</span> <span class="op">...</span> chars<span class="op">&gt;</span></span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="kw">struct</span> tl_to_vl<span class="op">;</span></span>
 <span id="cb9-3"><a href="#cb9-3"></a></span>
@@ -165,8 +177,10 @@
 <li><strong>line 5</strong> defines the recursion: The idea is to let the type list shrink stepwise, while the character, which is taken from it, is appended to the variadic character list.</li>
 <li><strong>line 10</strong> is the recursion abort step. At this point, the type list is empty and the variadic character list contains the whole string. Having the whole string in the <code>chars...</code> template variable, we can define the static function <code>str()</code> which defines a static character array and returns it.</li>
 </ul>
-<p>This code example is different than the others before, because it relies on inheritance. It would have been possible to implement the others with inheritance, too, or implement this one defining local <code>type</code> type variables etc., but i found this form to be the shortest and most useful one, while still being nicely readable.</p>
-<p>By instanciating <code>tl_to_vl&lt;some_type_list&gt;</code>, a chain of inheriting classes is unrolled, and the last base class, which is the recursion abort type from line 10, defines the static <code>str()</code> function. Because every member of a <code>struct</code> is public by default, the actually instantiated <em>outer</em> type <code>tl_to_vl&lt;some_type_list&gt;</code> also provides this function, which is directly callable.</p>
+<p>This code example is different than the others before, because it relies on inheritance.
+It would have been possible to implement the others with inheritance, too, or implement this one defining local <code>type</code> type variables etc., but i found this form to be the shortest and most useful one, while still being nicely readable.</p>
+<p>By instanciating <code>tl_to_vl&lt;some_type_list&gt;</code>, a chain of inheriting classes is unrolled, and the last base class, which is the recursion abort type from line 10, defines the static <code>str()</code> function.
+Because every member of a <code>struct</code> is public by default, the actually instantiated <em>outer</em> type <code>tl_to_vl&lt;some_type_list&gt;</code> also provides this function, which is directly callable.</p>
 <p>Example of how to print a type list on the terminal, after converting it into a C-String:</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> abc_string_provider <span class="op">{</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>   <span class="at">static</span> <span class="kw">constexpr</span> <span class="at">const</span> <span class="dt">char</span> <span class="op">*</span> str<span class="op">()</span> <span class="op">{</span></span>
@@ -210,7 +224,9 @@
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>xorl  <span class="op">%</span><span class="kw">eax</span><span class="op">,</span> <span class="op">%</span><span class="kw">eax</span></span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>popq  <span class="op">%</span><span class="kw">rbp</span></span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>retq</span></code></pre></div>
-<p>The disassembly shows that the string is just read out of the binary, where it is available without any processing. It is pretty nice to see that there is <em>no trace</em> of any meta programming code in the binary. Apart from those strange and long symbol names, everything looks as if the string was hard coded into the binary by hand to its resulting form.</p>
+<p>The disassembly shows that the string is just read out of the binary, where it is available without any processing.
+It is pretty nice to see that there is <em>no trace</em> of any meta programming code in the binary.
+Apart from those strange and long symbol names, everything looks as if the string was hard coded into the binary by hand to its resulting form.</p>
 <p>The next article will deal with template meta programs which transform character type lists in order to do useful things with them.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;

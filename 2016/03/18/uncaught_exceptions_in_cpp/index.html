@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,7 +35,9 @@
 </div>
 <div class="content container"><h1>Uncaught Exceptions in C++</h1>
 <div class="post"><span class="post-date">March 18, 2016</span>
-<p>What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it? The program gets terminated. That is fine in general, but what happens to all objects which need to be properly destructed?</p>
+<p>What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it?
+The program gets terminated.
+That is fine in general, but what happens to all objects which need to be properly destructed?</p>
 <!--more-->
 <p>Let’s try it out:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
@@ -64,7 +64,8 @@
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This program instanciates three <code>Foo</code> objects: A global one, a static global one, and a local stack instance. <code>Foo</code>’s destructor just emits a message which tells which one of the three instances was just destructed.</p>
+<p>This program instanciates three <code>Foo</code> objects: A global one, a static global one, and a local stack instance.
+<code>Foo</code>’s destructor just emits a message which tells which one of the three instances was just destructed.</p>
 <p>(I wrapped the <code>throw</code> clause into a conditional which the compiler cannot optimize away, as it cannot predict with how many parameters the executable will be called.)</p>
 <p>In the ideal case, the compiler should emit code which unrolls the stack as soon as the exception is thrown, destructs all objects which are in flight and then terminates the program:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clangg++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span> bla</span>
@@ -75,7 +76,8 @@
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">$ ./main</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">terminate called after throwing an instance of '</span>int<span class="st">'</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">Aborted (core dumped)</span></span></code></pre></div>
-<p><em>Ooops</em>, unfortunately, this is not the case: If those <code>Foo</code> objects held any unflushed buffers, they’d be gone now!</p>
+<p><em>Ooops</em>, unfortunately, this is not the case:
+If those <code>Foo</code> objects held any unflushed buffers, they’d be gone now!</p>
 <p>Wrapping the exception into a <code>try</code>-<code>catch</code> clause fixes this behaviour.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string&gt;</span></span>
@@ -102,7 +104,8 @@
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>The output looks much better now. <em>All</em> objects are properly destructed:</p>
+<p>The output looks much better now.
+<em>All</em> objects are properly destructed:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> clang++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++11 <span class="kw">&amp;&amp;</span> <span class="ex">./main</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">local</span> <span class="va">stack</span> 2 <span class="va">Foo</span><span class="st">'s dtor called.</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="st">Caught Exception.</span></span>
@@ -114,7 +117,8 @@
 <p>If no matching handler is found, the function std::terminate() is called; whether or not the stack is unwound before this call to std::terminate() is implementation-defined (15.5.1).</p>
 </blockquote>
 <p>“Whether or not the stack is unwound” is the crunch point here: It is not unwound in our case.</p>
-<p>This becomes especially important In C++14, where it is possible to throw exceptions from within <code>constexpr</code> functions. This can be used as an approach which provides <code>assert</code> behaviour at compile time <em>and</em> at run time (whereas <code>static_assert</code> does not help at run time).</p></div>
+<p>This becomes especially important In C++14, where it is possible to throw exceptions from within <code>constexpr</code> functions.
+This can be used as an approach which provides <code>assert</code> behaviour at compile time <em>and</em> at run time (whereas <code>static_assert</code> does not help at run time).</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
 var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/03/18/uncaught_exceptions_in_cpp/';

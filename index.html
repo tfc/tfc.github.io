@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -42,7 +40,10 @@
 </strong>
 </p>
 
-<p>This article is about how to filter unique items from heterogeneous lists on the type level in Haskell. This example, without further context, might look a bit esoteric by itself, but I learned a lot writing it and wanted to share the experience.</p>
+<p>This article is about how to filter unique items from heterogeneous lists on
+the type level in Haskell.
+This example, without further context, might look a bit esoteric by itself,
+but I learned a lot writing it and wanted to share the experience.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2022/03/20/unique-heterogeneous-typelists" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -57,7 +58,9 @@
 </strong>
 </p>
 
-<p>This is my trip report from the awesome NixOS community hackathon on Lanzarote. For more information please also have a look on the website: <a href="https://oceansprint.org">https://oceansprint.org</a></p>
+<p>This is my trip report from the awesome NixOS community hackathon on Lanzarote.
+For more information please also have a look on the website:
+<a href="https://oceansprint.org">https://oceansprint.org</a></p>
 
 <p><a class="btn btn-sm btn-primary" href="./2021/12/12/nix-community-oceansprint-report" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -72,7 +75,15 @@
 </strong>
 </p>
 
-<p>This article explains how to quickly set up a C++ project environment with complete toolchain- and dependency management with <code>nix</code>. <a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and other Unix systems (It is indeed a more powerful alternative to <a href="https://conan.io/"><code>conan</code></a> and <a href="https://www.docker.com/"><code>docker</code></a>) that makes package management reliable and reproducible. After setting up the project and playing around with it, we will <strong>parametrize</strong> the project description in order to automatically build it with different compilers and dependency library versions (GCC 7 &amp; 8, Clang 7 &amp; 8, lib <code>boost</code> 1.6.6 - 1.6.9, lib <code>poco</code> 1.9.0 &amp; 1.9.1).</p>
+<p>This article explains how to quickly set up a C++ project environment with
+complete toolchain- and dependency management with <code>nix</code>.
+<a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and
+other Unix systems (It is indeed a more powerful alternative to <a href="https://conan.io/"><code>conan</code></a> and <a href="https://www.docker.com/"><code>docker</code></a>) that makes package
+management reliable and reproducible.
+After setting up the project and playing around with it, we will <strong>parametrize</strong>
+the project description in order to automatically build it with different
+compilers and dependency library versions (GCC 7 &amp; 8, Clang 7 &amp; 8, lib <code>boost</code>
+1.6.6 - 1.6.9, lib <code>poco</code> 1.9.0 &amp; 1.9.1).</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2019/04/17/tutorial_nix_cpp_setup" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -87,7 +98,10 @@
 </strong>
 </p>
 
-<p>While learning Haskell and using its really smart library dependency management tools (<a href="https://www.haskell.org/cabal/"><code>cabal</code></a> and <a href="https://docs.haskellstack.org/en/stable/README/"><code>stack</code></a>), i realized that the C++ eco system has a problem: There are no handy <em>established</em> tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way. <a href="https://nixos.org/nix/"><code>Nix</code></a> however convinced me to be more versatile and powerful than <a href="https://www.conan.io/">Conan</a> and handier than <a href="https://www.docker.com/">Docker</a>, <a href="https://www.vagrantup.com/">Vagrant</a>, etc. (although it’s fair to say that i am mixing use cases here a little bit!) In this article, i am going to showcase this great tool a little bit.</p>
+<p>While learning Haskell and using its really smart library dependency management tools (<a href="https://www.haskell.org/cabal/"><code>cabal</code></a> and <a href="https://docs.haskellstack.org/en/stable/README/"><code>stack</code></a>), i realized that the C++ eco system has a problem:
+There are no handy <em>established</em> tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way.
+<a href="https://nixos.org/nix/"><code>Nix</code></a> however convinced me to be more versatile and powerful than <a href="https://www.conan.io/">Conan</a> and handier than <a href="https://www.docker.com/">Docker</a>, <a href="https://www.vagrantup.com/">Vagrant</a>, etc. (although it’s fair to say that i am mixing use cases here a little bit!)
+In this article, i am going to showcase this great tool a little bit.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2018/02/27/managing_libraries_with_nix" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -102,7 +116,10 @@
 </strong>
 </p>
 
-<p>This article picks up an example operating system kernel code snippet that is written in C++, but looks like “C with classes”. I think it is a great idea to implement Embedded projects/kernels in C++ instead of C and it’s nice to see that the number of embedded system developers that use C++ is rising. Unfortunately, I see stagnation in terms of modern programming in embedded/kernel projects in the industry. After diving through the context i demonstrate how to implement a nice iterator as a zero cost abstraction that helps tidy up the code.</p>
+<p>This article picks up an example operating system kernel code snippet that is written in C++, but looks like “C with classes”.
+I think it is a great idea to implement Embedded projects/kernels in C++ instead of C and it’s nice to see that the number of embedded system developers that use C++ is rising.
+Unfortunately, I see stagnation in terms of modern programming in embedded/kernel projects in the industry.
+After diving through the context i demonstrate how to implement a nice iterator as a zero cost abstraction that helps tidy up the code.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2017/07/02/order2_iterator" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -117,7 +134,8 @@
 </strong>
 </p>
 
-<p>This article is about the <a href="https://www.packtpub.com/application-development/c17-stl-cookbook"><strong>C++17 STL Cookbook</strong></a>, which got published this week. After about 6 months of writing, I am happy that it is out the door and hope it helps and inspires its readers to write modern C++ code.</p>
+<p>This article is about the <a href="https://www.packtpub.com/application-development/c17-stl-cookbook"><strong>C++17 STL Cookbook</strong></a>, which got published this week.
+After about 6 months of writing, I am happy that it is out the door and hope it helps and inspires its readers to write modern C++ code.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2017/06/30/cpp17_stl_cookbook" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -132,7 +150,11 @@
 </strong>
 </p>
 
-<p>Sometimes, casting is just inevitable. And then there’s even not much science behind it, at least it seems so. Once some address is provided in a variable of the right size, a typed pointer can be casted out of it, and then the object can be accessed via its members and methods as usual. In some situations it is really easy to get the casting wrong, leading to interesting bugs. This article describes an example situation and a proper fix.</p>
+<p>Sometimes, casting is just inevitable.
+And then there’s even not much science behind it, at least it seems so.
+Once some address is provided in a variable of the right size, a typed pointer can be casted out of it, and then the object can be accessed via its members and methods as usual.
+In some situations it is really easy to get the casting wrong, leading to interesting bugs.
+This article describes an example situation and a proper fix.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2017/01/22/reinterpret_cast_trap" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -147,7 +169,9 @@
 </strong>
 </p>
 
-<p>The C++ STL comes with <em>stream</em> style character output, which is an alternative to the classic <code>printf</code> like format function collection of the C library. For different reasons, some C++ programmers still stick to <code>printf</code> like formatting. This article demonstrates the <code>pprintpp</code> <a href="https://github.com/tfc/pprintpp">(open source, and available on Github)</a> library, which tries to make <code>printf</code> use comfortable and safe while avoiding any runtime overhead.</p>
+<p>The C++ STL comes with <em>stream</em> style character output, which is an alternative to the classic <code>printf</code> like format function collection of the C library.
+For different reasons, some C++ programmers still stick to <code>printf</code> like formatting.
+This article demonstrates the <code>pprintpp</code> <a href="https://github.com/tfc/pprintpp">(open source, and available on Github)</a> library, which tries to make <code>printf</code> use comfortable and safe while avoiding any runtime overhead.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/11/05/python_style_printf_for_cpp" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -162,7 +186,11 @@
 </strong>
 </p>
 
-<p>There are a lot of algorithms which can be implemented using <em>recursive</em> or <em>iterative</em> style. Actually, <strong>everything</strong> can be implemented in both styles. For a lot of algorithms, the recursive version is simpler to read, write, and understand. But nevertheless, programmers know, that recursive functions burden a lot of memory consumption, because there is usually a <code>call</code> instruction per recursive call, which puts another call frame on the stack. Interestingly, this is not true for some special cases.</p>
+<p>There are a lot of algorithms which can be implemented using <em>recursive</em> or <em>iterative</em> style.
+Actually, <strong>everything</strong> can be implemented in both styles.
+For a lot of algorithms, the recursive version is simpler to read, write, and understand.
+But nevertheless, programmers know, that recursive functions burden a lot of memory consumption, because there is usually a <code>call</code> instruction per recursive call, which puts another call frame on the stack.
+Interestingly, this is not true for some special cases.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/09/11/dont_fear_recursion" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
@@ -177,7 +205,10 @@
 </strong>
 </p>
 
-<p>Sometimes there is the requirement to generate a range of numbers from some algorithm. Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever. Some calculations can be optimized by <em>memorizing</em> some values for the calculation of the next number, just as this applies for <strong>fibonacci numbers</strong>. This article shows how to wrap such calculations into <strong>iterators</strong> in order to have performant, and nicely encapsulated algorithms.</p>
+<p>Sometimes there is the requirement to generate a range of numbers from some algorithm.
+Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever.
+Some calculations can be optimized by <em>memorizing</em> some values for the calculation of the next number, just as this applies for <strong>fibonacci numbers</strong>.
+This article shows how to wrap such calculations into <strong>iterators</strong> in order to have performant, and nicely encapsulated algorithms.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/09/04/algorithms_in_iterators" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>

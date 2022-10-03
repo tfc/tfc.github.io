@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,20 +35,35 @@
 </div>
 <div class="content container"><h1>Iterators are also part of the C++ zero cost abstractions</h1>
 <div class="post"><span class="post-date">July  2, 2017</span>
-<p>This article picks up an example operating system kernel code snippet that is written in C++, but looks like “C with classes”. I think it is a great idea to implement Embedded projects/kernels in C++ instead of C and it’s nice to see that the number of embedded system developers that use C++ is rising. Unfortunately, I see stagnation in terms of modern programming in embedded/kernel projects in the industry. After diving through the context i demonstrate how to implement a nice iterator as a zero cost abstraction that helps tidy up the code.</p>
+<p>This article picks up an example operating system kernel code snippet that is written in C++, but looks like “C with classes”.
+I think it is a great idea to implement Embedded projects/kernels in C++ instead of C and it’s nice to see that the number of embedded system developers that use C++ is rising.
+Unfortunately, I see stagnation in terms of modern programming in embedded/kernel projects in the industry.
+After diving through the context i demonstrate how to implement a nice iterator as a zero cost abstraction that helps tidy up the code.</p>
 <!--more-->
 <h2 id="the-real-life-story">The real life story</h2>
 <blockquote>
-<p>This context dive is rather long. If you dont care about the actual logic behind the code, just jump to the next section.</p>
+<p>This context dive is rather long.
+If you dont care about the actual logic behind the code, just jump to the next section.</p>
 </blockquote>
-<p>As an intern at Intel Labs in 2012, I had my first contact with microkernel operating systems that were implemented in C++. This article concentrates on a recurring code pattern that I have seen very often in the following years also in other companies. I have the opinion that such code should be written <em>once</em> as a little library helper.</p>
-<p>Let’s jump right into it: Most operating systems allow processes to share memory. Memory is then usually shared by one process that tells the operating system kernel to map a specific memory range into the address space of another process, possibly at some different address than where it is visible for the original process.</p>
-<p>In those <a href="https://en.wikipedia.org/wiki/Microkernel">microkernel operating system</a> environments I have been working on, memory ranges were described in a very specific way: The beginning of a chunk is described by its <em>page number</em> in the virtual memory space. The size of a chunk is described by its <em>order</em>.</p>
+<p>As an intern at Intel Labs in 2012, I had my first contact with microkernel operating systems that were implemented in C++.
+This article concentrates on a recurring code pattern that I have seen very often in the following years also in other companies.
+I have the opinion that such code should be written <em>once</em> as a little library helper.</p>
+<p>Let’s jump right into it:
+Most operating systems allow processes to share memory.
+Memory is then usually shared by one process that tells the operating system kernel to map a specific memory range into the address space of another process, possibly at some different address than where it is visible for the original process.</p>
+<p>In those <a href="https://en.wikipedia.org/wiki/Microkernel">microkernel operating system</a> environments I have been working on, memory ranges were described in a very specific way:
+The beginning of a chunk is described by its <em>page number</em> in the virtual memory space.
+The size of a chunk is described by its <em>order</em>.</p>
 <blockquote>
-<p>Both these characteristics are then part of a <em>capability range descriptor</em> and are used by some microkernel operating systems to describe ranges of memory, I/O ports, kernel objects, etc. Capabilities are a <a href="https://en.wikipedia.org/wiki/Capability-based_security">security concept</a> i would like to ignore as much as possible for now, because the scope of this article is the maths behind capability range descriptors.</p>
+<p>Both these characteristics are then part of a <em>capability range descriptor</em> and are used by some microkernel operating systems to describe ranges of memory, I/O ports, kernel objects, etc.
+Capabilities are a <a href="https://en.wikipedia.org/wiki/Capability-based_security">security concept</a> i would like to ignore as much as possible for now, because the scope of this article is the maths behind capability range descriptors.</p>
 </blockquote>
-<p>Example: A memory range that is 4 memory pages large and begins at address <code>0x123000</code> is described by <code>(0x123, 2)</code>. We get from <code>0x123000</code> to <code>0x123</code>, because pages are 4096 bytes (0x1000 in hex) large. That means that we need to divide a virtual address pointer value by <code>0x1000</code> and get a virtual page number. From 4 pages we get to the order value <code>2</code>, because <span class="math inline">4 = 2<sup>2</sup></span>, so the order is 2.</p>
-<p>Ok, that is simple. It stops being simple as soon as one describes real-life memory ranges. Such a <code>(base, order)</code> tuple is also called a <em>capability range descriptor</em>, and must follow the following rules:</p>
+<p>Example:
+A memory range that is 4 memory pages large and begins at address <code>0x123000</code> is described by <code>(0x123, 2)</code>.
+We get from <code>0x123000</code> to <code>0x123</code>, because pages are 4096 bytes (0x1000 in hex) large. That means that we need to divide a virtual address pointer value by <code>0x1000</code> and get a virtual page number.
+From 4 pages we get to the order value <code>2</code>, because <span class="math inline">4 = 2<sup>2</sup></span>, so the order is 2.</p>
+<p>Ok, that is simple. It stops being simple as soon as one describes real-life memory ranges.
+Such a <code>(base, order)</code> tuple is also called a <em>capability range descriptor</em>, and must follow the following rules:</p>
 <ol type="1">
 <li>Every memory capability’s size must be a power of 2. (By storing only the order, this rule is implicitly followed by design.)</li>
 <li>Every capability’s base must be evenly divisible by its size.</li>
@@ -61,7 +74,8 @@
 <li><code>(0x104, 1)</code>, <span class="math inline">2<sup>1</sup> = 2</span> pages</li>
 <li><code>(0x106, 0)</code>, <span class="math inline">2<sup>0</sup> = 1</span> pages</li>
 </ul>
-<p>Let’s get towards actual code: Mapping such an example range to another process’s address space would then look like the following code, which maps its own range <code>[0x100, 0x107)</code> to <code>[0x200, 0x207)</code> in the namespace of the other process using a structure <code>map_helper</code>:</p>
+<p>Let’s get towards actual code:
+Mapping such an example range to another process’s address space would then look like the following code, which maps its own range <code>[0x100, 0x107)</code> to <code>[0x200, 0x207)</code> in the namespace of the other process using a structure <code>map_helper</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>map_helper<span class="op">.</span>source_base <span class="op">=</span> <span class="bn">0x100</span><span class="op">;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>map_helper<span class="op">.</span>push_back<span class="op">(</span><span class="bn">0x200</span><span class="op">,</span> <span class="dv">2</span><span class="op">);</span> <span class="co">// 2^2 pages = 4 pages</span></span>
@@ -70,14 +84,25 @@
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                                <span class="co">//       sum = 7 pages</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>map_helper<span class="op">.</span>delegate<span class="op">(</span>target_address_space<span class="op">);</span></span></code></pre></div>
-<p>The <code>map_helper.delegate(...)</code> call results in a system call to the kernel which does the actual memory mapping. In order to not result in one system call per mapping, <code>map_helper</code> accepts a whole batch of mappings that are sent to the kernel in one run.</p>
+<p>The <code>map_helper.delegate(...)</code> call results in a system call to the kernel which does the actual memory mapping.
+In order to not result in one system call per mapping, <code>map_helper</code> accepts a whole batch of mappings that are sent to the kernel in one run.</p>
 <blockquote>
-<p>This looks very complicated but it is necessary to keep the microkernel <em>micro</em>. When the kernel gets mapping requests preformatted like this, the kernel code that applies the mapping contains much less complicated logic. An operating system kernel with a reduced amount of complicated logic is a good thing to have because then it is easier to prove that it is <em>correct</em>.</p>
+<p>This looks very complicated but it is necessary to keep the microkernel <em>micro</em>.
+When the kernel gets mapping requests preformatted like this, the kernel code that applies the mapping contains much less complicated logic.
+An operating system kernel with a reduced amount of complicated logic is a good thing to have because then it is easier to prove that it is <em>correct</em>.</p>
 </blockquote>
-<p>Ok, that is nearly everything about expressing memory mappings with the logic of capability range descriptors. There is one last quirk.</p>
-<p>Imagine we want to map the range <code>[0x0, 0x10)</code>, which can be expressed as <code>(0x0, 4)</code> (<code>0x10 = 16</code>, and <span class="math inline">16 = 2<sup>4</sup></span>), to the range <code>[0x1, 0x11)</code> in the other process’s address space. That should be easy since they only have an offset of 1 page to each other. What is visible at address <code>0x1000</code> in the first process, will be visible at address <code>0x2000</code> in the other. Actually, it is not that easy, because the capability range descriptor <code>(0x0, 4)</code> can not simply be described as <code>(0x1, 4)</code> in the other process’s address space. It violates rule number 2 because <code>0x1</code> is not evenly divisible by <code>0x10</code>!</p>
+<p>Ok, that is nearly everything about expressing memory mappings with the logic of capability range descriptors.
+There is one last quirk.</p>
+<p>Imagine we want to map the range <code>[0x0, 0x10)</code>, which can be expressed as <code>(0x0, 4)</code> (<code>0x10 = 16</code>, and <span class="math inline">16 = 2<sup>4</sup></span>), to the range <code>[0x1, 0x11)</code> in the other process’s address space.
+That should be easy since they only have an offset of 1 page to each other.
+What is visible at address <code>0x1000</code> in the first process, will be visible at address <code>0x2000</code> in the other.
+Actually, it is not that easy, because the capability range descriptor <code>(0x0, 4)</code> can not simply be described as <code>(0x1, 4)</code> in the other process’s address space.
+It violates rule number 2 because <code>0x1</code> is not evenly divisible by <code>0x10</code>!</p>
 <p>Frustratingly, this means that we need to break down the whole descriptor <code>(0x0, 4)</code> into 16 descriptors with order <code>0</code> because only such small ones have mappings that comply with the two rules in <strong>both</strong> address spaces.</p>
-<p>This was already a worst-case example. Another less bad example is the following one: If we want to map <code>[0x0, 0x10)</code> to <code>[0x8, 0x18)</code> in the other process, we could do that with the two descriptors <code>(0, 3)</code> and <code>(8, 3)</code>, because both offsets <code>0x0</code> and <code>0x8</code> are evenly divisible by 8. That allows for larger chunks.</p>
+<p>This was already a worst-case example.
+Another less bad example is the following one:
+If we want to map <code>[0x0, 0x10)</code> to <code>[0x8, 0x18)</code> in the other process, we could do that with the two descriptors <code>(0, 3)</code> and <code>(8, 3)</code>, because both offsets <code>0x0</code> and <code>0x8</code> are evenly divisible by 8.
+That allows for larger chunks.</p>
 <p>A generic function that maps <em>any</em> page range to another process’s address space could finally look like the following:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> map<span class="op">(</span><span class="dt">word_t</span> base1<span class="op">,</span> <span class="dt">word_t</span> base2<span class="op">,</span> <span class="dt">word_t</span> size<span class="op">,</span> <span class="dt">foo_t</span> target_address_space<span class="op">)</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -110,10 +135,16 @@
 <span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    map_helper<span class="op">.</span>delegate<span class="op">(</span>target_address_space<span class="op">);</span></span>
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>As a newcomer to such a project, you will soon understand the maths behind it. You will see it everywhere, because the same technique is used for sharing memory, I/O ports, and descriptors for kernel objects like threads, semaphores, etc. between processes.</p>
-<p>After you have seen repeatedly exactly the same calculation with different <em>payload</em> code between it, you might get sick of it. Everywhere in the code base where this pattern is repeated, you have to follow the calculations thoroughly in order to see if it is <strong>really</strong> the same formula. If it is, you may wonder why no one writes some kind of library for it instead of duplicating the formula in code again and again. And if it is <em>not</em> the same formula - is that because it is wrong or is there an actual idea behind that? It is plainly annoying to write and read this from the ground on all the time.</p>
+<p>As a newcomer to such a project, you will soon understand the maths behind it.
+You will see it everywhere, because the same technique is used for sharing memory, I/O ports, and descriptors for kernel objects like threads, semaphores, etc. between processes.</p>
+<p>After you have seen repeatedly exactly the same calculation with different <em>payload</em> code between it, you might get sick of it.
+Everywhere in the code base where this pattern is repeated, you have to follow the calculations thoroughly in order to see if it is <strong>really</strong> the same formula.
+If it is, you may wonder why no one writes some kind of library for it instead of duplicating the formula in code again and again.
+And if it is <em>not</em> the same formula - is that because it is wrong or is there an actual idea behind that?
+It is plainly annoying to write and read this from the ground on all the time.</p>
 <h2 id="library-thoughts">Library thoughts</h2>
-<p>Ok, let’s assume that this piece of math will be recurring very often and we want to provide a nice abstraction for it. This would have multiple advantages:</p>
+<p>Ok, let’s assume that this piece of math will be recurring very often and we want to provide a nice abstraction for it.
+This would have multiple advantages:</p>
 <ul>
 <li>Reduced code duplication.</li>
 <li>Correctness: The library can be tested meticulously, and all user code will automatically profit from that. No one could ever do wrong descriptor calculations any longer if he/she just used the library.</li>
@@ -160,10 +191,21 @@
 <span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    map_helper<span class="op">.</span>delegate<span class="op">(</span>target_address_space<span class="op">);</span></span>
 <span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>What we have is now the pure math of capability range composition of generic ranges in <code>map_generic</code> and actual memory mapping code in <code>map</code>. This is already much better but leaves us without control <em>how many</em> chunks we actually want to consume at a time. As soon as we start <code>map_generic</code>, it will shoot all the sub-ranges at our callback function. At this point, it is hard to stop. And if we were able to stop it (for example by returning <code>true</code> from the callback whenever it shall continue and returning <code>false</code> if it shall stop), it would be hard to resume from where we stopped it. It’s just hardly composable coding style.</p>
+<p>What we have is now the pure math of capability range composition of generic ranges in <code>map_generic</code> and actual memory mapping code in <code>map</code>.
+This is already much better but leaves us without control <em>how many</em> chunks we actually want to consume at a time.
+As soon as we start <code>map_generic</code>, it will shoot all the sub-ranges at our callback function.
+At this point, it is hard to stop.
+And if we were able to stop it (for example by returning <code>true</code> from the callback whenever it shall continue and returning <code>false</code> if it shall stop), it would be hard to resume from where we stopped it.
+It’s just hardly composable coding style.</p>
 <h2 id="the-iterator-library">The iterator library</h2>
-<p>After all, this is C++. Can’t we have some really nice and composable things here? Of course, we can. How about iterators? We could define an iterable range class which we can feed with our memory geometry. When such a range is iterated over, it emits the sub-ranges.</p>
-<p>So let’s implement this in terms of an iterator. If you don’t know yet how to implement iterators, you might want to have a look at <a href="../../../../2016/09/04/algorithms_in_iterators">my other article where i explain how to implement your own iterator</a>.</p>
+<p>After all, this is C++.
+Can’t we have some really nice and composable things here?
+Of course, we can.
+How about iterators?
+We could define an iterable range class which we can feed with our memory geometry.
+When such a range is iterated over, it emits the sub-ranges.</p>
+<p>So let’s implement this in terms of an iterator.
+If you don’t know yet how to implement iterators, you might want to have a look at <a href="../../../../2016/09/04/algorithms_in_iterators">my other article where i explain how to implement your own iterator</a>.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="pp">#include </span><span class="im">&lt;cstdint&gt;</span><span class="pp">   </span><span class="co">// uintptr_t</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="pp">#include </span><span class="im">&lt;algorithm&gt;</span><span class="pp"> </span><span class="co">// min/max</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="pp">#include </span><span class="im">&lt;tuple&gt;</span></span>
@@ -206,20 +248,27 @@
 <span id="cb4-40"><a href="#cb4-40"></a>    order_range begin<span class="op">()</span> <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> <span class="op">*</span><span class="kw">this</span><span class="op">;</span> <span class="op">}</span></span>
 <span id="cb4-41"><a href="#cb4-41"></a>    it_sentinel end<span class="op">()</span>   <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> <span class="op">{};</span> <span class="op">}</span></span>
 <span id="cb4-42"><a href="#cb4-42"></a><span class="op">};</span></span></code></pre></div>
-<p>This looks a bit bloaty at first, but this is a one-time implementation after all. When we compare it with the initial <code>for</code>-loop version, we realize that all the calculations are in the function <code>current_order</code> and <code>operator++</code>. All the other code is just data storage and retrieval, as well as iterator interface compliance.</p>
-<p>It might also at first look strange that the <code>begin()</code> function returns a copy of the <code>order_range</code> instance. The trick is that this class is at the same time a range and an iterator.</p>
-<p>One nice perk of C++17 is, that the <em>end</em> iterator does not need to be of the same type as normal iterators any longer. This allows for a simpler abort condition (which is: <code>size == 0</code>).</p>
-<p>With this tiny order 2 range iterator <em>“library”</em>, we can now do the following. (Let’s move away from the memory mapping examples to simple <code>printf</code> examples because we will compare them in <a href="https://gcc.godbolt.org">Godbolt</a> later)</p>
+<p>This looks a bit bloaty at first, but this is a one-time implementation after all.
+When we compare it with the initial <code>for</code>-loop version, we realize that all the calculations are in the function <code>current_order</code> and <code>operator++</code>.
+All the other code is just data storage and retrieval, as well as iterator interface compliance.</p>
+<p>It might also at first look strange that the <code>begin()</code> function returns a copy of the <code>order_range</code> instance.
+The trick is that this class is at the same time a range and an iterator.</p>
+<p>One nice perk of C++17 is, that the <em>end</em> iterator does not need to be of the same type as normal iterators any longer.
+This allows for a simpler abort condition (which is: <code>size == 0</code>).</p>
+<p>With this tiny order 2 range iterator <em>“library”</em>, we can now do the following.
+(Let’s move away from the memory mapping examples to simple <code>printf</code> examples because we will compare them in <a href="https://gcc.godbolt.org">Godbolt</a> later)</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> print_range<span class="op">(</span><span class="dt">word_t</span> base1<span class="op">,</span> <span class="dt">word_t</span> base2<span class="op">,</span> <span class="dt">word_t</span> size<span class="op">)</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="at">const</span> <span class="kw">auto</span> <span class="op">&amp;[</span>b1<span class="op">,</span> b2<span class="op">,</span> order<span class="op">]</span> <span class="op">:</span> order_range<span class="op">{</span>base1<span class="op">,</span> base2<span class="op">,</span> size<span class="op">})</span> <span class="op">{</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%4zx</span><span class="st"> -&gt; </span><span class="sc">%4zx</span><span class="st">, order </span><span class="sc">%2zu\n</span><span class="st">&quot;</span><span class="op">,</span> b1<span class="op">,</span> b2<span class="op">,</span> order<span class="op">);</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This code just contains <em>pure payload</em>. There is no trace of the mathematical obfuscation left.</p>
+<p>This code just contains <em>pure payload</em>.
+There is no trace of the mathematical obfuscation left.</p>
 <p>Another differentiating feature from the callback function variant is that we can combine this iterator with STL data structures and algorithms!</p>
 <h2 id="comparing-the-resulting-assembly">Comparing the resulting assembly</h2>
-<p>What is the price of this abstraction? Let us see how the non-iterator-version of the same code would look like, and then compare it in the Godbolt assembly output view.</p>
+<p>What is the price of this abstraction?
+Let us see how the non-iterator-version of the same code would look like, and then compare it in the Godbolt assembly output view.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> print_range<span class="op">(</span><span class="dt">word_t</span> base1<span class="op">,</span> <span class="dt">word_t</span> base2<span class="op">,</span> <span class="dt">word_t</span> size<span class="op">)</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">constexpr</span> <span class="dt">word_t</span> max_bit <span class="op">{</span><span class="dv">1</span><span class="bu">ull</span> <span class="op">&lt;&lt;</span> <span class="op">(</span><span class="dv">8</span> <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span>max_bit<span class="op">)</span> <span class="op">-</span> <span class="dv">1</span><span class="op">)};</span></span>
@@ -238,7 +287,8 @@
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        size  <span class="op">-=</span> step<span class="op">;</span></span>
 <span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Interestingly, <code>clang++</code> sees exactly what we did there and emits exactly <strong>the same assembly</strong> in <strong>both</strong> cases. That means that this iterator is a real <strong>zero cost</strong> abstraction!</p>
+<p>Interestingly, <code>clang++</code> sees exactly what we did there and emits exactly <strong>the same assembly</strong> in <strong>both</strong> cases.
+That means that this iterator is a real <strong>zero cost</strong> abstraction!</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>print_range<span class="op">(</span>unsigned long<span class="op">,</span> unsigned long<span class="op">,</span> unsigned long<span class="op">):</span> </span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>        <span class="bu">push</span>    <span class="kw">r15</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">push</span>    <span class="kw">r14</span></span>
@@ -282,15 +332,23 @@
 <span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="fu">.L.str:</span></span>
 <span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>        .asciz  <span class="st">&quot;%4zx -&gt; %4zx, order %2zu\n&quot;</span></span></code></pre></div>
 <p><a href="https://godbolt.org/g/hn3yix">See the whole example in gcc.godbolt.org.</a></p>
-<p>When comparing the assembly of both variants with GCC, the result is a little bit disappointing at first: The <code>for</code>-loop version is 62 lines of assembly vs. 48 lines of assembly for the iterator version. When looking at how many lines of assembly are the actual loop part, it is still 25 lines for <strong>both</strong> implementations!</p>
+<p>When comparing the assembly of both variants with GCC, the result is a little bit disappointing at first:
+The <code>for</code>-loop version is 62 lines of assembly vs. 48 lines of assembly for the iterator version.
+When looking at how many lines of assembly are the actual loop part, it is still 25 lines for <strong>both</strong> implementations!</p>
 <h2 id="summary">Summary</h2>
-<p>Hardcore low-level/kernel hackers often claim that it’s disadvantageous to use abstractions like iterators and generic algorithms. Their code needs to be very small and fast because especially on hot paths, interrupt service routines, and other occasions, the kernel surely must not be bloaty and slow.</p>
+<p>Hardcore low-level/kernel hackers often claim that it’s disadvantageous to use abstractions like iterators and generic algorithms.
+Their code needs to be very small and fast because especially on hot paths, interrupt service routines, and other occasions, the kernel surely must not be bloaty and slow.</p>
 <p>Unfortunately, one extreme kind of low-level hackers that keep their code tight and short just out of plain responsibility, are the ones that use the same reasons as an excuse for writing code that contains a lot of duplicates, is complex, hard to read (but surely makes you feel smart while being written), and difficult to test.</p>
-<p>Code should be separated into composable libraric parts that serve isolated concerns. C++ allows combining the goals of reusable software, testable libraries, and logical decoupling with high performance and low binary size.</p>
+<p>Code should be separated into composable libraric parts that serve isolated concerns.
+C++ allows combining the goals of reusable software, testable libraries, and logical decoupling with high performance and low binary size.</p>
 <p>It is usually worth a try to implement a nice abstraction that turns out to be free with regard to assembly size and performance.</p>
 <h2 id="related">Related</h2>
-<p>I really enjoyed reading <a href="https://kristerw.blogspot.de/2017/06/a-look-at-range-v3-code-generation.html">Krister Waldfridsson’s article</a> where he primarily analyzes runtime performance of a piece of range-v3 code. What’s interesting about that article is that he also shows an innocently looking code snippet with a raw <code>for</code>-loop that is slower than equivalent code that uses an STL algorithm, because the STL algorithm helps the compiler optimizing the code.</p>
-<p>Another thing that is worth a look and which fits the same topic: Jason Turner gave a <a href="https://www.youtube.com/watch?v=zBkNBP00wJE">great talk about using C++17 on tiny computers</a>. He demonstrates how modern C++ programming patterns that help writing better code do <strong>not</strong> lead to bloaty or slow code by compiling and showing the assembly in a Godbolt view. It actually runs on a real Commodore in the end.</p></div>
+<p>I really enjoyed reading <a href="https://kristerw.blogspot.de/2017/06/a-look-at-range-v3-code-generation.html">Krister Waldfridsson’s article</a> where he primarily analyzes runtime performance of a piece of range-v3 code.
+What’s interesting about that article is that he also shows an innocently looking code snippet with a raw <code>for</code>-loop that is slower than equivalent code that uses an STL algorithm, because the STL algorithm helps the compiler optimizing the code.</p>
+<p>Another thing that is worth a look and which fits the same topic:
+Jason Turner gave a <a href="https://www.youtube.com/watch?v=zBkNBP00wJE">great talk about using C++17 on tiny computers</a>.
+He demonstrates how modern C++ programming patterns that help writing better code do <strong>not</strong> lead to bloaty or slow code by compiling and showing the assembly in a Godbolt view.
+It actually runs on a real Commodore in the end.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
 var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2017/07/02/order2_iterator/';

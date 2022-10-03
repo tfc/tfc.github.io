@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,7 +35,8 @@
 </div>
 <div class="content container"><h1>How Does the Typical SFINAE Type Trait Work?</h1>
 <div class="post"><span class="post-date">February 19, 2016</span>
-<p>C++ type traits can be implemented using an interesting technique which uses the <em>SFINAE</em> principle. This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.</p>
+<p>C++ type traits can be implemented using an interesting technique which uses the <em>SFINAE</em> principle.
+This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.</p>
 <!--more-->
 <blockquote>
 <p>If you are not familiar with <em>type traits</em>, have a look at the article which <a href="../../../../2016/02/18/what_is_a_type_trait">describes how type traits work</a>.</p>
@@ -52,7 +51,10 @@
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>f<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;(</span>a<span class="op">);</span> <span class="co">// The user already specified T. No deduction necessary.</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>f<span class="op">(</span>a<span class="op">);</span>      <span class="co">// Here, the compiler needs to deduce T from the type of &quot;a&quot;</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">// The next example will be more complex to point out SFINAE mechanics</span></span></code></pre></div>
-<p>The SFINAE principle works as follows: If the compiler detects an error while it tries to substitute a type during template type deduction, it will not emit a compilation error. Instead, it will stop considering the symbol it is currently looking at as a match, and try the next symbol, which looks like a suitable candidate. Of course, the compiler will error-out if there are no suitable candidates left.</p>
+<p>The SFINAE principle works as follows:
+If the compiler detects an error while it tries to substitute a type during template type deduction, it will not emit a compilation error.
+Instead, it will stop considering the symbol it is currently looking at as a match, and try the next symbol, which looks like a suitable candidate.
+Of course, the compiler will error-out if there are no suitable candidates left.</p>
 <h2 id="simplest-example">Simplest Example</h2>
 <p>The in my opinion simplest example to demonstrate how this behaviour can be used, is one which i found on <a href="http://en.cppreference.com/w/cpp/language/sfinae">cppreference.com</a>:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span><span class="op">&lt;</span><span class="dt">int</span> I<span class="op">&gt;</span></span>
@@ -63,15 +65,29 @@
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> f<span class="op">(</span><span class="dt">char</span><span class="op">(*)[</span>I <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">1</span><span class="op">]</span> <span class="op">=</span> <span class="kw">nullptr</span><span class="op">)</span> <span class="op">{</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// this overload is selected  when I is odd</span></span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Both functions have the same signature, when they are selected: <code>void f(char (*)[1])</code> (They take a pointer to a character array of length 1, and return nothing). Although the signature is not fixed, as it depends on a variable template parameter, no other signatures can be generated from this. We will immediately see, why.</p>
-<p>The parameter is not meant to be actually provided by the user, which is why it is initialized to <code>nullptr</code> in the default case. This value is completely uninteresting, which is also why the parameter is not even named.</p>
-<p>Code which will actually use the function, will look like <code>f&lt;NUM&gt;();</code>, where <code>NUM</code> is any integer. When the compiler attempts to deduce which of those two implementations is the right one (They both initially appear as candidates), it will look at the first one, and try to deduce the parameter’s type, as it is not specified, yet. The expression <code>I % 2 == 0</code> is depending on the template parameter <code>I</code>, and as soon as that is defined by the user, the size of the array can be calculated.</p>
-<p>If <code>NUM</code> is an even number, this expression will evaluate to <code>0 == 0</code>, which evaluates further to <code>true</code>. In context of an array size description, this boolean value is cast to <code>int</code>, which evaluates the whole parameter type to <code>char(*)[1]</code>. The function’s signature is now completely deduced, the compiler happily chooses it, and generates the code. No SFINAE magic here, yet.</p>
-<p>But what happens, if <code>NUM</code> is an uneven number, like for example 3? In that case, <code>3 % 2 == 0</code> evaluates to <code>1 == 0</code>, hence to <code>false</code>, and after being cast to int, it is <code>0</code>. Arrays with size of <code>0</code> are not valid in C++ (There is a GNU C++ extension which allows them), hence the compiler might throw an error now. But following the SFINAE principle, it will just disregard this function implementation, as it cannot deduce a valid signature for it, and look at the next candidate. The next candidate’s parameter array type size will evaluate to <code>1</code>, which is fine, and the compiler will select it.</p>
-<p>This is a crazy method to select code paths, as it does that in quite a roundabout way. And this is still the simplest example.</p>
+<p>Both functions have the same signature, when they are selected: <code>void f(char (*)[1])</code> (They take a pointer to a character array of length 1, and return nothing).
+Although the signature is not fixed, as it depends on a variable template parameter, no other signatures can be generated from this.
+We will immediately see, why.</p>
+<p>The parameter is not meant to be actually provided by the user, which is why it is initialized to <code>nullptr</code> in the default case.
+This value is completely uninteresting, which is also why the parameter is not even named.</p>
+<p>Code which will actually use the function, will look like <code>f&lt;NUM&gt;();</code>, where <code>NUM</code> is any integer.
+When the compiler attempts to deduce which of those two implementations is the right one (They both initially appear as candidates), it will look at the first one, and try to deduce the parameter’s type, as it is not specified, yet.
+The expression <code>I % 2 == 0</code> is depending on the template parameter <code>I</code>, and as soon as that is defined by the user, the size of the array can be calculated.</p>
+<p>If <code>NUM</code> is an even number, this expression will evaluate to <code>0 == 0</code>, which evaluates further to <code>true</code>.
+In context of an array size description, this boolean value is cast to <code>int</code>, which evaluates the whole parameter type to <code>char(*)[1]</code>.
+The function’s signature is now completely deduced, the compiler happily chooses it, and generates the code.
+No SFINAE magic here, yet.</p>
+<p>But what happens, if <code>NUM</code> is an uneven number, like for example 3?
+In that case, <code>3 % 2 == 0</code> evaluates to <code>1 == 0</code>, hence to <code>false</code>, and after being cast to int, it is <code>0</code>.
+Arrays with size of <code>0</code> are not valid in C++ (There is a GNU C++ extension which allows them), hence the compiler might throw an error now.
+But following the SFINAE principle, it will just disregard this function implementation, as it cannot deduce a valid signature for it, and look at the next candidate.
+The next candidate’s parameter array type size will evaluate to <code>1</code>, which is fine, and the compiler will select it.</p>
+<p>This is a crazy method to select code paths, as it does that in quite a roundabout way.
+And this is still the simplest example.</p>
 <h2 id="the-more-complex-but-also-more-useful-example">The More Complex, But Also More Useful Example</h2>
 <p>The following type trait is able to tell, if a type <code>T</code> is dereferenceable.</p>
-<p>Pointers to any type are dereferenceable, iterators are dereferenceable, and types as <code>std::shared_ptr&lt;T&gt;</code>, but also <code>std::optional&lt;T&gt;</code> are dereferenceable, although they may not have anything else in common. If the dereferenceability is the only thing some functionality must know about the type in use, this is the right type trait for that job:</p>
+<p>Pointers to any type are dereferenceable, iterators are dereferenceable, and types as <code>std::shared_ptr&lt;T&gt;</code>, but also <code>std::optional&lt;T&gt;</code> are dereferenceable, although they may not have anything else in common.
+If the dereferenceability is the only thing some functionality must know about the type in use, this is the right type trait for that job:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> U1<span class="op">&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> is_dereferenceable</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -89,12 +105,31 @@
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">sizeof</span><span class="op">(</span>f<span class="op">&lt;</span>U1<span class="op">&gt;(</span>makeU<span class="op">&lt;</span>U1<span class="op">&gt;()))</span> <span class="op">==</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">yes_t</span><span class="op">)};</span></span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
 <p>Let’s have a look at the peripheral details first, which are necessary, but do not contain the interesting mechanism, yet.</p>
-<p>The static function <code>makeU()</code> is a little helper to create an rvalue reference of type <code>U</code>. This way, a function can be called using <code>f(makeU&lt;X&gt;())</code>, which would put an <code>X</code> reference into <code>f</code>. At first it appears that just writing <code>f(X{})</code> would do the same job, but what if there is no default constructor, or if the default constructor is protected/private? We will use this helper function only in a context where the compiler needs to deduce all types, but it will not actually be called and executed, hence needs no definition.</p>
-<p>The types <code>yes_t</code> and <code>no_t</code> are created as helper types. They are distinguishable from each other using <code>sizeof</code>, because <code>no_t</code> is twice as large as <code>yes_t</code> (indepentent from what size <code>char</code> has on the architecture in use).</p>
-<p>And now have a look at both implementations of the static function <code>f</code>: The second version is the simpler one - it just takes any kind and number of parameters, and returns <code>no_t</code>. The first version only takes a <code>T1&amp;</code> reference as its first parameter, and a strange character array pointer, initialized to <code>nullptr</code> as a default value.</p>
-<p>If we write <code>f&lt;FooType&gt;( makeU&lt;FooType&gt;() )</code>, the first parameter has exactly the type which the first implementation of <code>f</code> expects, which makes it look like a valid candidate. But the type deduction and substitution is not done at this point, yet, because there is still the type of the optional second parameter. The size of the character array type must still be deduced. A strange expression defines its size: <code>sizeof(*x)</code>. Of course, <code>x</code> is the first parameter, and this expression tries to dereference it. If <code>x</code> is of some pointer-, iterator-, or any other dereferenceable type, then the expression <code>*x</code> is perfectly valid and evaluates to something <code>sizeof</code> can tell the size of. As soon as that happened, the function signature is complete, and the implementation candidate is chosen by the compiler. In that case, the return value is <code>yes_t</code>.</p>
-<p>If the parameter <code>x</code> was of some type which is not dereferenceable, like <code>int</code> for example, then the compiler will not be able to evaluate the expression inside of <code>sizeof</code>, and there will be no array size. If there is no array size, then it is impossible to deduce the signature of the whole function, which is an error in general. Since the compiler follows the SFINAE principle, it will waive this candidate and choose the other, which matches any set of parameters. In this case, the return type is <code>no_t</code>. That is already the whole magic of this complicated trait structure.</p>
-<p>The static constexpr member variable <code>value</code> lines it all up and provides the actual functionality to the user: It lets the compiler select one of the two <code>f</code> function implementations. If the template parameter of the structure (<code>U1</code>) is dereferenceable, then the first implementation is chosen, which lets the left <code>sizeof</code> expression in the initialization of <code>value</code> evaluate to <code>sizeof(yes_t)</code>. The comparison will then evaluate to <code>true</code>, and then <code>is_dereferenceable&lt;FooType&gt;::value</code> tells us that our type <code>FooType</code> is dereferenceable.</p>
+<p>The static function <code>makeU()</code> is a little helper to create an rvalue reference of type <code>U</code>.
+This way, a function can be called using <code>f(makeU&lt;X&gt;())</code>, which would put an <code>X</code> reference into <code>f</code>.
+At first it appears that just writing <code>f(X{})</code> would do the same job, but what if there is no default constructor, or if the default constructor is protected/private?
+We will use this helper function only in a context where the compiler needs to deduce all types, but it will not actually be called and executed, hence needs no definition.</p>
+<p>The types <code>yes_t</code> and <code>no_t</code> are created as helper types.
+They are distinguishable from each other using <code>sizeof</code>, because <code>no_t</code> is twice as large as <code>yes_t</code> (indepentent from what size <code>char</code> has on the architecture in use).</p>
+<p>And now have a look at both implementations of the static function <code>f</code>:
+The second version is the simpler one - it just takes any kind and number of parameters, and returns <code>no_t</code>.
+The first version only takes a <code>T1&amp;</code> reference as its first parameter, and a strange character array pointer, initialized to <code>nullptr</code> as a default value.</p>
+<p>If we write <code>f&lt;FooType&gt;( makeU&lt;FooType&gt;() )</code>, the first parameter has exactly the type which the first implementation of <code>f</code> expects, which makes it look like a valid candidate.
+But the type deduction and substitution is not done at this point, yet, because there is still the type of the optional second parameter.
+The size of the character array type must still be deduced.
+A strange expression defines its size: <code>sizeof(*x)</code>. Of course, <code>x</code> is the first parameter, and this expression tries to dereference it.
+If <code>x</code> is of some pointer-, iterator-, or any other dereferenceable type, then the expression <code>*x</code> is perfectly valid and evaluates to something <code>sizeof</code> can tell the size of.
+As soon as that happened, the function signature is complete, and the implementation candidate is chosen by the compiler.
+In that case, the return value is <code>yes_t</code>.</p>
+<p>If the parameter <code>x</code> was of some type which is not dereferenceable, like <code>int</code> for example, then the compiler will not be able to evaluate the expression inside of <code>sizeof</code>, and there will be no array size.
+If there is no array size, then it is impossible to deduce the signature of the whole function, which is an error in general.
+Since the compiler follows the SFINAE principle, it will waive this candidate and choose the other, which matches any set of parameters.
+In this case, the return type is <code>no_t</code>.
+That is already the whole magic of this complicated trait structure.</p>
+<p>The static constexpr member variable <code>value</code> lines it all up and provides the actual functionality to the user:
+It lets the compiler select one of the two <code>f</code> function implementations.
+If the template parameter of the structure (<code>U1</code>) is dereferenceable, then the first implementation is chosen, which lets the left <code>sizeof</code> expression in the initialization of <code>value</code> evaluate to <code>sizeof(yes_t)</code>.
+The comparison will then evaluate to <code>true</code>, and then <code>is_dereferenceable&lt;FooType&gt;::value</code> tells us that our type <code>FooType</code> is dereferenceable.</p>
 <p>Usage:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>is_dereferenceable<span class="op">&lt;</span><span class="dt">int</span> <span class="op">&gt;::</span>value <span class="op">==</span> <span class="kw">false</span><span class="op">,</span> <span class="st">&quot;&quot;</span><span class="op">);</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>is_dereferenceable<span class="op">&lt;</span><span class="dt">int</span><span class="op">*&gt;::</span>value <span class="op">==</span> <span class="kw">true</span><span class="op">,</span>  <span class="st">&quot;&quot;</span><span class="op">);</span></span></code></pre></div>

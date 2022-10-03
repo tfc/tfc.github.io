@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,9 +35,22 @@
 </div>
 <div class="content container"><h1>Setting up a C++ project environment with nix</h1>
 <div class="post"><span class="post-date">April 17, 2019</span>
-<p>This article explains how to quickly set up a C++ project environment with complete toolchain- and dependency management with <code>nix</code>. <a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and other Unix systems (It is indeed a more powerful alternative to <a href="https://conan.io/"><code>conan</code></a> and <a href="https://www.docker.com/"><code>docker</code></a>) that makes package management reliable and reproducible. After setting up the project and playing around with it, we will <strong>parametrize</strong> the project description in order to automatically build it with different compilers and dependency library versions (GCC 7 &amp; 8, Clang 7 &amp; 8, lib <code>boost</code> 1.6.6 - 1.6.9, lib <code>poco</code> 1.9.0 &amp; 1.9.1).</p>
+<p>This article explains how to quickly set up a C++ project environment with
+complete toolchain- and dependency management with <code>nix</code>.
+<a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and
+other Unix systems (It is indeed a more powerful alternative to <a href="https://conan.io/"><code>conan</code></a> and <a href="https://www.docker.com/"><code>docker</code></a>) that makes package
+management reliable and reproducible.
+After setting up the project and playing around with it, we will <strong>parametrize</strong>
+the project description in order to automatically build it with different
+compilers and dependency library versions (GCC 7 &amp; 8, Clang 7 &amp; 8, lib <code>boost</code>
+1.6.6 - 1.6.9, lib <code>poco</code> 1.9.0 &amp; 1.9.1).</p>
 <!--more-->
-<p>Let’s start with a fresh system where no C++ compiler and no development libraries are installed. The only tool that we require to be installed is <code>nix</code> (see the <a href="https://nixos.org/nix/download.html">installation guide on nixos.org</a> for installation instructions), because we are going to use it to perform the toolchain and dependency setup.</p>
+<p>Let’s start with a fresh system where no C++ compiler and no development
+libraries are installed.
+The only tool that we require to be installed is <code>nix</code> (see the <a href="https://nixos.org/nix/download.html">installation
+guide on nixos.org</a> for installation
+instructions), because we are going to use it to perform the toolchain and
+dependency setup.</p>
 <h2 id="creating-a-little-example-c-project">Creating a little example C++ Project</h2>
 <p>Let’s write a C++ program with the following dependencies:</p>
 <ul>
@@ -47,7 +58,9 @@
 <li><code>boost</code> library (<a href="https://www.boost.org" class="uri">https://www.boost.org</a>)</li>
 <li><code>poco</code> library (<a href="https://pocoproject.org" class="uri">https://pocoproject.org</a>)</li>
 </ul>
-<p>For the sake of having a simple example app, the program does nothing more than printing what compiler it was built with and which versions of <code>boost</code> and <code>poco</code> it is linked against.</p>
+<p>For the sake of having a simple example app, the program does nothing more than
+printing what compiler it was built with and which versions of <code>boost</code> and
+<code>poco</code> it is linked against.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;boost/lexical_cast.hpp&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;Poco/Environment.h&gt;</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;iostream&gt;</span></span>
@@ -71,7 +84,12 @@
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">                &lt;&lt; (Poco::Environment::libraryVersion() &gt;&gt; 8 &amp; 0xff)</span></span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="st">                &lt;&lt; '\n';</span></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span></code></pre></div>
-<p>We can either <em>install</em> a C++ compiler by running <code>nix-env</code> with the appropriate arguments, or just run a shell that exposes a C++ compiler in its <code>PATH</code> environment. Let us not clutter the system’s <code>PATH</code> environment with compilers from the beginning, because often people would use different compilers for each project anyway.</p>
+<p>We can either <em>install</em> a C++ compiler by running <code>nix-env</code> with the
+appropriate arguments, or just run a shell that exposes a C++ compiler in its
+<code>PATH</code> environment.
+Let us not clutter the system’s <code>PATH</code> environment with compilers from the
+beginning, because often people would use different compilers for each project
+anyway.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">-p</span> gcc</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~]$</span> c++ <span class="at">--version</span></span>
@@ -82,11 +100,26 @@
 <p>We are now in a shell that includes GCC’s C++ compiler in its <code>PATH</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~/src/nix_cmake_example]$</span> echo <span class="va">$PATH</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...:/nix/store/ghzg4kg0sjif58smj2lfm2bdvjwim85y-gcc-wrapper-7.4.0/bin:...</span></span></code></pre></div>
-<p>I trimmed the rest of the path list. What’s important here: The path list is full of paths that begin with <code>/nix/store/...</code>. Each of them could be considered what one would call a <em>package</em> on typical Linux distributions. We can easily install multiple compilers with different versions, or even the same version with different sets of patches applied, next to each other in <code>/nix/store</code> and not have any of them collide during a project’s build, because <code>nix</code> does simply only map the packages into the current <code>PATH</code> that are needed.</p>
+<p>I trimmed the rest of the path list.
+What’s important here: The path list is full of paths that begin with
+<code>/nix/store/...</code>.
+Each of them could be considered what one would call a <em>package</em> on typical
+Linux distributions.
+We can easily install multiple compilers with different versions, or even
+the same version with different sets of patches applied, next to each other
+in <code>/nix/store</code> and not have any of them collide during a project’s build,
+because <code>nix</code> does simply only map the packages into the current <code>PATH</code> that
+are needed.</p>
 <blockquote>
-<p><code>nix</code> does even more than just exposing packages via the <code>PATH</code> to the executing shell: For a running build process it does also hide all paths that are <em>not</em> listed in the dependencies of a package in order to avoid unknown dependencies lurking into the project. In order to achieve that, it uses <a href="https://en.wikipedia.org/wiki/Linux_namespaces"><em>namespaces</em></a>, similar to <a href="https://www.docker.com/">Docker</a>. See also: <a href="https://nixos.wiki/wiki/Nix#Sandboxing">nixos.wiki about <strong>sandboxing</strong></a>, and <a href="https://nixos.org/nix/manual/#conf-sandbox">nix manual: <code>sandbox</code> setting</a></p>
+<p><code>nix</code> does even more than just exposing packages via the <code>PATH</code> to the
+executing shell: For a running build process it does also hide all paths
+that are <em>not</em> listed in the dependencies of a package in order to avoid
+unknown dependencies lurking into the project.
+In order to achieve that, it uses <a href="https://en.wikipedia.org/wiki/Linux_namespaces"><em>namespaces</em></a>, similar to <a href="https://www.docker.com/">Docker</a>.
+See also: <a href="https://nixos.wiki/wiki/Nix#Sandboxing">nixos.wiki about <strong>sandboxing</strong></a>, and <a href="https://nixos.org/nix/manual/#conf-sandbox">nix manual: <code>sandbox</code> setting</a></p>
 </blockquote>
-<p>The full procedure of using <code>nix-shell</code> to setup the environment and building and running the app looks like this:</p>
+<p>The full procedure of using <code>nix-shell</code> to setup the environment and building
+and running the app looks like this:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">-p</span> gcc boost poco</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> c++ <span class="at">-o</span> main main.cpp <span class="at">-lPocoFoundation</span> <span class="at">-lboost_system</span></span>
@@ -100,40 +133,59 @@
 <p>Running the compiled binary can of course be done without <code>nix-shell</code>.</p>
 </blockquote>
 <p>One would typically add a file called <code>default.nix</code> to the project folder:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode nix"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">with</span> import <span class="op">&lt;</span>nixpkgs<span class="op">&gt;</span> {}<span class="kw">;</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">stdenv.mkDerivation</span> {</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">name</span> = <span class="st">&quot;my-app&quot;</span><span class="kw">;</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">src</span> = ./.<span class="kw">;</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">buildInputs</span> = [ boost poco ]<span class="kw">;</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">buildPhase</span> = <span class="st">&quot;c++ -o main main.cpp -lPocoFoundation -lboost_system&quot;</span><span class="kw">;</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="ex">installPhase</span> = <span class="st">''</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$out</span>/bin</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cp</span> main <span class="va">$out</span>/bin/</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">''</span><span class="kw">;</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div>
-<p>This buys us that we can simply run <code>nix-build</code> to configure, build and package the project into the nix store with a single command. Developers would still use <code>nix-shell</code> for incremental builds between source modifications. <code>nix-shell</code> does also consult <code>default.nix</code> in order to setup the dependencies right, so we don’t need the <code>-p</code> parameter list any longer.</p>
+<pre class="nix"><code>with import &lt;nixpkgs&gt; {};
+
+stdenv.mkDerivation {
+  name = &quot;my-app&quot;;
+  src = ./.;
+
+  buildInputs = [ boost poco ];
+
+  buildPhase = &quot;c++ -o main main.cpp -lPocoFoundation -lboost_system&quot;;
+
+  installPhase = ''
+    mkdir -p $out/bin
+    cp main $out/bin/
+  '';
+}</code></pre>
+<p>This buys us that we can simply run <code>nix-build</code> to configure, build and package
+the project into the nix store with a single command.
+Developers would still use <code>nix-shell</code> for incremental builds between source
+modifications.
+<code>nix-shell</code> does also consult <code>default.nix</code> in order to setup the dependencies
+right, so we don’t need the <code>-p</code> parameter list any longer.</p>
 <p>Very short overview over the most important lines:</p>
 <ul>
-<li><code>stdenv</code> is an object in the nix expression language that is imported from <code>&lt;nixpkgs&gt;</code>. <code>nixpkgs</code> is a globally available nix expression with all the packages. <code>stdenv</code> contains the compiler and other things needed to compile projects.</li>
+<li><code>stdenv</code> is an object in the nix expression language that is imported from
+<code>&lt;nixpkgs&gt;</code>. <code>nixpkgs</code> is a globally available nix expression with all the
+packages. <code>stdenv</code> contains the compiler and other things needed to compile
+projects.</li>
 <li><code>buildInputs</code> lists compile time and run time dependencies of the project.</li>
 <li><code>buildPhase</code> is a shell hook that describes how to build the program.</li>
 <li><code>installPhase</code> describes what files should be copied into the nix store.</li>
 </ul>
-<p>We’re covering how this works in detail only in minimal depth. More information about nix derivations:</p>
+<p>We’re covering how this works in detail only in minimal depth.
+More information about nix derivations:</p>
 <ul>
 <li><a href="https://nixos.org/nix/manual/#ssec-derivation"><code>nix</code> manual section about derivations</a></li>
 <li><a href="https://nixos.wiki/wiki/C" class="uri">https://nixos.wiki/wiki/C</a></li>
 </ul>
 <blockquote>
-<p>It looks like we’re using <code>nix</code> as a build system now - in fact, <code>mkDerivation</code> is a function that creates a so called “builder script” that is able to detect if we are using a Makefile based project (with or without autoconf), a CMake project, or a set of other build systems, and then executes the right steps according to the build system. One cool detail is that we would typically not touch <code>CMakeFile</code> or other files in order to use <code>nix</code> - this way users who do not want to or cannot use <code>nix</code> are able to use their own tools for dependency management.</p>
-<p><code>mkDerivation</code> is a very versatile and complex helper: See the <a href="https://nixos.org/nix/manual/#ssec-derivation"><code>nix</code> manual section about derivations</a></p>
+<p>It looks like we’re using <code>nix</code> as a build system now - in fact,
+<code>mkDerivation</code> is a function that creates a so called “builder script” that
+is able to detect if we are using a Makefile based project (with or without
+autoconf), a CMake project, or a set of other build systems, and then
+executes the right steps according to the build system.
+One cool detail is that we would typically not touch <code>CMakeFile</code> or other
+files in order to use <code>nix</code> - this way users who do not want to or cannot
+use <code>nix</code> are able to use their own tools for dependency management.</p>
+<p><code>mkDerivation</code> is a very versatile and complex helper: See the <a href="https://nixos.org/nix/manual/#ssec-derivation"><code>nix</code> manual
+section about derivations</a></p>
 </blockquote>
-<p>In this example we use no build system, hence need to use the <code>buildPhase</code> hook to define how our little application is compiled and linked.</p>
-<p>Someone else who checks out this project and who has installed <code>nix</code> can now simply run:</p>
+<p>In this example we use no build system, hence need to use the <code>buildPhase</code>
+hook to define how our little application is compiled and linked.</p>
+<p>Someone else who checks out this project and who has installed <code>nix</code> can
+now simply run:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-build</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> derivations will be built:</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/dw9d2r7rykym08fzmdgf6v0ia2sn6hq9-my-app.drv</span></span>
@@ -160,10 +212,22 @@
 <span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
 <span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
 <span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span></code></pre></div>
-<p>The compiler, all libraries etc. are automatically downloaded and put into action. Much simpler than with <a href="https://conan.io/">conan</a>!</p>
-<p>That is basically it: If the program grows, we will certainly switch to some build system - <code>nix</code> supports that without having to add nix-specific stuff into the build files (GNUMake, CMake, meson, etc. are supported. Have a look into the <a href="https://github.com/NixOS/nixpkgs/tree/master/pkgs/development/tools/build-managers"><code>nixpkgs</code> git repository folder for supported build systems</a>). If the number of dependencies grows, be that libraries or compile time tools, we can simply add them to the nix expression.</p>
+<p>The compiler, all libraries etc. are automatically downloaded and put into
+action.
+Much simpler than with <a href="https://conan.io/">conan</a>!</p>
+<p>That is basically it: If the program grows, we will certainly switch
+to some build system - <code>nix</code> supports that without having to add nix-specific
+stuff into the build files (GNUMake, CMake, meson, etc. are supported.
+Have a look into the <a href="https://github.com/NixOS/nixpkgs/tree/master/pkgs/development/tools/build-managers"><code>nixpkgs</code> git repository folder for supported build
+systems</a>).
+If the number of dependencies grows, be that libraries or compile time tools,
+we can simply add them to the nix expression.</p>
 <h2 id="building-the-code-with-different-dependency-versions">Building the code with different dependency versions</h2>
-<p>The <code>default.nix</code> expression results in one so-called <em>derivation</em> that <code>nix</code> can materialize into a binary package in the nix storage. Let us now write another nix expression that takes multiple <code>boost</code> library versions, multiple <code>poco</code> library versions and multiple compilers, and that results in a <em>set</em> of derivations that nix can materialize using those.</p>
+<p>The <code>default.nix</code> expression results in one so-called <em>derivation</em> that <code>nix</code>
+can materialize into a binary package in the nix storage.
+Let us now write another nix expression that takes multiple <code>boost</code> library
+versions, multiple <code>poco</code> library versions and multiple compilers, and
+that results in a <em>set</em> of derivations that nix can materialize using those.</p>
 <p>We will use the following variety of dependency versions:</p>
 <ul>
 <li>GCC 7 &amp; 8</li>
@@ -172,7 +236,8 @@
 <li>lib <code>boost</code> 1.6.6 - 1.6.9</li>
 </ul>
 <p>…which results in <span class="math inline">(2+2) * 2 * 4 = 32</span> different binaries.</p>
-<p>Quick spoiler: The result of the nix expression that we are going to write will allow us to build and execute these 32 binaries with a single <code>nix-build release.nix</code> command.</p>
+<p>Quick spoiler: The result of the nix expression that we are going to write
+will allow us to build and execute these 32 binaries with a single <code>nix-build release.nix</code> command.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> for path in <span class="va">$(</span><span class="ex">nix-build</span> release.nix<span class="va">)</span><span class="kw">;</span> <span class="cf">do</span> <span class="dt">\</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>   echo <span class="st">&quot;====&quot;</span><span class="kw">;</span> <span class="dt">\</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>   echo <span class="st">&quot;Output of </span><span class="va">$path</span><span class="st">/bin/main:&quot;</span><span class="kw">;</span> <span class="dt">\</span></span>
@@ -371,112 +436,164 @@
 <span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
 <span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
 <span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span></code></pre></div>
-<p>As the first step, let us first decompose the <code>default.nix</code> file into a file <code>derivation.nix</code> and another file <code>release.nix</code>.</p>
-<p>The new <code>derivation.nix</code> file contains the pure package description without knowledge about where the dependencies come from:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode nix"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">{</span> <span class="ex">boost,</span> poco, stdenv }:</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">stdenv.mkDerivation</span> {</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">name</span> = <span class="st">&quot;my-app&quot;</span><span class="kw">;</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">src</span> = ./.<span class="kw">;</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">buildInputs</span> = [ boost poco ]<span class="kw">;</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">buildPhase</span> = <span class="st">&quot;c++ -std=c++17 -o main main.cpp -lPocoFoundation -lboost_system&quot;</span><span class="kw">;</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="ex">installPhase</span> = <span class="st">''</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$out</span>/bin</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cp</span> main <span class="va">$out</span>/bin/</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">''</span><span class="kw">;</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
-<p>The first line states that the content of this file is a <em>function</em> that accepts a dictionary with the keys <code>boost</code>, <code>poco</code>, and <code>stdenv</code> as input arguments. It does then finally return a derivation. A derivation can be materialized into a package with the binary by <code>nix</code>.</p>
+<p>As the first step, let us first decompose the <code>default.nix</code> file into a file
+<code>derivation.nix</code> and another file <code>release.nix</code>.</p>
+<p>The new <code>derivation.nix</code> file contains the pure package description without
+knowledge about where the dependencies come from:</p>
+<pre class="nix"><code>{ boost, poco, stdenv }:
+
+stdenv.mkDerivation {
+  name = &quot;my-app&quot;;
+  src = ./.;
+
+  buildInputs = [ boost poco ];
+
+  buildPhase = &quot;c++ -std=c++17 -o main main.cpp -lPocoFoundation -lboost_system&quot;;
+
+  installPhase = ''
+    mkdir -p $out/bin
+    cp main $out/bin/
+  '';
+}</code></pre>
+<p>The first line states that the content of this file is a <em>function</em> that
+accepts a dictionary with the keys <code>boost</code>, <code>poco</code>, and <code>stdenv</code> as input
+arguments.
+It does then finally return a derivation.
+A derivation can be materialized into a package with the binary by <code>nix</code>.</p>
 <p>This means that we can regard <code>derivation.nix</code> like a mathematical function<br />
 <span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em>(<em>c</em><em>o</em><em>m</em><em>p</em><em>i</em><em>l</em><em>e</em><em>r</em>,<em>b</em><em>o</em><em>o</em><em>s</em><em>t</em>,<em>p</em><em>o</em><em>c</em><em>o</em>) → <em>d</em><em>e</em><em>r</em><em>i</em><em>v</em><em>a</em><em>t</em><em>i</em><em>o</em><em>n</em></span>.</p>
-<p>The next step is then to use that function <span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em></span> and feed it with the cartesian product of all 32 input combinations. The file <code>release.nix</code> does just that:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource numberLines nix"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">{</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a>  <span class="ex">nixpkgs</span> <span class="pp">?</span> <span class="op">&lt;</span>nixpkgs<span class="op">&gt;</span>,</span>
-<span id="cb9-3"><a href="#cb9-3"></a>  <span class="ex">pkgs</span> <span class="pp">?</span> import nixpkgs {}</span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="ex">}:</span></span>
+<p>The next step is then to use that function <span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em></span> and feed it with the cartesian
+product of all 32 input combinations.
+The file <code>release.nix</code> does just that:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource numberLines nix"><code class="sourceCode"><span id="cb9-1"><a href="#cb9-1"></a>{</span>
+<span id="cb9-2"><a href="#cb9-2"></a>  nixpkgs ? &lt;nixpkgs&gt;,</span>
+<span id="cb9-3"><a href="#cb9-3"></a>  pkgs ? import nixpkgs {}</span>
+<span id="cb9-4"><a href="#cb9-4"></a>}:</span>
 <span id="cb9-5"><a href="#cb9-5"></a></span>
-<span id="cb9-6"><a href="#cb9-6"></a><span class="bu">let</span></span>
-<span id="cb9-7"><a href="#cb9-7"></a>  <span class="ex">compilers</span> = with pkgs<span class="kw">;</span> <span class="kw">{</span></span>
-<span id="cb9-8"><a href="#cb9-8"></a>    <span class="ex">gcc7</span> = stdenv<span class="kw">;</span></span>
-<span id="cb9-9"><a href="#cb9-9"></a>    <span class="ex">gcc8</span> = overrideCC stdenv gcc8<span class="kw">;</span></span>
-<span id="cb9-10"><a href="#cb9-10"></a>    <span class="ex">clang7</span> = overrideCC stdenv clang_7<span class="kw">;</span></span>
-<span id="cb9-11"><a href="#cb9-11"></a>    <span class="ex">clang8</span> = overrideCC stdenv clang_8<span class="kw">;</span></span>
-<span id="cb9-12"><a href="#cb9-12"></a>  <span class="kw">};</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>let</span>
+<span id="cb9-7"><a href="#cb9-7"></a>  compilers = with pkgs; {</span>
+<span id="cb9-8"><a href="#cb9-8"></a>    gcc7 = stdenv;</span>
+<span id="cb9-9"><a href="#cb9-9"></a>    gcc8 = overrideCC stdenv gcc8;</span>
+<span id="cb9-10"><a href="#cb9-10"></a>    clang7 = overrideCC stdenv clang_7;</span>
+<span id="cb9-11"><a href="#cb9-11"></a>    clang8 = overrideCC stdenv clang_8;</span>
+<span id="cb9-12"><a href="#cb9-12"></a>  };</span>
 <span id="cb9-13"><a href="#cb9-13"></a></span>
-<span id="cb9-14"><a href="#cb9-14"></a>  <span class="ex">pocoLibs</span> = {</span>
-<span id="cb9-15"><a href="#cb9-15"></a>    <span class="ex">poco190</span> = pkgs.poco<span class="kw">;</span></span>
-<span id="cb9-16"><a href="#cb9-16"></a>    <span class="ex">poco191</span> = pkgs.poco.overrideAttrs <span class="er">(</span><span class="ex">oldAttrs:</span> {</span>
-<span id="cb9-17"><a href="#cb9-17"></a>      <span class="ex">name</span> = <span class="st">&quot;poco-1.9.1&quot;</span><span class="kw">;</span></span>
-<span id="cb9-18"><a href="#cb9-18"></a>      <span class="ex">src</span> = pkgs.fetchgit {</span>
-<span id="cb9-19"><a href="#cb9-19"></a>        <span class="ex">url</span> = <span class="st">&quot;https://github.com/pocoproject/poco.git&quot;</span><span class="kw">;</span></span>
-<span id="cb9-20"><a href="#cb9-20"></a>        <span class="fu">rev</span> = <span class="st">&quot;196540ce34bf884921ff3f9ce338e38fc938acdd&quot;</span><span class="kw">;</span></span>
-<span id="cb9-21"><a href="#cb9-21"></a>        <span class="ex">sha256</span> = <span class="st">&quot;0q0xihkm2z8kndx40150inq7llcyny59cv016gxsx0vbzzbdkcnd&quot;</span><span class="kw">;</span></span>
-<span id="cb9-22"><a href="#cb9-22"></a>      <span class="er">}</span><span class="kw">;</span></span>
-<span id="cb9-23"><a href="#cb9-23"></a>    <span class="er">}</span><span class="kw">);</span></span>
-<span id="cb9-24"><a href="#cb9-24"></a>  <span class="kw">};</span></span>
+<span id="cb9-14"><a href="#cb9-14"></a>  pocoLibs = {</span>
+<span id="cb9-15"><a href="#cb9-15"></a>    poco190 = pkgs.poco;</span>
+<span id="cb9-16"><a href="#cb9-16"></a>    poco191 = pkgs.poco.overrideAttrs (oldAttrs: {</span>
+<span id="cb9-17"><a href="#cb9-17"></a>      name = &quot;poco-1.9.1&quot;;</span>
+<span id="cb9-18"><a href="#cb9-18"></a>      src = pkgs.fetchgit {</span>
+<span id="cb9-19"><a href="#cb9-19"></a>        url = &quot;https://github.com/pocoproject/poco.git&quot;;</span>
+<span id="cb9-20"><a href="#cb9-20"></a>        rev = &quot;196540ce34bf884921ff3f9ce338e38fc938acdd&quot;;</span>
+<span id="cb9-21"><a href="#cb9-21"></a>        sha256 = &quot;0q0xihkm2z8kndx40150inq7llcyny59cv016gxsx0vbzzbdkcnd&quot;;</span>
+<span id="cb9-22"><a href="#cb9-22"></a>      };</span>
+<span id="cb9-23"><a href="#cb9-23"></a>    });</span>
+<span id="cb9-24"><a href="#cb9-24"></a>  };</span>
 <span id="cb9-25"><a href="#cb9-25"></a></span>
-<span id="cb9-26"><a href="#cb9-26"></a>  <span class="ex">boostLibs</span> = {</span>
-<span id="cb9-27"><a href="#cb9-27"></a>    <span class="ex">inherit</span> <span class="er">(</span><span class="ex">pkgs</span><span class="kw">)</span> <span class="ex">boost166</span> boost167 boost168 boost169<span class="kw">;</span></span>
-<span id="cb9-28"><a href="#cb9-28"></a>  <span class="er">}</span><span class="kw">;</span></span>
+<span id="cb9-26"><a href="#cb9-26"></a>  boostLibs = {</span>
+<span id="cb9-27"><a href="#cb9-27"></a>    inherit (pkgs) boost166 boost167 boost168 boost169;</span>
+<span id="cb9-28"><a href="#cb9-28"></a>  };</span>
 <span id="cb9-29"><a href="#cb9-29"></a></span>
-<span id="cb9-30"><a href="#cb9-30"></a>  <span class="ex">originalDerivation</span> = [ <span class="er">(</span><span class="ex">pkgs.callPackage</span> <span class="er">(</span><span class="ex">import</span> ./derivation.nix<span class="kw">)</span> <span class="ex">{}</span><span class="kw">)</span> <span class="ex">]</span><span class="kw">;</span></span>
+<span id="cb9-30"><a href="#cb9-30"></a>  originalDerivation = [ (pkgs.callPackage (import ./derivation.nix) {}) ];</span>
 <span id="cb9-31"><a href="#cb9-31"></a></span>
-<span id="cb9-32"><a href="#cb9-32"></a>  <span class="ex">f</span> = libname: libs: derivs: with pkgs.lib<span class="kw">;</span></span>
-<span id="cb9-33"><a href="#cb9-33"></a>    <span class="ex">concatMap</span> <span class="er">(</span><span class="ex">deriv:</span></span>
-<span id="cb9-34"><a href="#cb9-34"></a>      <span class="ex">mapAttrsToList</span> <span class="er">(</span><span class="ex">libVers:</span> lib:</span>
-<span id="cb9-35"><a href="#cb9-35"></a>        <span class="kw">(</span><span class="ex">deriv.override</span> { <span class="st">&quot;</span><span class="va">${libname}</span><span class="st">&quot;</span> = lib<span class="kw">;</span> <span class="er">}</span><span class="kw">)</span><span class="ex">.overrideAttrs</span></span>
-<span id="cb9-36"><a href="#cb9-36"></a>          <span class="kw">(</span><span class="ex">old:</span> { name = <span class="st">&quot;</span><span class="va">${old</span><span class="er">.name</span><span class="va">}</span><span class="st">-</span><span class="va">${libVers}</span><span class="st">&quot;</span><span class="kw">;</span> <span class="er">}</span><span class="kw">)</span></span>
-<span id="cb9-37"><a href="#cb9-37"></a>      <span class="kw">)</span> <span class="ex">libs</span></span>
-<span id="cb9-38"><a href="#cb9-38"></a>    <span class="kw">)</span> <span class="ex">derivs</span><span class="kw">;</span></span>
+<span id="cb9-32"><a href="#cb9-32"></a>  f = libname: libs: derivs: with pkgs.lib;</span>
+<span id="cb9-33"><a href="#cb9-33"></a>    concatMap (deriv:</span>
+<span id="cb9-34"><a href="#cb9-34"></a>      mapAttrsToList (libVers: lib:</span>
+<span id="cb9-35"><a href="#cb9-35"></a>        (deriv.override { &quot;${libname}&quot; = lib; }).overrideAttrs</span>
+<span id="cb9-36"><a href="#cb9-36"></a>          (old: { name = &quot;${old.name}-${libVers}&quot;; })</span>
+<span id="cb9-37"><a href="#cb9-37"></a>      ) libs</span>
+<span id="cb9-38"><a href="#cb9-38"></a>    ) derivs;</span>
 <span id="cb9-39"><a href="#cb9-39"></a></span>
-<span id="cb9-40"><a href="#cb9-40"></a>  <span class="ex">overrides</span> = [</span>
-<span id="cb9-41"><a href="#cb9-41"></a>    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;stdenv&quot;</span> compilers<span class="kw">)</span></span>
-<span id="cb9-42"><a href="#cb9-42"></a>    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;poco&quot;</span>   pocoLibs<span class="kw">)</span></span>
-<span id="cb9-43"><a href="#cb9-43"></a>    <span class="kw">(</span><span class="ex">f</span> <span class="st">&quot;boost&quot;</span>  boostLibs<span class="kw">)</span></span>
-<span id="cb9-44"><a href="#cb9-44"></a>  <span class="ex">]</span><span class="kw">;</span></span>
-<span id="cb9-45"><a href="#cb9-45"></a><span class="er">in</span></span>
-<span id="cb9-46"><a href="#cb9-46"></a>  <span class="ex">pkgs.lib.foldl</span> <span class="er">(</span><span class="ex">a:</span> b: a // { <span class="st">&quot;</span><span class="va">${b</span><span class="er">.name</span><span class="va">}</span><span class="st">&quot;</span> = b<span class="kw">;</span> <span class="er">}</span><span class="kw">)</span> <span class="ex">{}</span> <span class="er">(</span></span>
-<span id="cb9-47"><a href="#cb9-47"></a>    <span class="ex">pkgs.lib.foldl</span> <span class="er">(</span><span class="ex">a:</span> f: f a<span class="kw">)</span> <span class="ex">originalDerivation</span> overrides</span>
-<span id="cb9-48"><a href="#cb9-48"></a>  <span class="kw">)</span></span></code></pre></div>
+<span id="cb9-40"><a href="#cb9-40"></a>  overrides = [</span>
+<span id="cb9-41"><a href="#cb9-41"></a>    (f &quot;stdenv&quot; compilers)</span>
+<span id="cb9-42"><a href="#cb9-42"></a>    (f &quot;poco&quot;   pocoLibs)</span>
+<span id="cb9-43"><a href="#cb9-43"></a>    (f &quot;boost&quot;  boostLibs)</span>
+<span id="cb9-44"><a href="#cb9-44"></a>  ];</span>
+<span id="cb9-45"><a href="#cb9-45"></a>in</span>
+<span id="cb9-46"><a href="#cb9-46"></a>  pkgs.lib.foldl (a: b: a // { &quot;${b.name}&quot; = b; }) {} (</span>
+<span id="cb9-47"><a href="#cb9-47"></a>    pkgs.lib.foldl (a: f: f a) originalDerivation overrides</span>
+<span id="cb9-48"><a href="#cb9-48"></a>  )</span></code></pre></div>
 <p>This code looks a bit more complicated, but it does a lot of things:</p>
 <ul>
-<li>It defines the variety of compilers and libraries in the variables <code>compilers</code>, <code>pocoLibs</code>, and <code>boostLibs</code>.
+<li>It defines the variety of compilers and libraries in the variables
+<code>compilers</code>, <code>pocoLibs</code>, and <code>boostLibs</code>.
 <ul>
-<li>note that <code>nixpkgs</code> already contains lib <code>poco</code> version 1.9.0, but not 1.9.1 - we simply override its package description to use the latest 1.9.1 source from poco’s github repository.</li>
+<li>note that <code>nixpkgs</code> already contains lib <code>poco</code> version 1.9.0, but not
+1.9.1 - we simply override its package description to use the latest 1.9.1
+source from poco’s github repository.</li>
 </ul></li>
-<li>Function <code>f</code> contains all the magic: It reapplies the original function <code>deriv</code> with one library input overloaded from a library list argument!</li>
-<li>The list <code>overrides</code> contains the list of function <code>f</code> applications that shall be applied over the original derivation.</li>
+<li>Function <code>f</code> contains all the magic: It reapplies the original function
+<code>deriv</code> with one library input overloaded from a library list argument!</li>
+<li>The list <code>overrides</code> contains the list of function <code>f</code> applications that
+shall be applied over the original derivation.</li>
 <li>The last 2 lines of code apply all the transformations within a simple <code>fold</code></li>
 </ul>
-<p>This explanation is very brief. The whole code might look pretty much familiar to everyone who is not used to nix but has some experience with purely functional programming languages. Explaining the code in detail to developers who neither know <code>nix</code> nor any functional programming, would explode the scope of this article.</p>
+<p>This explanation is very brief.
+The whole code might look pretty much familiar to everyone who is not used to
+nix but has some experience with purely functional programming languages.
+Explaining the code in detail to developers who neither know <code>nix</code> nor any
+functional programming, would explode the scope of this article.</p>
 <h2 id="summary">Summary</h2>
-<p>We have seen how simple it is to quickly set up an ad-hoc C++ programming environment with a compiler and libraries, without cluttering the system.</p>
-<p>We have “packaged” our little project with a roughly ~10 LOC short <code>default.nix</code> Users with solely <code>nix</code> installed can clone this project from git, run <code>nix-build</code> and get the binary. Simple as that.</p>
-<p>With less than 50 LOC we implemented a nix expression that builds our application in 32 different variants with different compilers and library versions.</p>
-<p>There is a git repository with all project files that is available for checkout: <a href="https://github.com/tfc/nix_cpp_cartesian_dependencies" class="uri">https://github.com/tfc/nix_cpp_cartesian_dependencies</a></p>
+<p>We have seen how simple it is to quickly set up an ad-hoc C++ programming
+environment with a compiler and libraries, without cluttering the system.</p>
+<p>We have “packaged” our little project with a roughly ~10 LOC short <code>default.nix</code>
+Users with solely <code>nix</code> installed can clone this project from git, run
+<code>nix-build</code> and get the binary. Simple as that.</p>
+<p>With less than 50 LOC we implemented a nix expression that builds our
+application in 32 different variants with different compilers and library
+versions.</p>
+<p>There is a git repository with all project files that is available for checkout:
+<a href="https://github.com/tfc/nix_cpp_cartesian_dependencies" class="uri">https://github.com/tfc/nix_cpp_cartesian_dependencies</a></p>
 <h2 id="outlook">Outlook</h2>
-<p>What else can be done from here? The advantages and strengths of <code>nix</code> have <em>by far</em> not been exhausted in this example.</p>
+<p>What else can be done from here? The advantages and strengths of <code>nix</code> have
+<em>by far</em> not been exhausted in this example.</p>
 <h3 id="maximum-reproducibility-pinning-nixpkgs">Maximum Reproducibility: Pinning <code>nixpkgs</code></h3>
-<p>Whenever we referenced packages, we got them from the magical nix expression <code>&lt;nixpkgs&gt;</code>. This package source is a <em>channel</em> that can be updated with <code>nix-channel --update</code>, which is similar to running <code>apt-get update</code> on Debian-like Linux distros. Of course, an update of the channel also updates the packages and thus might break the whole build.</p>
-<p>With <code>nix</code>, we can simply <strong>pin</strong> the package list to a version that is known to work.</p>
+<p>Whenever we referenced packages, we got them from the magical nix expression
+<code>&lt;nixpkgs&gt;</code>.
+This package source is a <em>channel</em> that can be updated with <code>nix-channel --update</code>, which is similar to running <code>apt-get update</code> on Debian-like Linux
+distros.
+Of course, an update of the channel also updates the packages and thus might
+break the whole build.</p>
+<p>With <code>nix</code>, we can simply <strong>pin</strong> the package list to a version that is known
+to work.</p>
 <p>In the github repository of this example, i did so with <a href="https://github.com/tfc/nix_cpp_cartesian_dependencies/blob/master/nixpkgs.nix">nixpkgs.nix</a>.</p>
-<p>Using this technique, one can be pretty confident, that the project will still work in all configurations in a few years, which makes our build procedure pretty reproducible.</p>
+<p>Using this technique, one can be pretty confident, that the project will
+still work in all configurations in a few years, which makes our build procedure
+pretty reproducible.</p>
 <h3 id="nix-ci-hydra">Nix CI: Hydra</h3>
-<p>Since <code>nix</code> is simply a tool that can be installed on Linux, Mac, and other UNIX systems, it can also be run in different CIs.</p>
-<p>The NixOS project does however come with its own CI: <a href="https://nixos.org/hydra/">Hydra</a>. I am running my own instance on <a href="https://hydra.kosmosgame.com" class="uri">https://hydra.kosmosgame.com</a> and installed this project as a jobset on it:</p>
+<p>Since <code>nix</code> is simply a tool that can be installed on Linux, Mac, and other UNIX
+systems, it can also be run in different CIs.</p>
+<p>The NixOS project does however come with its own CI:
+<a href="https://nixos.org/hydra/">Hydra</a>.
+I am running my own instance on <a href="https://hydra.kosmosgame.com" class="uri">https://hydra.kosmosgame.com</a> and installed
+this project as a jobset on it:</p>
 <p><a href="https://hydra.kosmosgame.com/jobset/github/nix_cpp_cartesian_dependencies#tabs-jobs">This article’s project in hydra</a></p>
-<p>The code does a bit more than covered in this article: I added a nix expression <a href="https://github.com/tfc/nix_cpp_cartesian_dependencies/blob/master/output.nix"><code>output.nix</code></a> that does not only build the application in all variants, but also executes them and stores their results in the nix store. This way they can be looked at in the browser like here: <a href="https://hydra.kosmosgame.com/build/265">example output</a></p>
+<p>The code does a bit more than covered in this article:
+I added a nix expression <a href="https://github.com/tfc/nix_cpp_cartesian_dependencies/blob/master/output.nix"><code>output.nix</code></a>
+that does not only build the application in all variants, but also executes
+them and stores their results in the nix store.
+This way they can be looked at in the browser like here: <a href="https://hydra.kosmosgame.com/build/265">example output</a></p>
 <h3 id="fully-reproducible-automatic-integration-tests">Fully Reproducible, Automatic Integration Tests</h3>
-<p>Nix expressions do not only allow for simple ad-hoc packaging of binaries: They are mighty enough to describe whole-system descriptions. In fact, the NixOS installer ISOs, the Virtualbox NixOS demo VM image, the Amazon AMIs, Microsoft Azure Blobs, etc. are all built from nix expressions.</p>
-<p>I build a little more complicated example and put it on github: <a href="https://github.com/tfc/nix_cmake_example" class="uri">https://github.com/tfc/nix_cmake_example</a></p>
-<p>In a nutshell, this repository contains a C++ server application that uses PostgreSQL as a database backend and a Python client application that provides a little web server interface to the same database. In order to test such an application one needs a host with a confiured and running PostgreSQL instance.</p>
-<p>The C++ app is built in different configurations - all configurations are automatically tested in VMs that are automatically created, spun up, and destroyed afterwards.</p>
+<p>Nix expressions do not only allow for simple ad-hoc packaging of binaries:
+They are mighty enough to describe whole-system descriptions.
+In fact, the NixOS installer ISOs, the Virtualbox NixOS demo VM image, the
+Amazon AMIs, Microsoft Azure Blobs, etc. are all built from nix expressions.</p>
+<p>I build a little more complicated example and put it on github:
+<a href="https://github.com/tfc/nix_cmake_example" class="uri">https://github.com/tfc/nix_cmake_example</a></p>
+<p>In a nutshell, this repository contains a C++ server application that uses
+PostgreSQL as a database backend and a Python client application that provides
+a little web server interface to the same database.
+In order to test such an application one needs a host with a confiured and
+running PostgreSQL instance.</p>
+<p>The C++ app is built in different configurations - all configurations are
+automatically tested in VMs that are automatically created, spun up, and
+destroyed afterwards.</p>
 <figure>
-<img src="https://github.com/tfc/nix_cmake_example/raw/master/doc/hydra_nix_example.png" alt="Hydra example output" /><figcaption aria-hidden="true">Hydra example output</figcaption>
+<img src="https://github.com/tfc/nix_cmake_example/raw/master/doc/hydra_nix_example.png" alt="Hydra example output" />
+<figcaption aria-hidden="true">Hydra example output</figcaption>
 </figure>
-<p>The whole output can be inspected on <a href="https://hydra.kosmosgame.com/jobset/github/nix_cmake_example#tabs-jobs" class="uri">https://hydra.kosmosgame.com/jobset/github/nix_cmake_example#tabs-jobs</a></p>
+<p>The whole output can be inspected on
+<a href="https://hydra.kosmosgame.com/jobset/github/nix_cmake_example#tabs-jobs" class="uri">https://hydra.kosmosgame.com/jobset/github/nix_cmake_example#tabs-jobs</a></p>
 <h3 id="cross-compilation">Cross Compilation</h3>
 <p>Just touching this topic by dropping some links</p>
 <ul>

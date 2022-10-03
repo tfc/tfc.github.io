@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,18 +35,25 @@
 </div>
 <div class="content container"><h1>Template Meta Programming Basics</h1>
 <div class="post"><span class="post-date">May  5, 2016</span>
-<p>C++ template meta programs are at first really hard to read. This is because the template mechanism accidentally became turing complete, although it was invented to enable for type-agnostic programming of generic algorithms. However, now the world knows that the C++ template part of the language <em>is</em> turing complete, people started writing full programs in it, and it enhances the power and flexibility of libraries quite a lot. This article aims to explain some very basic things one needs to know about the C++ template meta programming language, in order to be able to do things with it, or even understand foreign programs.</p>
+<p>C++ template meta programs are at first really hard to read.
+This is because the template mechanism accidentally became turing complete, although it was invented to enable for type-agnostic programming of generic algorithms.
+However, now the world knows that the C++ template part of the language <em>is</em> turing complete, people started writing full programs in it, and it enhances the power and flexibility of libraries quite a lot.
+This article aims to explain some very basic things one needs to know about the C++ template meta programming language, in order to be able to do things with it, or even understand foreign programs.</p>
 <!--more-->
 <h2 id="getting-values-out-of-types">Getting Values Out of Types</h2>
-<p>C++ TMP programs work on types, not values. In some cases, it is useful to work with values, and for that, they need to be wrapped into types. This is very easy for any type which can be used as template parameters, just like integers, characters, etc.:</p>
+<p>C++ TMP programs work on types, not values.
+In some cases, it is useful to work with values, and for that, they need to be wrapped into types.
+This is very easy for any type which can be used as template parameters, just like integers, characters, etc.:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> n<span class="op">&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="dt">int_type</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">int</span> value <span class="op">{</span>n<span class="op">};</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>The <code>int_type</code> enables for bijective mappings between <code>int_type&lt;N&gt;</code> and integers <code>N</code>. This way integers can be put where only types are accepted, without losing the actual value information, as it is fixed in the type name.</p>
+<p>The <code>int_type</code> enables for bijective mappings between <code>int_type&lt;N&gt;</code> and integers <code>N</code>.
+This way integers can be put where only types are accepted, without losing the actual value information, as it is fixed in the type name.</p>
 <h2 id="function-calling">Function Calling</h2>
-<p>In C++ TMP, <strong>functions</strong> are implemented by <em>misusing</em> structures or classes. (There is no real difference between classes and structures - it is just convenient that everything in a struct is public by default)</p>
+<p>In C++ TMP, <strong>functions</strong> are implemented by <em>misusing</em> structures or classes.
+(There is no real difference between classes and structures - it is just convenient that everything in a struct is public by default)</p>
 <p>This is done using a typical pattern:</p>
 <ul>
 <li>The function’s <strong>parameters</strong> are just template parameters.</li>
@@ -62,10 +67,13 @@
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> int_pointer <span class="op">=</span> <span class="kw">typename</span> to_pointer<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;::</span>type<span class="op">;</span> <span class="co">// Result: int *</span></span></code></pre></div>
-<p>This example presents the <code>to_pointer</code> <em>function</em>, which takes any parameter type <code>T</code> and returns <code>T*</code>. In the last line, it is used to transform <code>int</code> to an <code>int *</code> type.</p>
-<p>The function is <em>applied</em> by writing <code>typename function_name&lt;parameter&gt;::type</code>. <code>type</code> is just the convention that the function return type is provided by a <code>using</code> clause with that name, and <code>typename</code> is a necessary keyword which makes the compiler select a matching template and look into it.</p>
+<p>This example presents the <code>to_pointer</code> <em>function</em>, which takes any parameter type <code>T</code> and returns <code>T*</code>.
+In the last line, it is used to transform <code>int</code> to an <code>int *</code> type.</p>
+<p>The function is <em>applied</em> by writing <code>typename function_name&lt;parameter&gt;::type</code>.
+<code>type</code> is just the convention that the function return type is provided by a <code>using</code> clause with that name, and <code>typename</code> is a necessary keyword which makes the compiler select a matching template and look into it.</p>
 <h2 id="function-call-using-clause-helpers">Function Call Using-Clause Helpers</h2>
-<p>Using <code>typename ...::type</code> quickly looks clumsy when applying TMP functions in a nested way. Since C++11, it is possible to wrap that clumsy part of function application into <code>using</code> clauses:</p>
+<p>Using <code>typename ...::type</code> quickly looks clumsy when applying TMP functions in a nested way.
+Since C++11, it is possible to wrap that clumsy part of function application into <code>using</code> clauses:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> param<span class="op">&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> <span class="dt">function_t</span> <span class="op">=</span> <span class="kw">typename</span> function<span class="op">&lt;</span>param<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
 <p>The naming typically follows the convention, that if the function name is <code>foo</code>, the helper name is <code>foo_t</code>.</p>
@@ -77,7 +85,8 @@
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> result <span class="op">=</span> <span class="dt">function_t</span><span class="op">&lt;</span>FooParam<span class="op">&gt;;</span></span></code></pre></div>
 <h2 id="pattern-matching">Pattern Matching</h2>
 <p><em>Pattern matching</em> is a very important principle in purely functional programming, and so it is in C++ TMP programming.</p>
-<p>In the following example it is used to provide a completely different implementation for a TMP function which takes integers, in the case the integer is a <code>10</code>. It will return <code>false</code> in all cases, but <code>true</code> in case the integer is of the value <code>10</code>.</p>
+<p>In the following example it is used to provide a completely different implementation for a TMP function which takes integers, in the case the integer is a <code>10</code>.
+It will return <code>false</code> in all cases, but <code>true</code> in case the integer is of the value <code>10</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">int</span> n<span class="op">&gt;</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> is_ten <span class="op">{</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="dt">bool</span> value <span class="op">{</span><span class="kw">false</span><span class="op">};</span></span>
@@ -90,7 +99,8 @@
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> result1 <span class="op">{</span>is_ten<span class="op">&lt;</span><span class="dv">12</span><span class="op">&gt;::</span>value<span class="op">};</span> <span class="co">// false</span></span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> result2 <span class="op">{</span>is_ten<span class="op">&lt;</span><span class="dv">10</span><span class="op">&gt;::</span>value<span class="op">};</span> <span class="co">// true</span></span></code></pre></div>
-<p>It would have been possible to have only one implementation of <code>is_ten</code> which initializes its <code>value</code> field to <code>n == 10</code>, which would be a correct implementation, too. This example uses pattern matching on this <em>problem</em> just for the sake of simplicity.</p>
+<p>It would have been possible to have only one implementation of <code>is_ten</code> which initializes its <code>value</code> field to <code>n == 10</code>, which would be a correct implementation, too.
+This example uses pattern matching on this <em>problem</em> just for the sake of simplicity.</p>
 <p>Pattern matching becomes extremely useful when used in more complicated cases, because it can be used to look <em>into</em> template types:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> <span class="dt">vector_type</span><span class="op">&gt;</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a><span class="kw">struct</span> is_pointer_vector <span class="op">{</span></span>
@@ -112,7 +122,9 @@
 <li><strong>Line 2</strong> defines the generic matcher, which will always return <code>false</code>.</li>
 <li><strong>Line 7</strong> defines the case which only matches on vectors with pointer payload types. The type being pointed to could be anything, but it has to be a pointer.</li>
 </ul>
-<p>Pattern matching is very flexible. It would have been possible to initialize the <code>value</code> field of the generic case depending on type traits accessing member type definitions of vector (Which could for example look like <code>is_pointer&lt;vector_type::container_type&gt;::value</code>), but that would not necessarily be more readable. Often, this would even be slower, as i experienced that the compiler will be a lot quicker matching the right types instead of unrolling nested conditional branches.</p>
+<p>Pattern matching is very flexible.
+It would have been possible to initialize the <code>value</code> field of the generic case depending on type traits accessing member type definitions of vector (Which could for example look like <code>is_pointer&lt;vector_type::container_type&gt;::value</code>), but that would not necessarily be more readable.
+Often, this would even be slower, as i experienced that the compiler will be a lot quicker matching the right types instead of unrolling nested conditional branches.</p>
 <h2 id="if-else-branches">If-Else Branches</h2>
 <div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> condition<span class="op">,</span> <span class="kw">typename</span> <span class="dt">true_t</span><span class="op">,</span> <span class="kw">typename</span> <span class="dt">false_t</span><span class="op">&gt;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>if_else </span>
@@ -133,7 +145,9 @@
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> <span class="dt">odd_t</span><span class="op">;</span></span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> result <span class="op">=</span> if_else<span class="op">&lt;</span><span class="dv">5</span> <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">0</span><span class="op">,</span> <span class="dt">even_t</span><span class="op">,</span> <span class="dt">odd_t</span><span class="op">&gt;;</span></span></code></pre></div>
-<p>Especially when nesting a lot of <code>if_else_t</code> expressions, the code becomes quickly <strong>less readable</strong>. Pattern matching can help out a lot here, being both easier to read in most cases. Another noteworthy detail is, that the compiler will be <strong>faster</strong> matching patterns than unfolding a lot of nested <code>if_else_t</code>s.</p></div>
+<p>Especially when nesting a lot of <code>if_else_t</code> expressions, the code becomes quickly <strong>less readable</strong>.
+Pattern matching can help out a lot here, being both easier to read in most cases.
+Another noteworthy detail is, that the compiler will be <strong>faster</strong> matching patterns than unfolding a lot of nested <code>if_else_t</code>s.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
 var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/05/05/template_meta_programming_basics/';

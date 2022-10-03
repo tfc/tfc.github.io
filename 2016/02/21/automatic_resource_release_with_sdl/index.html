@@ -28,8 +28,6 @@
 </a>
 <a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
 </a>
-<a href="https://plus.google.com/+JacekGalowicz"><i class="fa fa-google-plus-square"></i>
-</a>
 <a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
 </a>
 </p>
@@ -37,7 +35,12 @@
 </div>
 <div class="content container"><h1>A Nice Way to Manage SDL Resource Lifetime</h1>
 <div class="post"><span class="post-date">February 21, 2016</span>
-<p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL. SDL is easy to use and portable, but it is a C-style library. Because of that C nature, the library does not really help the user to write elegant, modern code. Acquiring and Releasing SDL resources often ends up in ugly old school resource management. It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases. The approach is easily extendable to other kinds of resources, too.</p>
+<p>I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL.
+SDL is easy to use and portable, but it is a C-style library.
+Because of that C nature, the library does not really help the user to write elegant, modern code.
+Acquiring and Releasing SDL resources often ends up in ugly old school resource management.
+It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases.
+The approach is easily extendable to other kinds of resources, too.</p>
 <!--more-->
 <h2 id="typical-c-style-sdl-code">Typical C-Style SDL Code</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></span>
@@ -90,9 +93,13 @@
 <span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This code contains a list of resource release code which is also quite error prone to write/maintain.</p>
 <h2 id="using-shared_ptr-to-automate-resource-handling">Using <code>shared_ptr</code> to Automate Resource Handling</h2>
-<p><code>shared_ptr</code> from the STL is a useful helper class, which wraps a pointer to some resource payload. As soon as a shared pointer is released, it automatically calls <code>delete</code> on the payload instance being pointed to.</p>
-<p>The resources which SDL gives us, cannot be release using <code>delete</code>, as the SDL provides specific functions for every resource type. In order to be able to use <code>shared_ptr</code>’s automatic resource management capability, it needs to be customized to call <em>different</em> code than the default <code>delete</code> call.</p>
-<p>This is indeed possible: <code>shared_ptr</code>’s constructor takes a second, optional parameter, which can be a lambda expression. This lambda expression will then be called (with the payload pointer as its only parameter) by the shared pointer class instead of its default <code>delete</code> call.</p>
+<p><code>shared_ptr</code> from the STL is a useful helper class, which wraps a pointer to some resource payload.
+As soon as a shared pointer is released, it automatically calls <code>delete</code> on the payload instance being pointed to.</p>
+<p>The resources which SDL gives us, cannot be release using <code>delete</code>, as the SDL provides specific functions for every resource type.
+In order to be able to use <code>shared_ptr</code>’s automatic resource management capability, it needs to be customized to call <em>different</em> code than the default <code>delete</code> call.</p>
+<p>This is indeed possible:
+<code>shared_ptr</code>’s constructor takes a second, optional parameter, which can be a lambda expression.
+This lambda expression will then be called (with the payload pointer as its only parameter) by the shared pointer class instead of its default <code>delete</code> call.</p>
 <p>The following code provides a function <code>sdl_shared</code>, which takes a pointer to an SDL resource, and wraps it into a <code>shared_ptr</code> instance which automatically calls the right SDL specific release function at its end of life cycle:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;memory&gt;</span><span class="pp"> </span><span class="co">// shared_ptr</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;SDL2/SDL.h&gt;</span></span>
@@ -106,7 +113,8 @@
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>shared_ptr<span class="op">&lt;</span>T<span class="op">&gt;</span> sdl_shared<span class="op">(</span>T <span class="op">*</span>t<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">std::</span>shared_ptr<span class="op">&lt;</span>T<span class="op">&gt;(</span>t<span class="op">,</span> <span class="op">[](</span>T <span class="op">*</span>t<span class="op">)</span> <span class="op">{</span> SDL_DelRes<span class="op">(</span>t<span class="op">);</span> <span class="op">});</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p><code>sdl_shared</code> is a template function which deduces the pointer type from the input parameter. This helper function can be wrapped around any SDL resource allocating function, as long as one <code>SDL_DelRes</code> overload is defined for the specific SDL resource type.</p>
+<p><code>sdl_shared</code> is a template function which deduces the pointer type from the input parameter.
+This helper function can be wrapped around any SDL resource allocating function, as long as one <code>SDL_DelRes</code> overload is defined for the specific SDL resource type.</p>
 <p>Using this helper, the resource management can be implemented much cleaner:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>SDL_Init<span class="op">(</span>SDL_INIT_VIDEO<span class="op">)</span> <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
