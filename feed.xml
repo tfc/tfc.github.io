@@ -7,8 +7,157 @@
         <description><![CDATA[This blog is about programming]]></description>
         <atom:link href="https://blog.galowicz.de/feed.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Sun, 20 Mar 2022 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Sat, 26 Nov 2022 00:00:00 UT</lastBuildDate>
         <item>
+    <title>NixOS Community Oceansprint late 2022 Report</title>
+    <link>https://blog.galowicz.de/2022/11/26/nix-community-oceansprint3-report</link>
+    <description><![CDATA[<p>This is my trip report from the late 2022 Oceansprint hackathon on Lanzarote.
+For more information please also have a look on the website:
+<a href="https://oceansprint.org">https://oceansprint.org</a></p>
+<!--more-->
+<h1 id="oceansprint">Oceansprint</h1>
+<p><a href="https://oceansprint.org">Oceansprint</a> is a regular hackathon event in the
+NixOS community (i wrote a bit about the community and event location
+<a href="/2021/12/12/nix-community-oceansprint-report">in the last article</a>)
+that is planned to happen twice a year.
+From 21.11. to 25.11.2022 it happened for the third time.
+This time we were roughly ~20 participants.</p>
+<p>After i was at the first oceansprint, skipped the second, and participated in
+the third one again, i have experienced quite an increment in the overall
+event’s quality and the group activities.
+Big kudos to Neyts Zupan, Domen Kozar and Florian Friesdorf for the great
+organization!</p>
+<figure>
+<img src="/images/2021-12-oceansprint-location.jpg" alt="The Oceansprint location" />
+<figcaption aria-hidden="true">The Oceansprint location</figcaption>
+</figure>
+<h1 id="socializing">Socializing</h1>
+<p>During the hacking sessions over the day, we all typically sat in groups based
+on who worked together on something.
+At breakfast and lunch there was typically some random regrouping involved,
+and over the day there were also many sporadic discussions at the coffee
+machine.
+This, combined with the fact that 99% of the time everyone was disciplined in
+speaking english, it was very nice to catch some interesting insights in
+random topics when walking by.</p>
+<figure>
+<img src="/images/2022-oceansprint3-buffet.jpg" alt="The catering Original Tweet" />
+<figcaption aria-hidden="true">The catering <a href="https://twitter.com/nzupan/status/1594653961419644932">Original Tweet</a></figcaption>
+</figure>
+<p>Events that really lifted the interaction to a more fun level away from just
+work-related discussions were the big grill party and the catamaran sailing
+event (there was also wind surfing and hiking), as well as the regular
+strandings at the cocktail bar “el kiosko”.
+We even went into the sauna together that Domen has on his balcony.
+This way it was possible to get to talk to <em>everyone</em> in more detail over the
+week without any hassle and simply having a great time.</p>
+<h1 id="sprint-projects">Sprint Projects</h1>
+<p>I will only describe the topics where i either participated or that i followed
+more closely out of personal interest.
+There were many more projects, and i am pretty sure they are covered by other
+blog articles.</p>
+<h2 id="secure-boot-on-nixos">Secure Boot on NixOS</h2>
+<p><a href="https://twitter.com/blitzclone">Julian Stecklina</a> (works at <a href="https://cyberus-technology.de/">Cyberus
+Technology</a>), Niklas Sturm (works at
+<a href="https://www.secunet.com/">Secunet</a>), and
+<a href="https://twitter.com/Ra1t0_Bezar1us">Raito Bezarius</a> worked together to support
+Secure Boot on NixOS.
+They were very successful this week: We have seen laptops booting with activated
+Secureboot and the Gnome Device Security dialogue displaying a green
+Secureboot entry:</p>
+<figure>
+<img src="/images/2022-oceansprint3-secureboot.png" alt="Activated Secureboot on NixOS Original Tweet" />
+<figcaption aria-hidden="true">Activated Secureboot on NixOS <a href="https://twitter.com/blitzclone/status/1596108176914493440">Original Tweet</a></figcaption>
+</figure>
+<p>There is already a pull request on github that introduces this work for at least
+developer setups.
+For secure and easy production use, some work on key management etc. is still
+left to be done.
+See the code and more details on github:
+<a href="https://github.com/blitz/lanzaboote">github.com/blitz/lanzaboote</a></p>
+<p>Multiple aspects of this make this project remarkable:</p>
+<ul>
+<li>Niklas and Julian did not know Raito before. The collaboration was a
+spontaneous result of talking about their project plans on the first evening.</li>
+<li>On every ocean sprint so far, we sent different Cyberus co-workers, and this
+is the first sprint with Secunet co-workers. So far, every co-worker who
+returned learned about new ways how to use nix and NixOS productively for both
+personal profit and also company goals.</li>
+<li>Both companies Cyberus Technology and Secunet are working with or evaluating
+NixOS internally. Getting Secureboot working in NixOS is an important mile
+stone.</li>
+<li>This is a great example of how the sponsorship money of both companies, which
+initially was a donation to support events of this kind, also turned out to be
+an investment with immediate return.</li>
+</ul>
+<h2 id="dream2nix-enhancements">Dream2nix enhancements</h2>
+<p><a href="https://github.com/hsjobeki">Johannes Kirschbauer</a> and
+<a href="https://github.com/davhau">David Hauer</a> worked together on improving the
+<a href="https://nix-community.github.io/dream2nix/">dream2nix</a> project.</p>
+<p>From my perspective this is another remarkable collaboration between open source
+maintainers and companies, as Johannes aims to push nix for frontend/UI projects
+at secunet.
+The Oceansprint has been the perfect chance to talk to David about how to get
+the most value out of this for all parties over a beer in person.</p>
+<h2 id="noogle">Noogle</h2>
+<p>Another thing that Johannes and David came up with, is Noogle:
+A search machine for nix and nixpkgs library functions.</p>
+<figure>
+<img src="/images/2022-oceansprint3-noogle.jpg" alt="Noogle Alpha Original Tweet" />
+<figcaption aria-hidden="true">Noogle Alpha <a href="https://twitter.com/domenkozar/status/1596168388195545088">Original Tweet</a></figcaption>
+</figure>
+<p>All Haskellers immediately cheered for this as this is like
+<a href="https://hoogle.haskell.org/">hoogle</a>, a great tool for finding the right
+function in all available packages.</p>
+<h1 id="sponsors">Sponsors</h1>
+<p>The sponsors are a very important topic, as such events would not be possible
+without them.</p>
+<figure>
+<img src="/images/2022-oceansprint3-shirt.jpg" alt="The sponsored Oceansprint Shirt Original Tweet" />
+<figcaption aria-hidden="true">The sponsored Oceansprint Shirt <a href="https://twitter.com/domenkozar/status/1595004457653309440">Original Tweet</a></figcaption>
+</figure>
+<p>As one of the founders of Cyberus, i was interested in the company growing
+into the Nix(OS) open source community, hence it was natural to become a sponsor
+of this event.
+In addition to that, i put some effort into convincing secunet to sponsor the
+oceansprint, too, as we do work together with this awesome technology and they
+are also interested having their colleagues to grow into the community.</p>
+<p>After having spoken with the organisers <a href="https://twitter.com/nzupan">Neyts</a> and
+<a href="https://twitter.com/domenkozar">Domen</a> at the
+<a href="https://2022.nixcon.org/">NixCon 2022 in Paris</a> about the topic of sponsoring,
+i learned that they found it easier to motivate small businesses to participate
+in sponsoring than the very big ones.</p>
+<p>It seems like the pressure to be able to explain the value proposition of a
+sponsoring is bigger for large company management.
+So far i personally see the following reasons why companies should
+sponsor/invest in conferences and hackathons like this:</p>
+<ul>
+<li>Sponsoring is a good way to reserve seats for your employees at such events.
+While attending, they will extend their network and as soon as some open
+source library or tool has a problem that needs to be fixed, discussing how
+to fix it quickly will be just a phone call with the maintainer away.
+I experienced the profit of such short communication channels at work very
+often already.</li>
+<li>The exposure to long-year community members helps a lot understanding the
+used technology better. Especially less experienced colleagues come back with
+a lot of enlightment, which is why we try to send different colleagues every
+time.</li>
+<li>Having your own employees hack together on things with people that are not on
+your payroll is a very efficient way to get work done for all participating
+sides.</li>
+<li>Events like this in the sun with great social activities are a great way to
+support the efforts of your most motivated co-workers. The overall motivation
+at such events is infectious.</li>
+<li>Most big companies use lots and lots of open source technology.
+Often, employees do not get enough time due to project constraints, or are
+legally not allowed to share code back.
+Sponsoring such events is a great way to give back.</li>
+</ul>]]></description>
+    <pubDate>Sat, 26 Nov 2022 00:00:00 UT</pubDate>
+    <guid>https://blog.galowicz.de/2022/11/26/nix-community-oceansprint3-report</guid>
+    <dc:creator>Jacek Galowicz</dc:creator>
+</item>
+<item>
     <title>Filtering Unique Items from Heterogeneous Lists at Compile Time</title>
     <link>https://blog.galowicz.de/2022/03/20/unique-heterogeneous-typelists</link>
     <description><![CDATA[<p>This article is about how to filter unique items from heterogeneous lists on
@@ -3415,192 +3564,6 @@ On the level of writing assembler code, it is pretty normal that the question �
 <em>Tail recursion</em> is a nice step towards such simplifying abstractions, and can be used for free, which is pretty much worth knowing about it.</p>]]></description>
     <pubDate>Sun, 11 Sep 2016 00:00:00 UT</pubDate>
     <guid>https://blog.galowicz.de/2016/09/11/dont_fear_recursion</guid>
-    <dc:creator>Jacek Galowicz</dc:creator>
-</item>
-<item>
-    <title>Wrapping Algorithms into Iterators</title>
-    <link>https://blog.galowicz.de/2016/09/04/algorithms_in_iterators</link>
-    <description><![CDATA[<p>Sometimes there is the requirement to generate a range of numbers from some algorithm.
-Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever.
-Some calculations can be optimized by <em>memorizing</em> some values for the calculation of the next number, just as this applies for <strong>fibonacci numbers</strong>.
-This article shows how to wrap such calculations into <strong>iterators</strong> in order to have performant, and nicely encapsulated algorithms.</p>
-<!--more-->
-<h1 id="fibonacci-numbers">Fibonacci Numbers</h1>
-<p>The fibonacci number sequence is widely known.
-Generating those numbers is often used as a typical example for recursions, but at least in standard imperative programming languages, the iterative version is more performant:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">size_t</span> fib<span class="op">(</span><span class="dt">size_t</span> n<span class="op">)</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> a <span class="op">{</span><span class="dv">0</span><span class="op">};</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> b <span class="op">{</span><span class="dv">1</span><span class="op">};</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">size_t</span> i <span class="op">{</span><span class="dv">0</span><span class="op">};</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">const</span> <span class="dt">size_t</span> old_b <span class="op">{</span>b<span class="op">};</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        b <span class="op">+=</span> a<span class="op">;</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        a  <span class="op">=</span> old_b<span class="op">;</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> b<span class="op">;</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This way it is easy to generate any fibonacci number.
-But if all fibonacci numbers up to a certain limit need to be generated for some purpose, this implementation is not too handy any longer.
-When counting fibonacci number <code>N</code>, and then <code>N+1</code>, the content of the variables <code>a</code> and <code>b</code> could be reused, because the next fibonacci number is just the sum of the last two fibonacci numbers.</p>
-<p>In this sense, it would be useful to have a class, which manages some <em>fibonacci state</em> in order to be able to quickly calculate just the next number.</p>
-<p>A lot of people would just implement a class <code>fibonacci_number</code> which has some <code>next()</code> method and a <code>current()</code> method and use that.
-This is fine, but i propose to go a step further by realizing that this is how <strong><em>iterators</em></strong> work.
-By implementing this functionality in terms of iterators, it can be used in combination with the STL, boosting up the code readability.</p>
-<h1 id="iterators">Iterators</h1>
-<p>What do we need in order to implement the simplest possible iterator?</p>
-<p>Let us have a look at what the C++ compiler asks for if we want to iterate over a container class:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="at">const</span> <span class="kw">auto</span> <span class="op">&amp;</span>item <span class="op">:</span> vector<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* loop body */</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This kind of loop declaration exists since C++11.
-The compiler will expand this to the following equivalent code:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> it  <span class="op">(</span><span class="bu">std::</span>begin<span class="op">(</span>vector<span class="op">));</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> end <span class="op">(</span><span class="bu">std::</span>end<span class="op">(</span>vector<span class="op">));</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(;</span> it <span class="op">!=</span> end<span class="op">;</span> <span class="op">++</span>it<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">const</span> <span class="kw">auto</span> <span class="op">&amp;</span>item <span class="op">(*</span>it<span class="op">);</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="co">/* loop body */</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Looking at the expanded loop, it is pretty obvious what needs to be implemented.
-First, we need to distinguish between two kinds of objects: <code>vector</code> is the <strong>iterable range</strong>, and <code>it</code> is the <strong>iterator</strong>.</p>
-<p>The <strong>iterable range</strong> needs to implement a <code>begin()</code> and an <code>end()</code> function.
-These functions return iterator objects.</p>
-<blockquote>
-<p>Note that this code sample does not call <code>vector.begin()</code> and <code>vector.end()</code>, but <code>std::begin(vector)</code> and <code>std::end(vector)</code>.
-Those STL functions do actually call <code>vector.begin()</code> and <code>end()</code>, but they are more generic, i.e. they also work on raw arrays and automatically do the right thing in order to obtain begin/end iterators.</p>
-</blockquote>
-<p>The <strong>iterator</strong> class needs to implement the following:</p>
-<ul>
-<li>operator <code>*</code>, which works like dereferencing a pointer (pointers are also valid iterators!)</li>
-<li>operator <code>++</code> (prefix), which increments the iterator to the next item</li>
-<li>operator <code>!=</code>, which is necessary in order to check if the loop shall terminate because <code>it</code> reached the same position as <code>end</code> denotes.</li>
-</ul>
-<p>In order to implement any kind of algorithm-generated range, we would first implement an iterator which basically hides variables and the algorithm itself in the <code>operator++</code> implementation.
-An iterable class would then just provide a begin and end iterator as needed, in order to enable for C++11 style <code>for</code> loops.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> iterator</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ... state variables ...</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Constructor</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    iterator<span class="op">&amp;</span> <span class="kw">operator</span><span class="op">++()</span> <span class="op">{</span> <span class="co">/* increment */</span> <span class="cf">return</span> <span class="op">*</span><span class="kw">this</span><span class="op">;</span> <span class="op">}</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    T <span class="kw">operator</span><span class="op">*()</span> <span class="at">const</span> <span class="op">{</span> <span class="co">/* return some value or reference */</span> <span class="op">}</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> <span class="kw">operator</span><span class="op">!=</span> <span class="at">const</span> <span class="op">(</span><span class="at">const</span> iterator<span class="op">&amp;</span> o<span class="op">)</span> <span class="op">{</span> <span class="co">/* compare states */</span> <span class="op">}</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>The simplest iterator ever would be a counting iterator: It would just wrap an integer variable, increment it in <code>operator++</code> and return the integer in <code>operator*</code>.
-<code>operator!=</code> would then just compare this number with the number of another iterator.</p>
-<p>But now let us continue with the fibonacci iterator.</p>
-<h1 id="fibonacci-iterator">Fibonacci Iterator</h1>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> fibit</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> i <span class="op">{</span><span class="dv">0</span><span class="op">};</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> a <span class="op">{</span><span class="dv">0</span><span class="op">};</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> b <span class="op">{</span><span class="dv">1</span><span class="op">};</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">constexpr</span> fibit<span class="op">()</span> <span class="op">=</span> <span class="cf">default</span><span class="op">;</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">constexpr</span> fibit<span class="op">(</span><span class="dt">size_t</span> <span class="va">b_</span><span class="op">,</span> <span class="dt">size_t</span> <span class="va">a_</span><span class="op">,</span> <span class="dt">size_t</span> <span class="va">i_</span><span class="op">)</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        <span class="op">:</span> i<span class="op">{</span><span class="va">i_</span><span class="op">},</span> a<span class="op">{</span><span class="va">a_</span><span class="op">},</span> b<span class="op">{</span><span class="va">b_</span><span class="op">}</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">{}</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> <span class="kw">operator</span><span class="op">*()</span> <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> b<span class="op">;</span> <span class="op">}</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">constexpr</span> fibit<span class="op">&amp;</span> <span class="kw">operator</span><span class="op">++()</span> <span class="op">{</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">const</span> <span class="dt">size_t</span> old_b <span class="op">{</span>b<span class="op">};</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        b <span class="op">+=</span> a<span class="op">;</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        a  <span class="op">=</span> old_b<span class="op">;</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">++</span>i<span class="op">;</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">*</span><span class="kw">this</span><span class="op">;</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">bool</span> <span class="kw">operator</span><span class="op">!=(</span><span class="at">const</span> fibit <span class="op">&amp;</span>o<span class="op">)</span> <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> i <span class="op">!=</span> o<span class="op">.</span>i<span class="op">;</span> <span class="op">}</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>Using this iterator, it is already possible to iterate over fibonacci numbers:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>fibit it<span class="op">;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">// As the comparison operator only compares the &quot;i&quot; variable,</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">// define an iterator with everything zeroed, but &quot;i&quot; set</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">// to 20, in order to have an iteration terminator</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">const</span> fibit end <span class="op">{</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">20</span><span class="op">};</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="op">(</span>it <span class="op">!=</span> end<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="op">*</span>it <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span><span class="op">;</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">++</span>it<span class="op">;</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">// Or do it the elegant STL way: (include &lt;iterator&gt; first)</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>copy<span class="op">(</span>it<span class="op">,</span> end<span class="op">,</span> <span class="bu">std::</span>ostream_iterator<span class="op">&lt;</span><span class="dt">size_t</span><span class="op">&gt;{</span><span class="bu">std::</span>cout<span class="op">,</span><span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">});</span></span></code></pre></div>
-<p>In order to do it the nice C++11 way, we need an iterable class:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> fib_range</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    fibit  begin_it<span class="op">;</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">size_t</span> end_n<span class="op">;</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">constexpr</span> fib_range<span class="op">(</span><span class="dt">size_t</span> <span class="va">end_n_</span><span class="op">,</span> <span class="dt">size_t</span> begin_n <span class="op">=</span> <span class="dv">0</span><span class="op">)</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="op">:</span> begin_it<span class="op">{</span>fibit_at<span class="op">(</span>begin_n<span class="op">)},</span> end_n<span class="op">{</span><span class="va">end_n_</span><span class="op">}</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">{}</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    fibit begin<span class="op">()</span> <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> begin_it<span class="op">;</span> <span class="op">}</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    fibit end<span class="op">()</span>   <span class="at">const</span> <span class="op">{</span> <span class="cf">return</span> <span class="op">{</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> end_n<span class="op">};</span> <span class="op">}</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>We can now write…</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="at">const</span> <span class="dt">size_t</span> num <span class="op">:</span> fib_range<span class="op">(</span><span class="dv">10</span><span class="op">))</span> <span class="op">{</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> num <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span><span class="op">;</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>… which will print the first 10 fibonacci numbers.</p>
-<p>What does the function <code>fibit_at</code> do?
-This function is a <code>constexpr</code> function, which advances a fibonacci iterator at <em>compile time</em> if possible, in order to push the iterator towards the fibonacci number which the user wants:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> fibit fibit_at<span class="op">(</span><span class="dt">size_t</span> n<span class="op">)</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    fibit it<span class="op">;</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">size_t</span> i <span class="op">{</span><span class="dv">0</span><span class="op">};</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        <span class="op">++</span>it<span class="op">;</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> it<span class="op">;</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This function enables us to for example iterate from the 100th fibonacci number to the 105th, without having to calculate the first 100 fibonacci numbers at run time, because we can make the compiler prepare everything at compile time.</p>
-<blockquote>
-<p>When using C++17, <code>fibit_at</code> is useless, as it can be substituted by <code>std::next(fibit{}, n)</code>, because in the C++17 STL <code>std::next</code> is a <code>constexpr</code> function.</p>
-</blockquote>
-<p>In order to guarantee, that the 100th fibonacci number is already calculated, when the compiler writes the binary program to disk, we can just put the range into a <code>constexpr</code> variable:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="at">const</span> fib_range hundred_to_hundredfive <span class="op">{</span><span class="dv">105</span><span class="op">,</span> <span class="dv">100</span><span class="op">};</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span><span class="dt">size_t</span> num <span class="op">:</span> hundred_to_hundredfive<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Do whatever</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<h1 id="combine-the-fibonacci-iterator-with-stl-algorithms">Combine the Fibonacci Iterator with STL algorithms</h1>
-<p>Imagine we need a vector with the first 1000 fibonacci numbers.
-Having the fibonacci algorithm already wrapped into a handy iterator class, we can now use it with any STL algorithm from namespace <code>std</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>vector<span class="op">&lt;</span><span class="dt">size_t</span><span class="op">&gt;</span> fib_nums<span class="op">;</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fib_nums<span class="op">.</span>resize<span class="op">(</span><span class="dv">1000</span><span class="op">);</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">constexpr</span> <span class="at">const</span> fib_range first1000 <span class="op">{</span><span class="dv">1000</span><span class="op">};</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>copy<span class="op">(</span><span class="bu">std::</span>begin<span class="op">(</span>first1000<span class="op">),</span> <span class="bu">std::</span>end<span class="op">(</span>first1000<span class="op">),</span> <span class="bu">std::</span>begin<span class="op">(</span>fib_nums<span class="op">));</span></span></code></pre></div>
-<p>This is pretty neat and useful.
-However, with the current example code provided as is, this will not compile (yet), because we did not provide an iterator tag.
-Providing it is simple: Just make <code>fibit</code> publicly inherit from <code>std::iterator&lt;std::forward_iterator_tag, size_t&gt;</code>.</p>
-<p><code>std::iterator</code> as a base class for our <code>fibit</code> class will only add some typedefs which help STL algorithms identify which kind of iterator this is.
-For certain iterator types in certain situations, the STL algorithms have different implementations which contain performance optimizations (Which is elegantly hidden from the user!).</p>
-<p>The <code>std::forward_iterator</code> tag states, that this is an iterator which can just be advanced step by step, and that it only advances forward, not backward.</p>
-<h1 id="summary">Summary</h1>
-<p>A lot of algorithms which generate numeric ranges, can be implemented in terms of iterators, which is a natural fit.
-C++ provides nice syntax sugar for iterators, which makes them a natural interface for abstractions.</p>
-<p>In combination with STL algorithms and any STL compatible data structures, they promote for easy to read, easy to test, easy to maintain, and performant code.</p>
-<p>This article described a kind of iterator, which is not a plain pointer to <em>data</em>.
-It is an algorithm implementation in the sense, that the <em>increment</em> step does actually calculate something more complex than just a new internal pointer position to some next item.
-Interestingly, this way one can instantiate some kind of <em>iterable</em> object, which defines a range, which involves a lot of computation - but that computation is not executed until someone actually asks for the result (And the code which asks for the result does not even need to know what kind of algorithm it is implicitly executing, as this is all hidden behind a simple iterator interface).
-This kind of programming style goes towards <a href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a>, which is a powerful and elegant principle known from purely functional programming languages.</p>]]></description>
-    <pubDate>Sun, 04 Sep 2016 00:00:00 UT</pubDate>
-    <guid>https://blog.galowicz.de/2016/09/04/algorithms_in_iterators</guid>
     <dc:creator>Jacek Galowicz</dc:creator>
 </item>
 

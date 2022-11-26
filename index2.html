@@ -34,7 +34,25 @@
 </div>
 </div>
 <div class="content container"><h1>Posts (Page 2)</h1>
-<div class="posts"><div><h4><a href="./2016/06/25/cpp_template_type_list_performance">Type List Compile Time Performance</a>
+<div class="posts"><div><h4><a href="./2016/09/04/algorithms_in_iterators">Wrapping Algorithms into Iterators</a>
+</h4>
+<p><strong><small>September  4, 2016</small>
+</strong>
+</p>
+
+<p>Sometimes there is the requirement to generate a range of numbers from some algorithm.
+Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever.
+Some calculations can be optimized by <em>memorizing</em> some values for the calculation of the next number, just as this applies for <strong>fibonacci numbers</strong>.
+This article shows how to wrap such calculations into <strong>iterators</strong> in order to have performant, and nicely encapsulated algorithms.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/09/04/algorithms_in_iterators" role="button">Read more 
+<i class="fa fa-arrow-circle-right"></i>
+</a>
+</p>
+</div>
+
+<hr>
+<div><h4><a href="./2016/06/25/cpp_template_type_list_performance">Type List Compile Time Performance</a>
 </h4>
 <p><strong><small>June 25, 2016</small>
 </strong>
@@ -186,36 +204,19 @@ That is fine in general, but what happens to all objects which need to be proper
 </a>
 </p>
 </div>
-
-<hr>
-<div><h4><a href="./2016/02/27/static_polymorphy">Static Polymorphy in C++</a>
-</h4>
-<p><strong><small>February 27, 2016</small>
-</strong>
-</p>
-
-<p>In order to use <em>polymorphy</em>, virtual functions are the way to go in C++.
-They are nice and easy to use.
-However, polymorphy is not always needed at actual runtime.
-If it is only used to separate generic from specific functionality in order to have a common interface and avoid code duplication, the cost of having indirection introduced by <em>vtables</em> might not be desired.
-This article shows how to use the CRTP in order to get the compile time advantages of polymorphy, without using virtual methods.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/02/27/static_polymorphy" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
-</p>
-</div>
 </div>
 <div class="pagination"><a class="pagination-item newer" href="./index.html">Newer</a>
 
 <a class="pagination-item older" href="./index3.html">Older</a>
 </div>
 </div>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS"></script>
-<script>window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-WZ3FX4G3XS');</script>
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-28506344-2', 'auto');
+ga('send', 'pageview');
+gtag('config', 'UA-28506344-2', { 'anonymize_ip': true });</script>
 </body>
 </head>
 </html>
