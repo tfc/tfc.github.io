@@ -28,13 +28,13 @@ main = hakyll $ do
       route idRoute
       compile $ do
           posts <- recentFirst =<< loadAll pattern
-          let paginateCtx = paginateContext indexPages pageNum
-              ctx =
+          let ctx =
                   constField "title" ("Posts" ++ if pageNum > 1
                                 then " (Page " ++ show pageNum ++ ")"
                                 else "") <>
                   listField "posts" (teaserCtx tags) (return posts) <>
-                  paginateCtx <>
+                  tagCloudField "tagcloud" 100.0 100.0 tags <>
+                  paginateContext indexPages pageNum <>
                   defaultContext
           makeItem ""
               >>= loadAndApplyTemplate "templates/post-list.hamlet" ctx

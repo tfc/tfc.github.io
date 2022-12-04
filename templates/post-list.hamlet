@@ -1,3 +1,10 @@
+\$if(tagcloud)$
+<div .tagcloud>
+  Tags: $tagcloud$
+
+<hr />
+\$endif$
+
 <div .posts>
   \$for(posts)$
     <div>
