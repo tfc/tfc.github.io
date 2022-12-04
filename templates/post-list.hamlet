@@ -1,19 +1,19 @@
 <div .posts>
   \$for(posts)$
     <div>
-      <h4>
+      <h2>
         <a href="$url$">$title$
-        <p>
-          \$if(date)$
-          <strong>
-            <small>
-              \$date$,
-          \$endif$
-          \$if(tags)$
-          <strong>
-            <small>
-              Tags: $tags$
-          \$endif$
+      <span .post-tags>
+        \$if(date)$
+        <strong>
+          <small>
+            \$date$,
+        \$endif$
+        \$if(tags)$
+        <strong>
+          <small>
+            Tags: $tags$
+        \$endif$
       \$teaser$
       <p>
         <a .btn .btn-sm .btn-primary href="$url$" role="button">
