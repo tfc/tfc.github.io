@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Generating Integer Sequences at Compile Time
+tags: c++, meta-programming
 ---
 
 In some situations, it can be useful ot generate sequences of numbers at compile time.

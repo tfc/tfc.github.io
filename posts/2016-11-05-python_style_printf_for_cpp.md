@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Python Style printf for C++ with pprintpp
+tags: c++, meta-programming
 ---
 
 The C++ STL comes with *stream* style character output, which is an alternative to the classic `printf` like format function collection of the C library.

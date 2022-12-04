@@ -1,6 +1,7 @@
 ---
 layout: post
 title: ON_EXIT - Combining Automatic Destruction and Lambdas
+tags: c++
 ---
 
 When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can't easily stick with the *RAII* principle.
@@ -172,7 +173,7 @@ The new symbol will then be visible in the binary as `onexit123`, if it was inst
 
 Additionally, the macro reduces the rest of the syntax to the absolute minimum, so the user does not even have to specialize the lambda capture mode etc.
 
-## Conditional Execution 
+## Conditional Execution
 
 A version of this macro, which only executes in the success/error case, would be extremely useful in many situations.
 
@@ -206,5 +207,3 @@ The first version is much more elegant, because the code just expresses *what* n
 
 I learned about an addition to the C++ standard which enables for such code at [CPPCON](http://cppcon.org) in 2015.
 Andrei Alexandrescu presented this extremely useful idea ([This talk is available on Youtube](https://youtu.be/WjTrfoiB0MQ)).
-
-

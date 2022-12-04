@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Do Not Fear Recursion
+tags: c++
 ---
 
 There are a lot of algorithms which can be implemented using *recursive* or *iterative* style.
@@ -131,7 +132,7 @@ This shows, that this recursive version of the GCD algorithm can never lead to s
    4:	85 d2                	test   %edx,%edx
    6:	74 17                	je     1f <_Z7gcd_recjj+0x1f>
    8:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
-   f:	00 
+   f:	00
   10:	89 d1                	mov    %edx,%ecx
   12:	31 d2                	xor    %edx,%edx
   14:	f7 f1                	div    %ecx
@@ -139,8 +140,8 @@ This shows, that this recursive version of the GCD algorithm can never lead to s
   18:	89 c8                	mov    %ecx,%eax
   1a:	75 f4                	jne    10 <_Z7gcd_recjj+0x10>
   1c:	89 c8                	mov    %ecx,%eax
-  1e:	c3                   	retq   
-  1f:	c3                   	retq   
+  1e:	c3                   	retq
+  1f:	c3                   	retq
 ```
 
 However, looking at the iterative version shows, that both versions are completely **identical**.
@@ -153,7 +154,7 @@ This is pretty cool, because this way we can profit from the performance of iter
   24:	85 d2                	test   %edx,%edx
   26:	74 17                	je     3f <_Z7gcd_itrjj+0x1f>
   28:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
-  2f:	00 
+  2f:	00
   30:	89 d1                	mov    %edx,%ecx
   32:	31 d2                	xor    %edx,%edx
   34:	f7 f1                	div    %ecx
@@ -161,8 +162,8 @@ This is pretty cool, because this way we can profit from the performance of iter
   38:	89 c8                	mov    %ecx,%eax
   3a:	75 f4                	jne    30 <_Z7gcd_itrjj+0x10>
   3c:	89 c8                	mov    %ecx,%eax
-  3e:	c3                   	retq   
-  3f:	c3                   	retq   
+  3e:	c3                   	retq
+  3f:	c3                   	retq
 
 
 ```

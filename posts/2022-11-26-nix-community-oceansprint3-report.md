@@ -1,6 +1,7 @@
 ---
 layout: post
 title: NixOS Community Oceansprint late 2022 Report
+tags: nix, nixos
 ---
 
 This is my trip report from the late 2022 Oceansprint hackathon on Lanzarote.

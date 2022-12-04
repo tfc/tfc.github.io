@@ -1,6 +1,7 @@
 ---
 layout: post
 title: A __FILE__ Macro Which Does Not Contain the Whole Source File Path
+tags: c++
 ---
 
 The `__FILE__` macro expands to the current source file name at compile time.
@@ -26,8 +27,8 @@ static constexpr cstr past_last_slash(cstr str, cstr last_slash)
                        past_last_slash(str + 1, last_slash);
 }
 
-static constexpr cstr past_last_slash(cstr str) 
-{ 
+static constexpr cstr past_last_slash(cstr str)
+{
     return past_last_slash(str, str);
 }
 ```
@@ -68,7 +69,7 @@ The following macro, which looks strange, fixes both:
 This macro uses a `{}` scope, to instantiate a new helper variable on the fly, in order to force the return value of the helper function into a `constexpr` variable.
 At this point it is guaranteed, that the compiler will embed the return value into the binary, without generating a run time function call.
 The parentheses around that allow for transforming this scope block into an expression.
-`({int x = f(a, b); ...; x})` will just return the value of x, which was determined inbetween. 
+`({int x = f(a, b); ...; x})` will just return the value of x, which was determined inbetween.
 
 It is now possible to put this macro into any expression which would also accept `__FILE__` for logging, or printing.
 The assembly of the example program also looks better:

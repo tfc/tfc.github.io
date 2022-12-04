@@ -1,13 +1,14 @@
 ---
 layout: post
 title: Executing Brainfuck at Compile Time with C++ Templates
+tags: c++, meta-programming
 ---
 
 This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.
 
 <!--more-->
 
-> The code in this article depends largely on the code in [the article about type lists](/2016/05/08/compile_time_type_lists), [the article about character type list transformations](/2016/05/14/converting_between_c_strings_and_type_lists), and [the article about implementing a Turing tape](/2016/05/15/turing_tape_with_type_lists). 
+> The code in this article depends largely on the code in [the article about type lists](/2016/05/08/compile_time_type_lists), [the article about character type list transformations](/2016/05/14/converting_between_c_strings_and_type_lists), and [the article about implementing a Turing tape](/2016/05/15/turing_tape_with_type_lists).
 > There is also [the article about template meta-programming 101 things](/2016/05/05/template_meta_programming_basics).
 
 ## First Things First: What is Brainfuck?
@@ -84,7 +85,7 @@ struct null_to_0<tape<LList, null_t, RList>> {
 
 template <class Tape> struct null_to_0 { using type = Tape; };
 
-template <class Tape> using null_to_0_t = 
+template <class Tape> using null_to_0_t =
                                typename null_to_0<Tape>::type;
 ```
 
@@ -120,7 +121,7 @@ struct machine {
 | Function Name | What It Does |
 |:-------------:|----------------------------------------------|
 `move_left` / `move_right` | Moves the tape one step to the left/right, and returns a new `machine` type with the altered state. If it reaches the end of the tape while moving, it appends a new cell. This new cell is then initialized to `0`.
-`get` | Returns the type at cursor position. 
+`get` | Returns the type at cursor position.
 `set<value>` | Returns a new `machine` type with altered tape state. The tape is altered in that way, that it contains the new character `value` at cursor position.
 `increment` / `decrement` | Increments/decrements the value at cursor position and returns a new `machine` which contains this change.
 
@@ -229,16 +230,16 @@ struct interpret_step;
 // '.' command
 template <class BFM, class InList, class OutList>
 struct interpret_step<io_bfm<BFM, InList, OutList>, '.'> {
-    using type = io_bfm<BFM, 
-                       InList, 
+    using type = io_bfm<BFM,
+                       InList,
                        append_t<OutList, get_t<BFM>>>;
 };
 
 // ',' command
 template <class BFM, class InList, class OutList>
 struct interpret_step<io_bfm<BFM, InList, OutList>, ','> {
-    using type = io_bfm<set_t<BFM, head_t<InList>::value>, 
-                        tail_t<InList>, 
+    using type = io_bfm<set_t<BFM, head_t<InList>::value>,
+                        tail_t<InList>,
                         OutList>;
 };
 
@@ -246,35 +247,35 @@ struct interpret_step<io_bfm<BFM, InList, OutList>, ','> {
 template <class BFM, class InList, class OutList>
 struct interpret_step<io_bfm<BFM, InList, OutList>, '+'> {
     using type = io_bfm<increment_t<BFM>,
-                        InList, 
+                        InList,
                         OutList>;
 };
 
 // '-' command
 template <class BFM, class InList, class OutList>
 struct interpret_step<io_bfm<BFM, InList, OutList>, '-'> {
-    using type = io_bfm<decrement_t<BFM>, 
-                        InList, 
+    using type = io_bfm<decrement_t<BFM>,
+                        InList,
                         OutList>;
 };
 
 // '<' command
 template <class BFM, class InList, class OutList>
 struct interpret_step<io_bfm<BFM, InList, OutList>, '<'> {
-    using type = io_bfm<move_left_t<BFM>, 
-                        InList, 
+    using type = io_bfm<move_left_t<BFM>,
+                        InList,
                         OutList>;
 };
 
 // '>' command
 template <class BFM, class InList, class OutList>
 struct interpret_step<io_bfm<BFM, InList, OutList>, '>'> {
-    using type = io_bfm<move_right_t<BFM>, 
-                        InList, 
+    using type = io_bfm<move_right_t<BFM>,
+                        InList,
                         OutList>;
 };
 template <class IOBFM, char InputChar>
-using interpret_step_t = 
+using interpret_step_t =
           typename interpret_step<IOBFM, InputChar>::type;
 ```
 
@@ -307,7 +308,7 @@ Well, seems as if we need to do some homework first: Implement that *matching br
 
 The general problem is that a brainfuck loop can contain multiple nested loops.
 
-Examples: 
+Examples:
 
 - `+++[>+++[.-]<]`
 - `+++[>+++[>+++[.-]<]<]`
@@ -318,29 +319,29 @@ Therefore we have to **count**, how many loop we have seen beginning (by countin
 Solution:
 
 Whenever we see an opening `[` bracket, we *increment* a bracket counter, and whenever we see a closing `]` bracket, we *decrement* it again.
-Assuming we start at value `1`, because the first opening bracket denotes the beginning of the first loop. 
+Assuming we start at value `1`, because the first opening bracket denotes the beginning of the first loop.
 The next closing `]` bracket we see, while the counter is back at value `1`, is then the right loop end.
 
 ``` bash
 ......[......[......[.....]....].....]......
       1      2      3     2    1     X
-      
+
 position X: Do not increment, but abort search. We found it.
 ```
 
 Let's have a look at the C++ TMP implementation:
 
 ``` {.cpp .numberLines }
-// Find the closing brace, assuming we have seen an opening 
+// Find the closing brace, assuming we have seen an opening
 // one already.
 //
-// InList:  The BF Program list, one element _behind_ the 
+// InList:  The BF Program list, one element _behind_ the
 //          opening [ bracket.
-// OutList: A list which will grow with discovering all 
-//          inside-loop characters. Should be empty on 
+// OutList: A list which will grow with discovering all
+//          inside-loop characters. Should be empty on
 //          the initial call.
 //          inside-bracket loop part)
-// Counter: the bracket counter, which should be 1 on 
+// Counter: the bracket counter, which should be 1 on
 //          the initial call
 template <class InList, class OutList, size_t Counter>
 struct find_brace;
@@ -348,8 +349,8 @@ struct find_brace;
 // Match: counter is 1, command is ']'
 // This is the final closing bracket.
 template <class InList, class OutList>
-struct find_brace<tl<char_t<']'>, InList>, 
-                  OutList, 
+struct find_brace<tl<char_t<']'>, InList>,
+                  OutList,
                   1> {
     // We're done. The user can now choose...
 
@@ -362,33 +363,33 @@ struct find_brace<tl<char_t<']'>, InList>,
 
 // Match: counter is != 1, command is ']'
 template <class InList, class OutList, size_t N>
-struct find_brace<tl<char_t<']'>, InList>, 
-                  OutList, 
+struct find_brace<tl<char_t<']'>, InList>,
+                  OutList,
                   N>
     // Add character to outlist, decrement counter
-    : public find_brace<InList, 
-                       append_t<OutList, char_t<']'>>, 
+    : public find_brace<InList,
+                       append_t<OutList, char_t<']'>>,
                        N - 1>
 {};
 
 // Match: counter is != 1, command is '['
 template <class InList, class OutList, size_t N>
-struct find_brace<tl<char_t<'['>, InList>, 
-                  OutList, 
+struct find_brace<tl<char_t<'['>, InList>,
+                  OutList,
                   N>
     // Add character to outlist, increment counter
-    : public find_brace<InList, 
-                        append_t<OutList, char_t<'['>>, 
+    : public find_brace<InList,
+                        append_t<OutList, char_t<'['>>,
                         N + 1>
 {};
 
 // Match: Any yet unmatched case
 template <char C, class InList, class OutList, size_t N>
-struct find_brace<tl<char_t<C>, InList>, 
-                  OutList, 
+struct find_brace<tl<char_t<C>, InList>,
+                  OutList,
                   N>
     // Add character to outlist
-    : public find_brace<InList, 
+    : public find_brace<InList,
                         append_t<OutList, char_t<C>>,
                         N>
 {};
@@ -409,7 +410,7 @@ Ok, after having done the homework, we can finally implement the loop control co
 The following code consists of two blocks:
 
 1. The block which matches the *base* case (Line 336): one of the `+`, `-`, `.`, `,`, `<`, `>` commands. This is easy to handle, because we already implemented all that. For these cases, this block is just a wrapper which will apply all the BF program commands to the BFM, until the program runs empty.
-2. The large, ugly block (Line 366), which is invoked whenever the current program's head character is an opening bracket `[`. 
+2. The large, ugly block (Line 366), which is invoked whenever the current program's head character is an opening bracket `[`.
 
 The second block is so complicated, because it contains the loop execution decision:
 
@@ -418,7 +419,7 @@ The second block is so complicated, because it contains the loop execution decis
 
 In order to do that decision, the interpreter will:
 
-1. Load the cursor value and set a variable `loop_terminated` to true, if this value is zero. 
+1. Load the cursor value and set a variable `loop_terminated` to true, if this value is zero.
 2. if `loop_terminated` is true, then `run_tm` is called again on the rest of the program which begins behind the loop.
 3. if `loop_terminated` is false, then it will...
     - Take the IOBFM state, and run it on the loop body, as if it was the whole program.
@@ -454,7 +455,7 @@ struct run_tm<IOBFM, ::tl::tl<::char_t<'['>, RestProg>> {
         // ...else, execute the BFM on the loop body,
         //    as if it was the whole program...
         run_tm<
-            typename run_tm<IOBFM, 
+            typename run_tm<IOBFM,
                             typename blocks::brace_block
                       >::type,
             // ...and then confront it with the
@@ -463,12 +464,12 @@ struct run_tm<IOBFM, ::tl::tl<::char_t<'['>, RestProg>> {
     >::type;
 };
 
-// Matches: Base case. 
+// Matches: Base case.
 // Any of the 6 _simple_ brainfuck commands.
 template <class IOBFM, char Command, class RestProg>
 struct run_tm<IOBFM, ::tl::tl<::char_t<Command>, RestProg>> {
     using type = typename run_tm<
-                      interpret_step_t<IOBFM, Command>, 
+                      interpret_step_t<IOBFM, Command>,
                       RestProg
                  >::type;
 };
@@ -491,12 +492,12 @@ Let's throw all the code into a .cpp file and write a `main()` function, which w
 ``` cpp
 // The program input is provided by a string provider.
 // The type list transformation article explains, how these work.
-struct program_str { 
-    static constexpr const char * str() { 
+struct program_str {
+    static constexpr const char * str() {
         // "Hello World" Brainfuck implementation from wikipedia
-        return "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++." 
+        return "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++."
                ".+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.+++.";
-    } 
+    }
 };
 
 int main()
@@ -510,7 +511,7 @@ int main()
     // Compose an initialized IOBFM from an empty BFM, and the empty input
     using BFM = bfm::io_bfm<bfm::make_t, input_list, tl::null_t>;
 
-    // The BFM's machine output is obtained by _running_ the IOBFM 
+    // The BFM's machine output is obtained by _running_ the IOBFM
     // together with the brainfuck program in the run_tm function.
     using output = bfm::run_tm_t<BFM, prog>::output;
 
@@ -545,7 +546,7 @@ Printing at compile time looks like this:
 ``` bash
 Jacek.Galowicz ~/src/tmp_brainfuck $ g++ -o main main.cpp -std=c++14 -DPROGRAM_STR='"++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.+++."'
 
-main.cpp:31:51: error: implicit instantiation of undefined template 
+main.cpp:31:51: error: implicit instantiation of undefined template
 'debug_t<char_tl<'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!', '\n', '\x0D'> >'
     debug_t<typename tl_to_varlist<output>::list> t;
                                                   ^
@@ -562,5 +563,3 @@ make: *** [default] Error 1
 Implementing a Brainfuck Interpreter which works at compile time, is more a toy than actually a useful program.
 But it combines several template meta-programming techniques, and therefore i regard it as a great *learning vehicle*.
 And this is a nice insight into the Turing completeness of the C++ template language.
-
-

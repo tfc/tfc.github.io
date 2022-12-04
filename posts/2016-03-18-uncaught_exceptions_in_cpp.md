@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Uncaught Exceptions in C++
+tags: c++
 ---
 
 What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it?
@@ -109,5 +110,3 @@ The C++11 standard says the following in section `15.3.9`:
 
 This becomes especially important In C++14, where it is possible to throw exceptions from within `constexpr` functions.
 This can be used as an approach which provides `assert` behaviour at compile time *and* at run time (whereas `static_assert` does not help at run time).
-
-

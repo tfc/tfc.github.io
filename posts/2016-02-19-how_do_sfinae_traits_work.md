@@ -1,6 +1,7 @@
 ---
 layout: post
 title: How Does the Typical SFINAE Type Trait Work?
+tags: c++, meta-programming
 ---
 
 C++ type traits can be implemented using an interesting technique which uses the *SFINAE* principle.
@@ -26,7 +27,7 @@ f(a);      // Here, the compiler needs to deduce T from the type of "a"
 ```
 
 The SFINAE principle works as follows:
-If the compiler detects an error while it tries to substitute a type during template type deduction, it will not emit a compilation error. 
+If the compiler detects an error while it tries to substitute a type during template type deduction, it will not emit a compilation error.
 Instead, it will stop considering the symbol it is currently looking at as a match, and try the next symbol, which looks like a suitable candidate.
 Of course, the compiler will error-out if there are no suitable candidates left.
 
@@ -46,7 +47,7 @@ void f(char(*)[I % 2 == 1] = nullptr) {
 ```
 
 Both functions have the same signature, when they are selected: `void f(char (*)[1])` (They take a pointer to a character array of length 1, and return nothing).
-Although the signature is not fixed, as it depends on a variable template parameter, no other signatures can be generated from this. 
+Although the signature is not fixed, as it depends on a variable template parameter, no other signatures can be generated from this.
 We will immediately see, why.
 
 The parameter is not meant to be actually provided by the user, which is why it is initialized to `nullptr` in the default case.
@@ -103,7 +104,7 @@ This way, a function can be called using `f(makeU<X>())`, which would put an `X`
 At first it appears that just writing `f(X{})` would do the same job, but what if there is no default constructor, or if the default constructor is protected/private?
 We will use this helper function only in a context where the compiler needs to deduce all types, but it will not actually be called and executed, hence needs no definition.
 
-The types `yes_t` and `no_t` are created as helper types. 
+The types `yes_t` and `no_t` are created as helper types.
 They are distinguishable from each other using `sizeof`, because `no_t` is twice as large as `yes_t` (indepentent from what size `char` has on the architecture in use).
 
 And now have a look at both implementations of the static function `f`:

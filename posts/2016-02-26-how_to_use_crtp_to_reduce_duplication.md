@@ -1,6 +1,7 @@
 ---
 layout: post
 title: How to Use the CRTP to Reduce Duplication
+tags: c++
 ---
 
 Some objects have different interfaces for doing the same thing in a different way.
@@ -80,12 +81,12 @@ template <typename INHERITOR_TYPE>
 class bla_base_functionality
 {
 public:
-    void generic_function_bla() { 
+    void generic_function_bla() {
         generic_part_a();
         static_cast<INHERITOR_TYPE*>(this)->specialized_bla_part();
         generic_part_b();
     }
-}; 
+};
 
 class Foo : public bla_base_functionality<Foo>
 {
@@ -165,13 +166,13 @@ In order to solve that, there needs to be some more code accompanying the header
 
 ``` cpp
 template <typename U, typename T>
-bool operator==(const U &lhs, const comparison_impl<T> &rhs) 
+bool operator==(const U &lhs, const comparison_impl<T> &rhs)
 {
     return static_cast<T&>(rhs) == lhs;
 }
 
 template <typename U, typename T>
-bool operator!=(const U &lhs, const comparison_impl<T> &rhs) 
+bool operator!=(const U &lhs, const comparison_impl<T> &rhs)
 {
     return static_cast<T&>(rhs) != lhs;
 }
@@ -216,7 +217,7 @@ This can be done using *SFINAE* magic, using `enable_if`:
 ``` cpp
 template <typename U, typename T>
 typename std::enable_if<!std::is_same<U, T>::value, bool>::type
-operator==(const U &lhs, const comparison_impl<T> &rhs) 
+operator==(const U &lhs, const comparison_impl<T> &rhs)
 {
     return static_cast<T&>(rhs) == lhs;
 }
@@ -243,7 +244,7 @@ The condition is "`U` is not the same type as `some T>`", and can be expressed i
 `comparison_impl` is now a useful helper, which can be used for any class which represents something which can be compared to itself or to other types.
 The only operators which need to be implemented to exhaust the full support of `comparison_impl` are the following:
 
-- `operator==` 
+- `operator==`
 - `operator<`
 - `operator>`
 

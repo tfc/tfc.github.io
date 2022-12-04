@@ -1,9 +1,10 @@
 ---
 layout: post
 title: C++17 STL Cookbook
+tags: c++
 ---
 
-This article is about the [**C++17 STL Cookbook**](https://www.packtpub.com/application-development/c17-stl-cookbook), which got published this week. 
+This article is about the [**C++17 STL Cookbook**](https://www.packtpub.com/application-development/c17-stl-cookbook), which got published this week.
 After about 6 months of writing, I am happy that it is out the door and hope it helps and inspires its readers to write modern C++ code.
 
 <!--more-->
@@ -65,8 +66,8 @@ Another very inspiring talk about the "C with classes" vs. "Modern C++" topic is
 The **C++17 STL Cookbook** is obviously about **C++17** and the **STL**.
 While the first chapter concentrates solely on the most interesting new language features and syntax sugar that were introduced with the new C++17 standard, I aimed to spread a lot of *modern C++ philosophy* with the rest of the book:
 
-All recipes try to solve problems *the STL way*. 
- 
+All recipes try to solve problems *the STL way*.
+
 ## The content
 
 In roughly 500 pages, the book covers the following topics:
@@ -76,7 +77,7 @@ In roughly 500 pages, the book covers the following topics:
     An overview of the most interesting new C++17 *language* features: `constexpr if`, structured bindings, initializers in `if` statements, fold expressions, etc.
 
  2. **STL Containers**
-    
+
     A quick overview what kind of data structures we already have in the C++ STL, and what their characteristics are. The recipes show how to use them in C++17.
 
 
@@ -99,7 +100,7 @@ In roughly 500 pages, the book covers the following topics:
  7. **Strings, stream classes, and regular expressions**
  - The streaming library is an ancient and large, but very important part of the STL. This chapter shows how to solve the typical I/O tasks.
  8. **Utility classes**
-    
+
     Time conversion, `std::optional`, `std::any`, `std::variant`, automatic memory management with smart pointers, and random number generation.
 
  9. **Parallelism and concurrency**

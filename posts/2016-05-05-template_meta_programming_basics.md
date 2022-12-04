@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Template Meta Programming Basics
+tags: c++, meta-programming
 ---
 
 C++ template meta programs are at first really hard to read.
@@ -134,9 +135,9 @@ Often, this would even be slower, as i experienced that the compiler will be a l
 
 ``` cpp
 template <bool condition, typename true_t, typename false_t>
-if_else 
+if_else
 {
-    using type = false_t; 
+    using type = false_t;
 };
 
 template <typename true_t, typename false_t>
@@ -157,4 +158,3 @@ using result = if_else<5 % 2 == 0, even_t, odd_t>;
 Especially when nesting a lot of `if_else_t` expressions, the code becomes quickly **less readable**.
 Pattern matching can help out a lot here, being both easier to read in most cases.
 Another noteworthy detail is, that the compiler will be **faster** matching patterns than unfolding a lot of nested `if_else_t`s.
-

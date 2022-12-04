@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Implementing a Turing Tape for Use at Compile Time
+tags: c++, meta-programming
 ---
 
 Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table.
@@ -49,8 +50,8 @@ The most complicated part of the following code is the *pattern matching* part o
 ### Case 1: Non-empty Left/Right Lists
 
 ``` {.cpp .numberLines }
-template <class LHead, class LTail, 
-          class Cursor, 
+template <class LHead, class LTail,
+          class Cursor,
           class RHead, class RTail>
 struct tape<
            tl<LHead, LTail>, // Non-Empty Left List
@@ -61,23 +62,23 @@ struct tape<
 
     template <class T>
     using set = tape<
-                    tl<LHead, LTail>, 
-                    T, 
+                    tl<LHead, LTail>,
+                    T,
                     tl<RHead, RTail>>;
 
     using move_left  = tape<
-                           LTail, 
-                           LHead, 
+                           LTail,
+                           LHead,
                            tl<Cursor, tl<RHead, RTail>>>;
     using move_right = tape<
-                           tl<Cursor, tl<LHead, LTail>>, 
-                           RHead, 
+                           tl<Cursor, tl<LHead, LTail>>,
+                           RHead,
                            RTail>;
 };
 ```
 <br>
 
-- **Lines 5-7** match only on turing tape instances, which do not consist of empty lists at the left or right. 
+- **Lines 5-7** match only on turing tape instances, which do not consist of empty lists at the left or right.
 An empty list is a `null_t`, and will not match on `tl<LHead, LTail>`.
 After having successfully matched a non-empty list, the template variables `LHead` and `LTail` hold the head, and the rest (tail) of the left list.
 Same applies to the right list with its respective template variables `RHead` and `RTail`.
@@ -97,7 +98,7 @@ When moving the tape left or right, there are no list heads/tails in both direct
 template <class Cursor>
 struct tape<
            null_t, // Empty Left List
-           Cursor, 
+           Cursor,
            null_t  // Empty Right List
         > {
     using get = Cursor;
@@ -106,16 +107,16 @@ struct tape<
 
     using move_left  = tape<
                            null_t,
-                           null_t, 
+                           null_t,
                            tl<Cursor, null_t>>;
     using move_right = tape<
-                           tl<Cursor, null_t>, 
-                           null_t, 
+                           tl<Cursor, null_t>,
+                           null_t,
                            null_t>;
 };
 ```
 
-When shifting the tape to the *left*, the cursor becomes the tip. 
+When shifting the tape to the *left*, the cursor becomes the tip.
 It is then the only element in the previously empty right list.
 There are no items coming from the left list, so it is still empty.
 The cursor is just set to `null_t`, representing an empty cell.
@@ -129,11 +130,11 @@ They are kind of *hybrids* of case 1 and 2, because they match in cases where on
 That means that shift left or shift right are actually shifting the respective non-empty list like case 1 does, but then create a new empty item of the other empty list, just like case 2 does.
 
 ``` {.cpp .numberLines }
-template <class Cursor, 
+template <class Cursor,
           class RHead, class RTail>
 struct tape<
            null_t,          // Empty Left List
-           Cursor, 
+           Cursor,
            tl<RHead, RTail> // Non-Empty Right List
        > {
     using get = Cursor;
@@ -141,12 +142,12 @@ struct tape<
     using set = tape<null_t, T, tl<RHead, RTail>>;
 
     using move_left  = tape<
-                           null_t, 
-                           null_t, 
+                           null_t,
+                           null_t,
                            tl<Cursor, tl<RHead, RTail>>>;
     using move_right = tape<
-                           tl<Cursor, null_t>, 
-                           RHead, 
+                           tl<Cursor, null_t>,
+                           RHead,
                            RTail>;
 };
 ```
@@ -156,27 +157,27 @@ struct tape<
 Case 4 is just a mirrored version of case 3.
 
 ``` {.cpp .numberLines }
-template <class LHead, class LTail, 
+template <class LHead, class LTail,
           class Cursor>
 struct tape<
            tl<LHead, LTail>, // Non-Empty Left List
-           Cursor, 
+           Cursor,
            null_t            // Empty Right List
        > {
     using get = Cursor;
     template <class T>
     using set = tape<
-                    tl<LHead, LTail>, 
-                    T, 
+                    tl<LHead, LTail>,
+                    T,
                     null_t>;
 
     using move_left  = tape<
-                           LTail, 
-                           LHead, 
+                           LTail,
+                           LHead,
                            tl<Cursor, null_t>>;
     using move_right = tape<
-                           tl<Cursor, tl<LHead, LTail>>, 
-                           null_t, 
+                           tl<Cursor, tl<LHead, LTail>>,
+                           null_t,
                            null_t>;
 };
 ```

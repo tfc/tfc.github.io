@@ -1,6 +1,7 @@
 ---
 layout: post
 title: A Nice Way to Manage SDL Resource Lifetime
+tags: c++
 ---
 
 I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL.
@@ -132,5 +133,3 @@ int main() {
 *Also have a look at the other article, which [describes the `ON_EXIT` macro](/2016/02/21/on_exit_macro)*.
 
 All resources are automatically released, and the programmer does not need to define which resource is to be released in which case and what order.
-
-

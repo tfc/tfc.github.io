@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Useful type traits with if_compiles semantics
+tags: c++, meta-programming
 ---
 
 SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way.
@@ -15,7 +16,7 @@ This article shows a nice one-liner approach to define new SFINAE type traits.
 ## Encapsulating the Boiler Plate into a Macro
 
 I learned about this useful little trick, when i attended [CPPCON](http://cppcon.org) in 2015.
-Fedor Pikus gave an extremely interesting talk about template meta programming ([The recorded talk is on Youtube](https://youtu.be/CZi6QqZSbFg)). 
+Fedor Pikus gave an extremely interesting talk about template meta programming ([The recorded talk is on Youtube](https://youtu.be/CZi6QqZSbFg)).
 The presented macro was part of his talk.
 
 When using SFINAE the same way as presented and explained in the blog post which explains SFINAE, the type trait will pretty much look the same all the time.
@@ -79,4 +80,3 @@ DEFINE_IF_COMPILES(is_serializable,                x1.serialize());
 
 It is possible to complicate this further by providing a macro which enables for expressions like `two_type_trait<T, U>::value`, which provides instances `x1` and `x2` (Example: `supports_addition<T, U>::value`, which tries to add: `x1 + x2`).
 The macro is easily extensible to support that.
-

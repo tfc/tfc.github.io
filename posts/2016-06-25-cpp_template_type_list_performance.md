@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Type List Compile Time Performance
+tags: c++, meta-programming
 ---
 
 Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times.
@@ -149,8 +150,8 @@ struct odds
     using next = typename odds<tail_t<List>>::type;
 
     // If odd, prepend value to list. Else, skip it:
-    using type = if_else_t<is_odd, 
-                    prepend_t<next, head_t<List>>, 
+    using type = if_else_t<is_odd,
+                    prepend_t<next, head_t<List>>,
                     next
                  >;
 };
@@ -184,8 +185,8 @@ template <bool is_odd, typename Head, typename List>
 struct odds
 {
     using next = typename odds<
-                            (head_t<List>::value % 2) != 0, 
-                            head_t<List>, 
+                            (head_t<List>::value % 2) != 0,
+                            head_t<List>,
                             tail_t<List>>::type;
     using type = prepend_t<next, Head>;
 };
@@ -195,8 +196,8 @@ template <typename Head, typename List>
 struct odds<false, Head, List>
 {
     using type = typename odds<
-                            (head_t<List>::value % 2) != 0, 
-                            head_t<List>, 
+                            (head_t<List>::value % 2) != 0,
+                            head_t<List>,
                             tail_t<List>>::type;
 };
 
@@ -234,8 +235,8 @@ struct odds<false, Head, var_tl::tl<>>
 
 template <typename List>
 using odds_t = typename odds<
-                            (head_t<List>::value % 2) != 0, 
-                            head_t<List>, 
+                            (head_t<List>::value % 2) != 0,
+                            head_t<List>,
                             tail_t<List>>::type;
 ```
 
@@ -251,8 +252,8 @@ template <typename Head, typename TailHead, typename TailTail>
 struct odds<true, Head, rec_tl::tl<TailHead, TailTail>>
 {
     using next = typename odds<
-                            (TailHead::value % 2) != 0, 
-                            TailHead, 
+                            (TailHead::value % 2) != 0,
+                            TailHead,
                             TailTail>::type;
     using type = rec_tl::tl<Head, next>
 };
@@ -261,8 +262,8 @@ template <typename Head, typename TailHead, typename TailTail>
 struct odds<false, Head, rec_tl::tl<TailHead, TailTail>>
 {
     using type = typename odds<
-                            (TailHead::value % 2) != 0, 
-                            TailHead, 
+                            (TailHead::value % 2) != 0,
+                            TailHead,
                             TailTail>::type;
 };
 
@@ -280,8 +281,8 @@ struct odds<false, Head, rec_tl::null_t>
 
 template <typename List>
 using odds_t = typename odds<
-                            (head_t<List>::value % 2) != 0, 
-                            head_t<List>, 
+                            (head_t<List>::value % 2) != 0,
+                            head_t<List>,
                             tail_t<List>>::type;
 ```
 
@@ -290,25 +291,25 @@ Variadic:
 template <bool is_odd, typename Current, typename InList, typename OutList>
 struct odds;
 
-template <typename Current, typename InHead, 
+template <typename Current, typename InHead,
           typename ... InTail, typename ... Outs>
 struct odds<true, Current, var_tl::tl<InHead, InTail...>, var_tl::tl<Outs...>>
 {
     using type = typename odds<
-                            (InHead::value % 2) != 0, 
-                            InHead, 
-                            var_tl::tl<InTail...>, 
+                            (InHead::value % 2) != 0,
+                            InHead,
+                            var_tl::tl<InTail...>,
                             var_tl::tl<Outs..., Current>>::type;
 };
 
-template <typename Current, typename InHead, 
+template <typename Current, typename InHead,
           typename ... InTail, typename ... Outs>
 struct odds<false, Current, var_tl::tl<InHead, InTail...>, var_tl::tl<Outs...>>
 {
     using type = typename odds<
-                            (InHead::value % 2) != 0, 
-                            InHead, 
-                            var_tl::tl<InTail...>, 
+                            (InHead::value % 2) != 0,
+                            InHead,
+                            var_tl::tl<InTail...>,
                             var_tl::tl<Outs...>>::type;
 };
 
@@ -326,9 +327,9 @@ struct odds<false, Current, var_tl::tl<>, var_tl::tl<Outs...>>
 
 template <typename List>
 using odds_t = typename odds<
-                        (head_t<List>::value % 2) != 0, 
-                        head_t<List>, 
-                        tail_t<List>, 
+                        (head_t<List>::value % 2) != 0,
+                        head_t<List>,
+                        tail_t<List>,
                         var_tl::tl<>>::type;
 
 
@@ -343,5 +344,3 @@ What i learned from my previous C++ TMP experience, and these benchmarks;
 - Metashell is fine for debugging C++ TMP code, but not for actual measuring
 
 I hope these insights are also useful for others!
-
-

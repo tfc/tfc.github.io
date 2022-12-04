@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Iterators are also part of the C++ zero cost abstractions
+tags: c++
 ---
 
 This article picks up an example operating system kernel code snippet that is written in C++, but looks like "C with classes".
@@ -168,7 +169,7 @@ void map(word_t base1, word_t base2, word_t size, foo_t target_address_space)
 {
     map_helper.source_base = base1;
 
-    map_generic(base1, base2, size, 
+    map_generic(base1, base2, size,
         [&map_helper](word_t b1, word_t b2, word_t order) {
             map_helper.push_back(b2, order);
 
@@ -252,7 +253,7 @@ This looks a bit bloaty at first, but this is a one-time implementation after al
 When we compare it with the initial `for`-loop version, we realize that all the calculations are in the function `current_order` and `operator++`.
 All the other code is just data storage and retrieval, as well as iterator interface compliance.
 
-It might also at first look strange that the `begin()` function returns a copy of the `order_range` instance. 
+It might also at first look strange that the `begin()` function returns a copy of the `order_range` instance.
 The trick is that this class is at the same time a range and an iterator.
 
 One nice perk of C++17 is, that the *end* iterator does not need to be of the same type as normal iterators any longer.
@@ -277,7 +278,7 @@ Another differentiating feature from the callback function variant is that we ca
 
 ## Comparing the resulting assembly
 
-What is the price of this abstraction? 
+What is the price of this abstraction?
 Let us see how the non-iterator-version of the same code would look like, and then compare it in the Godbolt assembly output view.
 
 ``` cpp
@@ -305,7 +306,7 @@ Interestingly, `clang++` sees exactly what we did there and emits exactly **the 
 That means that this iterator is a real **zero cost** abstraction!
 
 ``` asm
-print_range(unsigned long, unsigned long, unsigned long): 
+print_range(unsigned long, unsigned long, unsigned long):
         push    r15
         push    r14
         push    r13
@@ -352,7 +353,7 @@ print_range(unsigned long, unsigned long, unsigned long):
 [See the whole example in gcc.godbolt.org.](https://godbolt.org/g/hn3yix)
 
 When comparing the assembly of both variants with GCC, the result is a little bit disappointing at first:
-The `for`-loop version is 62 lines of assembly vs. 48 lines of assembly for the iterator version. 
+The `for`-loop version is 62 lines of assembly vs. 48 lines of assembly for the iterator version.
 When looking at how many lines of assembly are the actual loop part, it is still 25 lines for **both** implementations!
 
 ## Summary
@@ -367,14 +368,12 @@ C++ allows combining the goals of reusable software, testable libraries, and log
 
 It is usually worth a try to implement a nice abstraction that turns out to be free with regard to assembly size and performance.
 
-## Related 
+## Related
 
 I really enjoyed reading [Krister Waldfridsson's article](https://kristerw.blogspot.de/2017/06/a-look-at-range-v3-code-generation.html) where he primarily analyzes runtime performance of a piece of range-v3 code.
 What's interesting about that article is that he also shows an innocently looking code snippet with a raw `for`-loop that is slower than equivalent code that uses an STL algorithm, because the STL algorithm helps the compiler optimizing the code.
 
 Another thing that is worth a look and which fits the same topic:
-Jason Turner gave a [great talk about using C++17 on tiny computers](https://www.youtube.com/watch?v=zBkNBP00wJE). 
+Jason Turner gave a [great talk about using C++17 on tiny computers](https://www.youtube.com/watch?v=zBkNBP00wJE).
 He demonstrates how modern C++ programming patterns that help writing better code do **not** lead to bloaty or slow code by compiling and showing the assembly in a Godbolt view.
 It actually runs on a real Commodore in the end.
-
-

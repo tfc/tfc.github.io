@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Type Lists
+tags: c++, meta-programming
 ---
 
 Homogenuous data in purely functional programs is typically managed in *lists*.
@@ -11,7 +12,7 @@ Having all this nice stuff as a template meta library is quite an enabler for co
 <!--more-->
 
 There are already very complete meta programming libraries, just like [Boost.Hana](https://github.com/boostorg/hana) for example.
-This article aims to explain, how *lists* of some kind of payload can be implemented in C++ template syntax. 
+This article aims to explain, how *lists* of some kind of payload can be implemented in C++ template syntax.
 From scratch.
 
 ## All Roads Lead to Rome
@@ -92,7 +93,7 @@ But this time, nested type lists clearly win the race.
 In fact, nested type lists are so much faster in this benchmarks, that it seems that they are **the** list implementation of choice.
 
 The graphs of the nested type list runs in GCC/Clang appear really small and similar in the diagram, and it's hard to compare them from this picture.
-I do not provide a diagram only showing these, because the lines are extremely noisy, not significantly different, and therefore the comparison between clang and GCC does not seem to be very meaningful in this case. 
+I do not provide a diagram only showing these, because the lines are extremely noisy, not significantly different, and therefore the comparison between clang and GCC does not seem to be very meaningful in this case.
 
 > Versions:
 > g++: GCC 5.3.1 20160406 (Red Hat 5.3.1-6)
@@ -142,7 +143,7 @@ template <typename ... Ts> struct make;
 
 // Case: Normal recursion. Consume one type per call.
 template <typename T, typename ... REST>
-struct make<T, REST...> { 
+struct make<T, REST...> {
     using type = tl<T, typename make<REST...>::type>;
 };
 
@@ -207,7 +208,7 @@ Those `using` helpers will look the same all the time, as they do no real work.
 ## Appending Items or Lists to a List's Tail
 
 ``` cpp
-// Function declaration: Takes a list, and a type. 
+// Function declaration: Takes a list, and a type.
 // Using (list, type) notation in following comments
 template <typename TList, typename T>
 struct append;
@@ -252,7 +253,7 @@ struct append<null_t, tl<Head, T>> { using type = tl<Head, T>; };
 ```
 
 Even without this specialization, it is possible to append a list to another, but the result would be ill-formed, if the expected result is one concatenated list.
-Imagine `l1 = tl<T1, null_t>` and `l2 = tl<T2, null_t>`: Without the new function specialization, appending `l2` to `l1` would result in `tl<T1, tl<tl<T1, null_t>, null_t>>`. 
+Imagine `l1 = tl<T1, null_t>` and `l2 = tl<T2, null_t>`: Without the new function specialization, appending `l2` to `l1` would result in `tl<T1, tl<tl<T1, null_t>, null_t>>`.
 This is actually correct, because we appended an item which is a list, to the list. (Which means that we just created a multi-dimensional list, or a *tree*)
 The new specialization will *flatten* this down, so we get an ordinary one dimensional list as a result.
 
@@ -273,7 +274,7 @@ class Type3;
 
 using list123 = make_t<Type1, Type2, Type3>;
 
-// This is our little debugging helper. 
+// This is our little debugging helper.
 // By not defining it, but instantiating it, we provoke a compile error.
 template <typename T> class debug_t;
 

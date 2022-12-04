@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Managing libraries with Nix
+tags: c++, nix
 ---
 
 While learning Haskell and using its really smart library dependency management tools ([`cabal`](https://www.haskell.org/cabal/) and [`stack`](https://docs.haskellstack.org/en/stable/README/)), i realized that the C++ eco system has a problem:
@@ -538,5 +539,3 @@ If it does not work, then it is possible to roll the system back to a previous c
 The same system configuration could be used to clone the system elsewhere, etc.
 
 This article is really just scratching the surface of Nix/NixOS's possibilities.
-
-

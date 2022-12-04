@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Static Polymorphy in C++
+tags: c++
 ---
 
 In order to use *polymorphy*, virtual functions are the way to go in C++.
@@ -32,7 +33,7 @@ class Dog : public Animal
 {
 public:
     virtual Sound get_sound() const override
-    { 
+    {
         return {"Woof"};
     }
 };
@@ -41,7 +42,7 @@ class Cat : public Animal
 {
 public:
     virtual Sound get_sound() const override
-    { 
+    {
         return {"Meow"};
     }
 };
@@ -73,7 +74,7 @@ class Dog : public Animal<Dog> // Note the template parameter
 {
 public:
     Sound get_sound() const
-    { 
+    {
         return {"Woof"};
     }
 };
@@ -82,7 +83,7 @@ class Cat : public Animal<Cat>
 {
 public:
     Sound get_sound() const override
-    { 
+    {
         return {"Meow"};
     }
 };

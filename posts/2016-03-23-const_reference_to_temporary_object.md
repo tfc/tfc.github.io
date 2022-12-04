@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Const References to Temporary Objects
+tags: c++
 ---
 
 In both C and C++, it is not a sane idea to hold a reference (or a pointer in C) to a temporarily created object, as the reference is quickly dangling as soon as the assignment is done.

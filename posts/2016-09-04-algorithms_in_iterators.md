@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Wrapping Algorithms into Iterators
+tags: c++
 ---
 
 Sometimes there is the requirement to generate a range of numbers from some algorithm.
@@ -245,4 +246,3 @@ This article described a kind of iterator, which is not a plain pointer to *data
 It is an algorithm implementation in the sense, that the *increment* step does actually calculate something more complex than just a new internal pointer position to some next item.
 Interestingly, this way one can instantiate some kind of *iterable* object, which defines a range, which involves a lot of computation - but that computation is not executed until someone actually asks for the result (And the code which asks for the result does not even need to know what kind of algorithm it is implicitly executing, as this is all hidden behind a simple iterator interface).
 This kind of programming style goes towards [lazy evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation), which is a powerful and elegant principle known from purely functional programming languages.
-
