@@ -1,6 +1,6 @@
 ---
 title: NixOS Community Oceansprint 2021 Report
-tags: nix, nixos
+tags: nix
 ---
 
 This is my trip report from the awesome NixOS community hackathon on Lanzarote.
