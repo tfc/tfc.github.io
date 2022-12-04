@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Const References to Temporary Objects
 tags: c++
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Managing libraries with Nix
 tags: c++, nix
 ---

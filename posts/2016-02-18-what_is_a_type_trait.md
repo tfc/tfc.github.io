@@ -1,5 +1,4 @@
 ---
-layout: post
 title: What is a Type Trait?
 tags: c++, meta-programming
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Iterators are also part of the C++ zero cost abstractions
 tags: c++
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Static Polymorphy in C++
 tags: c++
 ---

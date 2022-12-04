@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Type List Compile Time Performance
 tags: c++, meta-programming
 ---

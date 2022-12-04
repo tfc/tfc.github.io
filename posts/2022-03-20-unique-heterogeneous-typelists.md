@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Filtering Unique Items from Heterogeneous Lists at Compile Time
 tags: haskell, meta-programming
 ---

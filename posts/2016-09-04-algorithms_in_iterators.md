@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Wrapping Algorithms into Iterators
 tags: c++
 ---

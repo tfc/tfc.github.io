@@ -1,5 +1,4 @@
 ---
-layout: post
 title: NixOS Community Oceansprint 2021 Report
 tags: nix, nixos
 ---

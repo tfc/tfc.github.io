@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Python Style printf for C++ with pprintpp
 tags: c++, meta-programming
 ---

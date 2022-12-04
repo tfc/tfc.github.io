@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Do Not Fear Recursion
 tags: c++
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: C++17 STL Cookbook
 tags: c++
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Type Lists
 tags: c++, meta-programming
 ---

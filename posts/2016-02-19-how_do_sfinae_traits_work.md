@@ -1,5 +1,4 @@
 ---
-layout: post
 title: How Does the Typical SFINAE Type Trait Work?
 tags: c++, meta-programming
 ---

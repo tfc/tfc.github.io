@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Implementing a Turing Tape for Use at Compile Time
 tags: c++, meta-programming
 ---

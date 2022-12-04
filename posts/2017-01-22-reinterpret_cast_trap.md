@@ -1,5 +1,4 @@
 ---
-layout: post
 title: A reinterpret_cast Trap
 tags: c++
 ---

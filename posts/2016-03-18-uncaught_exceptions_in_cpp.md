@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Uncaught Exceptions in C++
 tags: c++
 ---

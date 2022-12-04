@@ -1,5 +1,4 @@
 ---
-layout: post
 title: ON_EXIT - Combining Automatic Destruction and Lambdas
 tags: c++
 ---

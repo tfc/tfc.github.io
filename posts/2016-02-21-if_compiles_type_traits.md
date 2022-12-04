@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Useful type traits with if_compiles semantics
 tags: c++, meta-programming
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Template Meta Programming Basics
 tags: c++, meta-programming
 ---

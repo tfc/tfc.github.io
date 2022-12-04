@@ -1,5 +1,4 @@
 ---
-layout: post
 title: A __FILE__ Macro Which Does Not Contain the Whole Source File Path
 tags: c++
 ---

@@ -1,5 +1,4 @@
 ---
-layout: post
 title: A Nice Way to Manage SDL Resource Lifetime
 tags: c++
 ---

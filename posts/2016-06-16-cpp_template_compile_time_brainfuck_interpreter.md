@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Executing Brainfuck at Compile Time with C++ Templates
 tags: c++, meta-programming
 ---

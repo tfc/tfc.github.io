@@ -1,5 +1,4 @@
 ---
-layout: post
 title: Setting up a C++ project environment with nix
 tags: nix, c++
 ---
