@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>Iterators are also part of the C++ zero cost abstractions</h1>
 <div class="post"><span class="post-date">July  2, 2017</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>
+</span>
 <p>This article picks up an example operating system kernel code snippet that is written in C++, but looks like “C with classes”.
 I think it is a great idea to implement Embedded projects/kernels in C++ instead of C and it’s nice to see that the number of embedded system developers that use C++ is rising.
 Unfortunately, I see stagnation in terms of modern programming in embedded/kernel projects in the industry.
@@ -178,7 +181,7 @@ This would have multiple advantages:</p>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    map_helper<span class="op">.</span>source_base <span class="op">=</span> base1<span class="op">;</span></span>
 <span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    map_generic<span class="op">(</span>base1<span class="op">,</span> base2<span class="op">,</span> size<span class="op">,</span> </span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    map_generic<span class="op">(</span>base1<span class="op">,</span> base2<span class="op">,</span> size<span class="op">,</span></span>
 <span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        <span class="op">[&amp;</span>map_helper<span class="op">](</span><span class="dt">word_t</span> b1<span class="op">,</span> <span class="dt">word_t</span> b2<span class="op">,</span> <span class="dt">word_t</span> order<span class="op">)</span> <span class="op">{</span></span>
 <span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>            map_helper<span class="op">.</span>push_back<span class="op">(</span>b2<span class="op">,</span> order<span class="op">);</span></span>
 <span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
@@ -289,7 +292,7 @@ Let us see how the non-iterator-version of the same code would look like, and th
 <span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>Interestingly, <code>clang++</code> sees exactly what we did there and emits exactly <strong>the same assembly</strong> in <strong>both</strong> cases.
 That means that this iterator is a real <strong>zero cost</strong> abstraction!</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>print_range<span class="op">(</span>unsigned long<span class="op">,</span> unsigned long<span class="op">,</span> unsigned long<span class="op">):</span> </span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>print_range<span class="op">(</span>unsigned long<span class="op">,</span> unsigned long<span class="op">,</span> unsigned long<span class="op">):</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>        <span class="bu">push</span>    <span class="kw">r15</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">push</span>    <span class="kw">r14</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">push</span>    <span class="kw">r13</span></span>

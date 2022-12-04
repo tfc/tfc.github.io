@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>Template Meta Programming Basics</h1>
 <div class="post"><span class="post-date">May  5, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>, <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html">meta-programming</a>
+</span>
 <p>C++ template meta programs are at first really hard to read.
 This is because the template mechanism accidentally became turing complete, although it was invented to enable for type-agnostic programming of generic algorithms.
 However, now the world knows that the C++ template part of the language <em>is</em> turing complete, people started writing full programs in it, and it enhances the power and flexibility of libraries quite a lot.
@@ -127,9 +130,9 @@ It would have been possible to initialize the <code>value</code> field of the ge
 Often, this would even be slower, as i experienced that the compiler will be a lot quicker matching the right types instead of unrolling nested conditional branches.</p>
 <h2 id="if-else-branches">If-Else Branches</h2>
 <div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">bool</span> condition<span class="op">,</span> <span class="kw">typename</span> <span class="dt">true_t</span><span class="op">,</span> <span class="kw">typename</span> <span class="dt">false_t</span><span class="op">&gt;</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>if_else </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>if_else</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="dt">false_t</span><span class="op">;</span> </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="dt">false_t</span><span class="op">;</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> <span class="dt">true_t</span><span class="op">,</span> <span class="kw">typename</span> <span class="dt">false_t</span><span class="op">&gt;</span></span>

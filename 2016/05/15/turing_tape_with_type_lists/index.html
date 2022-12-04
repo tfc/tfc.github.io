@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>Implementing a Turing Tape for Use at Compile Time</h1>
 <div class="post"><span class="post-date">May 15, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>, <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html">meta-programming</a>
+</span>
 <p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table.
 Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages.
 It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++.
@@ -70,8 +73,8 @@ In purely functional programming, we would create a completely new data structur
 </ul>
 <p>The most complicated part of the following code is the <em>pattern matching</em> part of the template type signature.</p>
 <h3 id="case-1-non-empty-leftright-lists">Case 1: Non-empty Left/Right Lists</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> LHead<span class="op">,</span> <span class="kw">class</span> LTail<span class="op">,</span> </span>
-<span id="cb2-2"><a href="#cb2-2"></a>          <span class="kw">class</span> Cursor<span class="op">,</span> </span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> LHead<span class="op">,</span> <span class="kw">class</span> LTail<span class="op">,</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>          <span class="kw">class</span> Cursor<span class="op">,</span></span>
 <span id="cb2-3"><a href="#cb2-3"></a>          <span class="kw">class</span> RHead<span class="op">,</span> <span class="kw">class</span> RTail<span class="op">&gt;</span></span>
 <span id="cb2-4"><a href="#cb2-4"></a><span class="kw">struct</span> tape<span class="op">&lt;</span></span>
 <span id="cb2-5"><a href="#cb2-5"></a>           tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;,</span> <span class="co">// Non-Empty Left List</span></span>
@@ -82,17 +85,17 @@ In purely functional programming, we would create a completely new data structur
 <span id="cb2-10"><a href="#cb2-10"></a></span>
 <span id="cb2-11"><a href="#cb2-11"></a>    <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> T<span class="op">&gt;</span></span>
 <span id="cb2-12"><a href="#cb2-12"></a>    <span class="kw">using</span> set <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a>                    tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;,</span> </span>
-<span id="cb2-14"><a href="#cb2-14"></a>                    T<span class="op">,</span> </span>
+<span id="cb2-13"><a href="#cb2-13"></a>                    tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;,</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>                    T<span class="op">,</span></span>
 <span id="cb2-15"><a href="#cb2-15"></a>                    tl<span class="op">&lt;</span>RHead<span class="op">,</span> RTail<span class="op">&gt;&gt;;</span></span>
 <span id="cb2-16"><a href="#cb2-16"></a></span>
 <span id="cb2-17"><a href="#cb2-17"></a>    <span class="kw">using</span> move_left  <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb2-18"><a href="#cb2-18"></a>                           LTail<span class="op">,</span> </span>
-<span id="cb2-19"><a href="#cb2-19"></a>                           LHead<span class="op">,</span> </span>
+<span id="cb2-18"><a href="#cb2-18"></a>                           LTail<span class="op">,</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a>                           LHead<span class="op">,</span></span>
 <span id="cb2-20"><a href="#cb2-20"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> tl<span class="op">&lt;</span>RHead<span class="op">,</span> RTail<span class="op">&gt;&gt;&gt;;</span></span>
 <span id="cb2-21"><a href="#cb2-21"></a>    <span class="kw">using</span> move_right <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb2-22"><a href="#cb2-22"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;&gt;,</span> </span>
-<span id="cb2-23"><a href="#cb2-23"></a>                           RHead<span class="op">,</span> </span>
+<span id="cb2-22"><a href="#cb2-22"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;&gt;,</span></span>
+<span id="cb2-23"><a href="#cb2-23"></a>                           RHead<span class="op">,</span></span>
 <span id="cb2-24"><a href="#cb2-24"></a>                           RTail<span class="op">&gt;;</span></span>
 <span id="cb2-25"><a href="#cb2-25"></a><span class="op">};</span></span></code></pre></div>
 <p><br></p>
@@ -113,7 +116,7 @@ The <strong>get</strong> and <strong>set</strong> functions work just equal to t
 <div class="sourceCode" id="cb3"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Cursor<span class="op">&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="kw">struct</span> tape<span class="op">&lt;</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a>           <span class="dt">null_t</span><span class="op">,</span> <span class="co">// Empty Left List</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>           Cursor<span class="op">,</span> </span>
+<span id="cb3-4"><a href="#cb3-4"></a>           Cursor<span class="op">,</span></span>
 <span id="cb3-5"><a href="#cb3-5"></a>           <span class="dt">null_t</span>  <span class="co">// Empty Right List</span></span>
 <span id="cb3-6"><a href="#cb3-6"></a>        <span class="op">&gt;</span> <span class="op">{</span></span>
 <span id="cb3-7"><a href="#cb3-7"></a>    <span class="kw">using</span> get <span class="op">=</span> Cursor<span class="op">;</span></span>
@@ -122,11 +125,11 @@ The <strong>get</strong> and <strong>set</strong> functions work just equal to t
 <span id="cb3-10"><a href="#cb3-10"></a></span>
 <span id="cb3-11"><a href="#cb3-11"></a>    <span class="kw">using</span> move_left  <span class="op">=</span> tape<span class="op">&lt;</span></span>
 <span id="cb3-12"><a href="#cb3-12"></a>                           <span class="dt">null_t</span><span class="op">,</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a>                           <span class="dt">null_t</span><span class="op">,</span> </span>
+<span id="cb3-13"><a href="#cb3-13"></a>                           <span class="dt">null_t</span><span class="op">,</span></span>
 <span id="cb3-14"><a href="#cb3-14"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> <span class="dt">null_t</span><span class="op">&gt;&gt;;</span></span>
 <span id="cb3-15"><a href="#cb3-15"></a>    <span class="kw">using</span> move_right <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb3-16"><a href="#cb3-16"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> <span class="dt">null_t</span><span class="op">&gt;,</span> </span>
-<span id="cb3-17"><a href="#cb3-17"></a>                           <span class="dt">null_t</span><span class="op">,</span> </span>
+<span id="cb3-16"><a href="#cb3-16"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> <span class="dt">null_t</span><span class="op">&gt;,</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>                           <span class="dt">null_t</span><span class="op">,</span></span>
 <span id="cb3-18"><a href="#cb3-18"></a>                           <span class="dt">null_t</span><span class="op">&gt;;</span></span>
 <span id="cb3-19"><a href="#cb3-19"></a><span class="op">};</span></span></code></pre></div>
 <p>When shifting the tape to the <em>left</em>, the cursor becomes the tip.
@@ -138,11 +141,11 @@ The cursor is just set to <code>null_t</code>, representing an empty cell.</p>
 <p>I leave case 3 and 4 mostly uncommented.
 They are kind of <em>hybrids</em> of case 1 and 2, because they match in cases where one list is empty, and the list on the other side is non-empty.
 That means that shift left or shift right are actually shifting the respective non-empty list like case 1 does, but then create a new empty item of the other empty list, just like case 2 does.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Cursor<span class="op">,</span> </span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Cursor<span class="op">,</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>          <span class="kw">class</span> RHead<span class="op">,</span> <span class="kw">class</span> RTail<span class="op">&gt;</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="kw">struct</span> tape<span class="op">&lt;</span></span>
 <span id="cb4-4"><a href="#cb4-4"></a>           <span class="dt">null_t</span><span class="op">,</span>          <span class="co">// Empty Left List</span></span>
-<span id="cb4-5"><a href="#cb4-5"></a>           Cursor<span class="op">,</span> </span>
+<span id="cb4-5"><a href="#cb4-5"></a>           Cursor<span class="op">,</span></span>
 <span id="cb4-6"><a href="#cb4-6"></a>           tl<span class="op">&lt;</span>RHead<span class="op">,</span> RTail<span class="op">&gt;</span> <span class="co">// Non-Empty Right List</span></span>
 <span id="cb4-7"><a href="#cb4-7"></a>       <span class="op">&gt;</span> <span class="op">{</span></span>
 <span id="cb4-8"><a href="#cb4-8"></a>    <span class="kw">using</span> get <span class="op">=</span> Cursor<span class="op">;</span></span>
@@ -150,37 +153,37 @@ That means that shift left or shift right are actually shifting the respective n
 <span id="cb4-10"><a href="#cb4-10"></a>    <span class="kw">using</span> set <span class="op">=</span> tape<span class="op">&lt;</span><span class="dt">null_t</span><span class="op">,</span> T<span class="op">,</span> tl<span class="op">&lt;</span>RHead<span class="op">,</span> RTail<span class="op">&gt;&gt;;</span></span>
 <span id="cb4-11"><a href="#cb4-11"></a></span>
 <span id="cb4-12"><a href="#cb4-12"></a>    <span class="kw">using</span> move_left  <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb4-13"><a href="#cb4-13"></a>                           <span class="dt">null_t</span><span class="op">,</span> </span>
-<span id="cb4-14"><a href="#cb4-14"></a>                           <span class="dt">null_t</span><span class="op">,</span> </span>
+<span id="cb4-13"><a href="#cb4-13"></a>                           <span class="dt">null_t</span><span class="op">,</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a>                           <span class="dt">null_t</span><span class="op">,</span></span>
 <span id="cb4-15"><a href="#cb4-15"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> tl<span class="op">&lt;</span>RHead<span class="op">,</span> RTail<span class="op">&gt;&gt;&gt;;</span></span>
 <span id="cb4-16"><a href="#cb4-16"></a>    <span class="kw">using</span> move_right <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb4-17"><a href="#cb4-17"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> <span class="dt">null_t</span><span class="op">&gt;,</span> </span>
-<span id="cb4-18"><a href="#cb4-18"></a>                           RHead<span class="op">,</span> </span>
+<span id="cb4-17"><a href="#cb4-17"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> <span class="dt">null_t</span><span class="op">&gt;,</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a>                           RHead<span class="op">,</span></span>
 <span id="cb4-19"><a href="#cb4-19"></a>                           RTail<span class="op">&gt;;</span></span>
 <span id="cb4-20"><a href="#cb4-20"></a><span class="op">};</span></span></code></pre></div>
 <h3 id="case-4-the-right-list-is-empty-the-left-one-is-non-empty">Case 4: The right list is empty, the left one is non-empty</h3>
 <p>Case 4 is just a mirrored version of case 3.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> LHead<span class="op">,</span> <span class="kw">class</span> LTail<span class="op">,</span> </span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> LHead<span class="op">,</span> <span class="kw">class</span> LTail<span class="op">,</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a>          <span class="kw">class</span> Cursor<span class="op">&gt;</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a><span class="kw">struct</span> tape<span class="op">&lt;</span></span>
 <span id="cb5-4"><a href="#cb5-4"></a>           tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;,</span> <span class="co">// Non-Empty Left List</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>           Cursor<span class="op">,</span> </span>
+<span id="cb5-5"><a href="#cb5-5"></a>           Cursor<span class="op">,</span></span>
 <span id="cb5-6"><a href="#cb5-6"></a>           <span class="dt">null_t</span>            <span class="co">// Empty Right List</span></span>
 <span id="cb5-7"><a href="#cb5-7"></a>       <span class="op">&gt;</span> <span class="op">{</span></span>
 <span id="cb5-8"><a href="#cb5-8"></a>    <span class="kw">using</span> get <span class="op">=</span> Cursor<span class="op">;</span></span>
 <span id="cb5-9"><a href="#cb5-9"></a>    <span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> T<span class="op">&gt;</span></span>
 <span id="cb5-10"><a href="#cb5-10"></a>    <span class="kw">using</span> set <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb5-11"><a href="#cb5-11"></a>                    tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;,</span> </span>
-<span id="cb5-12"><a href="#cb5-12"></a>                    T<span class="op">,</span> </span>
+<span id="cb5-11"><a href="#cb5-11"></a>                    tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;,</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a>                    T<span class="op">,</span></span>
 <span id="cb5-13"><a href="#cb5-13"></a>                    <span class="dt">null_t</span><span class="op">&gt;;</span></span>
 <span id="cb5-14"><a href="#cb5-14"></a></span>
 <span id="cb5-15"><a href="#cb5-15"></a>    <span class="kw">using</span> move_left  <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb5-16"><a href="#cb5-16"></a>                           LTail<span class="op">,</span> </span>
-<span id="cb5-17"><a href="#cb5-17"></a>                           LHead<span class="op">,</span> </span>
+<span id="cb5-16"><a href="#cb5-16"></a>                           LTail<span class="op">,</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a>                           LHead<span class="op">,</span></span>
 <span id="cb5-18"><a href="#cb5-18"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> <span class="dt">null_t</span><span class="op">&gt;&gt;;</span></span>
 <span id="cb5-19"><a href="#cb5-19"></a>    <span class="kw">using</span> move_right <span class="op">=</span> tape<span class="op">&lt;</span></span>
-<span id="cb5-20"><a href="#cb5-20"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;&gt;,</span> </span>
-<span id="cb5-21"><a href="#cb5-21"></a>                           <span class="dt">null_t</span><span class="op">,</span> </span>
+<span id="cb5-20"><a href="#cb5-20"></a>                           tl<span class="op">&lt;</span>Cursor<span class="op">,</span> tl<span class="op">&lt;</span>LHead<span class="op">,</span> LTail<span class="op">&gt;&gt;,</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a>                           <span class="dt">null_t</span><span class="op">,</span></span>
 <span id="cb5-22"><a href="#cb5-22"></a>                           <span class="dt">null_t</span><span class="op">&gt;;</span></span>
 <span id="cb5-23"><a href="#cb5-23"></a><span class="op">};</span></span></code></pre></div>
 <h2 id="adding-convenient-using-clause-helpers">Adding Convenient <code>using</code> Clause Helpers</h2>

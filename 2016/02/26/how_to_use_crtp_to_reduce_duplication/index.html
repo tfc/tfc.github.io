@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>How to Use the CRTP to Reduce Duplication</h1>
 <div class="post"><span class="post-date">February 26, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>
+</span>
 <p>Some objects have different interfaces for doing the same thing in a different way.
 One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>.
 Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>.
@@ -91,12 +94,12 @@ There are multiple things which can be done with it, and they basically look lik
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> bla_base_functionality</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span><span class="op">:</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> generic_function_bla<span class="op">()</span> <span class="op">{</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">void</span> generic_function_bla<span class="op">()</span> <span class="op">{</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        generic_part_a<span class="op">();</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">static_cast</span><span class="op">&lt;</span>INHERITOR_TYPE<span class="op">*&gt;(</span><span class="kw">this</span><span class="op">)-&gt;</span>specialized_bla_part<span class="op">();</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        generic_part_b<span class="op">();</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">};</span> </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Foo <span class="op">:</span> <span class="kw">public</span> bla_base_functionality<span class="op">&lt;</span>Foo<span class="op">&gt;</span></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -158,13 +161,13 @@ The other one is inherited from class <code>comparison_impl</code>.</p>
 <p>There is again that limitation, that <code>Foo</code> must be at the left side of the comparison, and the other type must be at the right side of it.
 In order to solve that, there needs to be some more code accompanying the header file which defines <code>comparison_impl</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> U<span class="op">,</span> <span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="kw">operator</span><span class="op">==(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="kw">operator</span><span class="op">==(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">static_cast</span><span class="op">&lt;</span>T<span class="op">&amp;&gt;(</span>rhs<span class="op">)</span> <span class="op">==</span> lhs<span class="op">;</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> U<span class="op">,</span> <span class="kw">typename</span> T<span class="op">&gt;</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="kw">operator</span><span class="op">!=(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span> </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> <span class="kw">operator</span><span class="op">!=(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">static_cast</span><span class="op">&lt;</span>T<span class="op">&amp;&gt;(</span>rhs<span class="op">)</span> <span class="op">!=</span> lhs<span class="op">;</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
@@ -199,7 +202,7 @@ It will error-out, telling us that these are two <em>ambiguous</em> implementati
 This can be done using <em>SFINAE</em> magic, using <code>enable_if</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> U<span class="op">,</span> <span class="kw">typename</span> T<span class="op">&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">typename</span> <span class="bu">std::</span>enable_if<span class="op">&lt;!</span><span class="bu">std::</span>is_same<span class="op">&lt;</span>U<span class="op">,</span> T<span class="op">&gt;::</span>value<span class="op">,</span> <span class="dt">bool</span><span class="op">&gt;::</span>type</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">operator</span><span class="op">==(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">operator</span><span class="op">==(</span><span class="at">const</span> U <span class="op">&amp;</span>lhs<span class="op">,</span> <span class="at">const</span> comparison_impl<span class="op">&lt;</span>T<span class="op">&gt;</span> <span class="op">&amp;</span>rhs<span class="op">)</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">static_cast</span><span class="op">&lt;</span>T<span class="op">&amp;&gt;(</span>rhs<span class="op">)</span> <span class="op">==</span> lhs<span class="op">;</span></span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>

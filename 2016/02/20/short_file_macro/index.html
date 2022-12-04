@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>A __FILE__ Macro Which Does Not Contain the Whole Source File Path</h1>
 <div class="post"><span class="post-date">February 20, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>
+</span>
 <p>The <code>__FILE__</code> macro expands to the current source file name at compile time.
 It is not really useful if the source file paths which the build system uses, are very long, as this would bloat log output with long path names.
 It would be useful to have a shortened version, which only contains the file name without the whole path.
@@ -53,8 +56,8 @@ This could be done at run time, and the overhead would most probably be neglibib
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                       past_last_slash<span class="op">(</span>str <span class="op">+</span> <span class="dv">1</span><span class="op">,</span> last_slash<span class="op">);</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="kw">constexpr</span> cstr past_last_slash<span class="op">(</span>cstr str<span class="op">)</span> </span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="kw">constexpr</span> cstr past_last_slash<span class="op">(</span>cstr str<span class="op">)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> past_last_slash<span class="op">(</span>str<span class="op">,</span> str<span class="op">);</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This is certainly not the most elegant way to express a substring search.

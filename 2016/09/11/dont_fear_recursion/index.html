@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>Do Not Fear Recursion</h1>
 <div class="post"><span class="post-date">September 11, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>
+</span>
 <p>There are a lot of algorithms which can be implemented using <em>recursive</em> or <em>iterative</em> style.
 Actually, <strong>everything</strong> can be implemented in both styles.
 For a lot of algorithms, the recursive version is simpler to read, write, and understand.
@@ -125,7 +128,7 @@ This shows, that this recursive version of the GCD algorithm can never lead to s
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>   4:	85 d2                	test   <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>   6:	74 17                	<span class="cf">je</span>     <span class="fl">1</span><span class="bn">f</span> <span class="op">&lt;</span>_Z7gcd_recjj<span class="op">+</span><span class="bn">0x1f</span><span class="op">&gt;</span></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>   8:	0f 1f 84 00 00 00 00 	nopl   <span class="bn">0x0</span><span class="op">(%</span><span class="kw">rax</span><span class="op">,%</span><span class="kw">rax</span><span class="op">,</span><span class="dv">1</span><span class="op">)</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">f:</span>	00 </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">f:</span>	00</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  10:	89 d1                	mov    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">ecx</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  12:	31 d2                	<span class="op">xor</span>    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  14:	f7 f1                	div    <span class="op">%</span><span class="kw">ecx</span></span>
@@ -133,8 +136,8 @@ This shows, that this recursive version of the GCD algorithm can never lead to s
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  18:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  1a:	75 f4                	jne    <span class="dv">10</span> <span class="op">&lt;</span>_Z7gcd_recjj<span class="op">+</span><span class="bn">0x10</span><span class="op">&gt;</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  1c:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  1e:	c3                   	retq   </span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  1f:	c3                   	retq   </span></code></pre></div>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  1e:	c3                   	retq</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  1f:	c3                   	retq</span></code></pre></div>
 <p>However, looking at the iterative version shows, that both versions are completely <strong>identical</strong>.
 This is pretty cool, because this way we can profit from the performance of iterative code, although our C++ code is a slick and tidy recursive implementation!</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>0000000000000020 &lt;_Z7gcd_itrjj<span class="op">&gt;:</span></span>
@@ -143,7 +146,7 @@ This is pretty cool, because this way we can profit from the performance of iter
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  24:	85 d2                	test   <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  26:	74 17                	<span class="cf">je</span>     <span class="fl">3</span><span class="bn">f</span> <span class="op">&lt;</span>_Z7gcd_itrjj<span class="op">+</span><span class="bn">0x1f</span><span class="op">&gt;</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  28:	0f 1f 84 00 00 00 00 	nopl   <span class="bn">0x0</span><span class="op">(%</span><span class="kw">rax</span><span class="op">,%</span><span class="kw">rax</span><span class="op">,</span><span class="dv">1</span><span class="op">)</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  2f:	00 </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  2f:	00</span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  30:	89 d1                	mov    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">ecx</span></span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  32:	31 d2                	<span class="op">xor</span>    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  34:	f7 f1                	div    <span class="op">%</span><span class="kw">ecx</span></span>
@@ -151,8 +154,8 @@ This is pretty cool, because this way we can profit from the performance of iter
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  38:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  3a:	75 f4                	jne    <span class="dv">30</span> <span class="op">&lt;</span>_Z7gcd_itrjj<span class="op">+</span><span class="bn">0x10</span><span class="op">&gt;</span></span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  3c:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  3e:	c3                   	retq   </span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  3f:	c3                   	retq   </span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  3e:	c3                   	retq</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  3f:	c3                   	retq</span>
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span></code></pre></div>
 <h2 id="summary">Summary</h2>
 <p>The GCD algorithm is a very short example for the behaviour of telling the compiler much more than needed to solve the actual problem, because imperative programming is all about telling the computer <em>what</em> to do, and <em>how</em> to do it.

@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>What is a Type Trait?</h1>
 <div class="post"><span class="post-date">February 18, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>, <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html">meta-programming</a>
+</span>
 <p>This article explains, how so called <em>type traits</em> in C++ work.
 Type traits have been there for quite a long time now. They are a meta programming technique which appears to use types and their sub types like functions at compile time, to control what the compiler actually compiles.</p>
 <!--more-->
@@ -71,7 +74,7 @@ That’s it, we just implemented a complicated way to express <code>bool y = not
 <p>The cool thing is, that this code will be completely fixed at runtime, so the compiler can reduce it to a constant value which will reside in the binary.
 <em>No</em> part of this will have to be evaluated at run time.</p>
 <p>Of course, since the release of C++11, we also could have written:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">not</span><span class="op">(</span><span class="dt">bool</span> x<span class="op">)</span> </span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">static</span> <span class="kw">constexpr</span> <span class="kw">not</span><span class="op">(</span><span class="dt">bool</span> x<span class="op">)</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">!</span>x<span class="op">;</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>

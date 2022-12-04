@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>Type Lists</h1>
 <div class="post"><span class="post-date">May  8, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>, <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html">meta-programming</a>
+</span>
 <p>Homogenuous data in purely functional programs is typically managed in <em>lists</em>.
 Items can be appended or prepended to lists, different lists can be concatenated.
 Lists can be filtered, transformed, mapped, reduced, etc.
@@ -141,7 +144,7 @@ The clumsyness of their creation can be overcome by creating actual variadic typ
 <span id="cb5-2"><a href="#cb5-2"></a></span>
 <span id="cb5-3"><a href="#cb5-3"></a><span class="co">// Case: Normal recursion. Consume one type per call.</span></span>
 <span id="cb5-4"><a href="#cb5-4"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">,</span> <span class="kw">typename</span> <span class="op">...</span> REST<span class="op">&gt;</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">struct</span> make<span class="op">&lt;</span>T<span class="op">,</span> REST<span class="op">...&gt;</span> <span class="op">{</span> </span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">struct</span> make<span class="op">&lt;</span>T<span class="op">,</span> REST<span class="op">...&gt;</span> <span class="op">{</span></span>
 <span id="cb5-6"><a href="#cb5-6"></a>    <span class="kw">using</span> type <span class="op">=</span> tl<span class="op">&lt;</span>T<span class="op">,</span> <span class="kw">typename</span> make<span class="op">&lt;</span>REST<span class="op">...&gt;::</span>type<span class="op">&gt;;</span></span>
 <span id="cb5-7"><a href="#cb5-7"></a><span class="op">};</span></span>
 <span id="cb5-8"><a href="#cb5-8"></a></span>
@@ -191,7 +194,7 @@ This code looks really similar to purely functional programming, and this <em>pa
 <p>The <code>head_t</code> and <code>tail_t</code> helpers again spare some typing.
 Those <code>using</code> helpers will look the same all the time, as they do no real work.</p>
 <h2 id="appending-items-or-lists-to-a-lists-tail">Appending Items or Lists to a List’s Tail</h2>
-<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Function declaration: Takes a list, and a type. </span></span>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Function declaration: Takes a list, and a type.</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Using (list, type) notation in following comments</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> TList<span class="op">,</span> <span class="kw">typename</span> T<span class="op">&gt;</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> append<span class="op">;</span></span>
@@ -272,7 +275,7 @@ To debug a list in different composition steps, it is valuable to print its stat
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> list123 <span class="op">=</span> <span class="dt">make_t</span><span class="op">&lt;</span>Type1<span class="op">,</span> Type2<span class="op">,</span> Type3<span class="op">&gt;;</span></span>
 <span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">// This is our little debugging helper. </span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">// This is our little debugging helper.</span></span>
 <span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">// By not defining it, but instantiating it, we provoke a compile error.</span></span>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span> <span class="kw">class</span> <span class="dt">debug_t</span><span class="op">;</span></span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>

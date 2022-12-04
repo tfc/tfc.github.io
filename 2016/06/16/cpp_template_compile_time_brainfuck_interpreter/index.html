@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>Executing Brainfuck at Compile Time with C++ Templates</h1>
 <div class="post"><span class="post-date">June 16, 2016</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>, <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html">meta-programming</a>
+</span>
 <p>This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.</p>
 <!--more-->
 <blockquote>
@@ -123,7 +126,7 @@ I decided to initialize such cells to the value <code>0</code>.</p>
 <span id="cb4-8"><a href="#cb4-8"></a></span>
 <span id="cb4-9"><a href="#cb4-9"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Tape<span class="op">&gt;</span> <span class="kw">struct</span> null_to_0 <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> Tape<span class="op">;</span> <span class="op">};</span></span>
 <span id="cb4-10"><a href="#cb4-10"></a></span>
-<span id="cb4-11"><a href="#cb4-11"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Tape<span class="op">&gt;</span> <span class="kw">using</span> <span class="dt">null_to_0_t</span> <span class="op">=</span> </span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> Tape<span class="op">&gt;</span> <span class="kw">using</span> <span class="dt">null_to_0_t</span> <span class="op">=</span></span>
 <span id="cb4-12"><a href="#cb4-12"></a>                               <span class="kw">typename</span> null_to_0<span class="op">&lt;</span>Tape<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
 <p>Instead of subclassing the Turing tape or similar, we will just use the function <code>null_to_0_t</code>, which transforms empty cell elements to <code>0</code> elements, and leaves others untouched.
 Whenever the list is altered for moving, this function is applied to it, and then this is set as the new list state.</p>
@@ -287,16 +290,16 @@ We will get at those just after the other command implementations:</p>
 <span id="cb9-4"><a href="#cb9-4"></a><span class="co">// '.' command</span></span>
 <span id="cb9-5"><a href="#cb9-5"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> BFM<span class="op">,</span> <span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
 <span id="cb9-6"><a href="#cb9-6"></a><span class="kw">struct</span> interpret_step<span class="op">&lt;</span>io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span> InList<span class="op">,</span> OutList<span class="op">&gt;,</span> <span class="ch">'.'</span><span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb9-7"><a href="#cb9-7"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span> </span>
-<span id="cb9-8"><a href="#cb9-8"></a>                       InList<span class="op">,</span> </span>
+<span id="cb9-7"><a href="#cb9-7"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>                       InList<span class="op">,</span></span>
 <span id="cb9-9"><a href="#cb9-9"></a>                       <span class="dt">append_t</span><span class="op">&lt;</span>OutList<span class="op">,</span> <span class="dt">get_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;&gt;&gt;;</span></span>
 <span id="cb9-10"><a href="#cb9-10"></a><span class="op">};</span></span>
 <span id="cb9-11"><a href="#cb9-11"></a></span>
 <span id="cb9-12"><a href="#cb9-12"></a><span class="co">// ',' command</span></span>
 <span id="cb9-13"><a href="#cb9-13"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> BFM<span class="op">,</span> <span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
 <span id="cb9-14"><a href="#cb9-14"></a><span class="kw">struct</span> interpret_step<span class="op">&lt;</span>io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span> InList<span class="op">,</span> OutList<span class="op">&gt;,</span> <span class="ch">','</span><span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb9-15"><a href="#cb9-15"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">set_t</span><span class="op">&lt;</span>BFM<span class="op">,</span> <span class="dt">head_t</span><span class="op">&lt;</span>InList<span class="op">&gt;::</span>value<span class="op">&gt;,</span> </span>
-<span id="cb9-16"><a href="#cb9-16"></a>                        <span class="dt">tail_t</span><span class="op">&lt;</span>InList<span class="op">&gt;,</span> </span>
+<span id="cb9-15"><a href="#cb9-15"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">set_t</span><span class="op">&lt;</span>BFM<span class="op">,</span> <span class="dt">head_t</span><span class="op">&lt;</span>InList<span class="op">&gt;::</span>value<span class="op">&gt;,</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a>                        <span class="dt">tail_t</span><span class="op">&lt;</span>InList<span class="op">&gt;,</span></span>
 <span id="cb9-17"><a href="#cb9-17"></a>                        OutList<span class="op">&gt;;</span></span>
 <span id="cb9-18"><a href="#cb9-18"></a><span class="op">};</span></span>
 <span id="cb9-19"><a href="#cb9-19"></a></span>
@@ -304,35 +307,35 @@ We will get at those just after the other command implementations:</p>
 <span id="cb9-21"><a href="#cb9-21"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> BFM<span class="op">,</span> <span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
 <span id="cb9-22"><a href="#cb9-22"></a><span class="kw">struct</span> interpret_step<span class="op">&lt;</span>io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span> InList<span class="op">,</span> OutList<span class="op">&gt;,</span> <span class="ch">'+'</span><span class="op">&gt;</span> <span class="op">{</span></span>
 <span id="cb9-23"><a href="#cb9-23"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">increment_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;,</span></span>
-<span id="cb9-24"><a href="#cb9-24"></a>                        InList<span class="op">,</span> </span>
+<span id="cb9-24"><a href="#cb9-24"></a>                        InList<span class="op">,</span></span>
 <span id="cb9-25"><a href="#cb9-25"></a>                        OutList<span class="op">&gt;;</span></span>
 <span id="cb9-26"><a href="#cb9-26"></a><span class="op">};</span></span>
 <span id="cb9-27"><a href="#cb9-27"></a></span>
 <span id="cb9-28"><a href="#cb9-28"></a><span class="co">// '-' command</span></span>
 <span id="cb9-29"><a href="#cb9-29"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> BFM<span class="op">,</span> <span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
 <span id="cb9-30"><a href="#cb9-30"></a><span class="kw">struct</span> interpret_step<span class="op">&lt;</span>io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span> InList<span class="op">,</span> OutList<span class="op">&gt;,</span> <span class="ch">'-'</span><span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb9-31"><a href="#cb9-31"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">decrement_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;,</span> </span>
-<span id="cb9-32"><a href="#cb9-32"></a>                        InList<span class="op">,</span> </span>
+<span id="cb9-31"><a href="#cb9-31"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">decrement_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;,</span></span>
+<span id="cb9-32"><a href="#cb9-32"></a>                        InList<span class="op">,</span></span>
 <span id="cb9-33"><a href="#cb9-33"></a>                        OutList<span class="op">&gt;;</span></span>
 <span id="cb9-34"><a href="#cb9-34"></a><span class="op">};</span></span>
 <span id="cb9-35"><a href="#cb9-35"></a></span>
 <span id="cb9-36"><a href="#cb9-36"></a><span class="co">// '&lt;' command</span></span>
 <span id="cb9-37"><a href="#cb9-37"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> BFM<span class="op">,</span> <span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
 <span id="cb9-38"><a href="#cb9-38"></a><span class="kw">struct</span> interpret_step<span class="op">&lt;</span>io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span> InList<span class="op">,</span> OutList<span class="op">&gt;,</span> <span class="ch">'&lt;'</span><span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb9-39"><a href="#cb9-39"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">move_left_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;,</span> </span>
-<span id="cb9-40"><a href="#cb9-40"></a>                        InList<span class="op">,</span> </span>
+<span id="cb9-39"><a href="#cb9-39"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">move_left_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;,</span></span>
+<span id="cb9-40"><a href="#cb9-40"></a>                        InList<span class="op">,</span></span>
 <span id="cb9-41"><a href="#cb9-41"></a>                        OutList<span class="op">&gt;;</span></span>
 <span id="cb9-42"><a href="#cb9-42"></a><span class="op">};</span></span>
 <span id="cb9-43"><a href="#cb9-43"></a></span>
 <span id="cb9-44"><a href="#cb9-44"></a><span class="co">// '&gt;' command</span></span>
 <span id="cb9-45"><a href="#cb9-45"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> BFM<span class="op">,</span> <span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
 <span id="cb9-46"><a href="#cb9-46"></a><span class="kw">struct</span> interpret_step<span class="op">&lt;</span>io_bfm<span class="op">&lt;</span>BFM<span class="op">,</span> InList<span class="op">,</span> OutList<span class="op">&gt;,</span> <span class="ch">'&gt;'</span><span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb9-47"><a href="#cb9-47"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">move_right_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;,</span> </span>
-<span id="cb9-48"><a href="#cb9-48"></a>                        InList<span class="op">,</span> </span>
+<span id="cb9-47"><a href="#cb9-47"></a>    <span class="kw">using</span> type <span class="op">=</span> io_bfm<span class="op">&lt;</span><span class="dt">move_right_t</span><span class="op">&lt;</span>BFM<span class="op">&gt;,</span></span>
+<span id="cb9-48"><a href="#cb9-48"></a>                        InList<span class="op">,</span></span>
 <span id="cb9-49"><a href="#cb9-49"></a>                        OutList<span class="op">&gt;;</span></span>
 <span id="cb9-50"><a href="#cb9-50"></a><span class="op">};</span></span>
 <span id="cb9-51"><a href="#cb9-51"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> IOBFM<span class="op">,</span> <span class="dt">char</span> InputChar<span class="op">&gt;</span></span>
-<span id="cb9-52"><a href="#cb9-52"></a><span class="kw">using</span> <span class="dt">interpret_step_t</span> <span class="op">=</span> </span>
+<span id="cb9-52"><a href="#cb9-52"></a><span class="kw">using</span> <span class="dt">interpret_step_t</span> <span class="op">=</span></span>
 <span id="cb9-53"><a href="#cb9-53"></a>          <span class="kw">typename</span> interpret_step<span class="op">&lt;</span>IOBFM<span class="op">,</span> InputChar<span class="op">&gt;::</span>type<span class="op">;</span></span></code></pre></div>
 <p>In this lengthy list of ugly definitions you will find no if-else control structures.
 The function call flow is completely controlled by <em>pattern matching</em>.
@@ -369,19 +372,19 @@ Assuming we start at value <code>1</code>, because the first opening bracket den
 The next closing <code>]</code> bracket we see, while the counter is back at value <code>1</code>, is then the right loop end.</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">......[......[......[.....]....].....]......</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>      <span class="ex">1</span>      2      3     2    1     X</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">position</span> X: Do not increment, but abort search. We found it.</span></code></pre></div>
 <p>Let’s have a look at the C++ TMP implementation:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1"></a><span class="co">// Find the closing brace, assuming we have seen an opening </span></span>
+<div class="sourceCode" id="cb11"><pre class="sourceCode numberSource cpp numberLines"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1"></a><span class="co">// Find the closing brace, assuming we have seen an opening</span></span>
 <span id="cb11-2"><a href="#cb11-2"></a><span class="co">// one already.</span></span>
 <span id="cb11-3"><a href="#cb11-3"></a><span class="co">//</span></span>
-<span id="cb11-4"><a href="#cb11-4"></a><span class="co">// InList:  The BF Program list, one element _behind_ the </span></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="co">// InList:  The BF Program list, one element _behind_ the</span></span>
 <span id="cb11-5"><a href="#cb11-5"></a><span class="co">//          opening [ bracket.</span></span>
-<span id="cb11-6"><a href="#cb11-6"></a><span class="co">// OutList: A list which will grow with discovering all </span></span>
-<span id="cb11-7"><a href="#cb11-7"></a><span class="co">//          inside-loop characters. Should be empty on </span></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="co">// OutList: A list which will grow with discovering all</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="co">//          inside-loop characters. Should be empty on</span></span>
 <span id="cb11-8"><a href="#cb11-8"></a><span class="co">//          the initial call.</span></span>
 <span id="cb11-9"><a href="#cb11-9"></a><span class="co">//          inside-bracket loop part)</span></span>
-<span id="cb11-10"><a href="#cb11-10"></a><span class="co">// Counter: the bracket counter, which should be 1 on </span></span>
+<span id="cb11-10"><a href="#cb11-10"></a><span class="co">// Counter: the bracket counter, which should be 1 on</span></span>
 <span id="cb11-11"><a href="#cb11-11"></a><span class="co">//          the initial call</span></span>
 <span id="cb11-12"><a href="#cb11-12"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">,</span> <span class="dt">size_t</span> Counter<span class="op">&gt;</span></span>
 <span id="cb11-13"><a href="#cb11-13"></a><span class="kw">struct</span> find_brace<span class="op">;</span></span>
@@ -389,8 +392,8 @@ The next closing <code>]</code> bracket we see, while the counter is back at val
 <span id="cb11-15"><a href="#cb11-15"></a><span class="co">// Match: counter is 1, command is ']'</span></span>
 <span id="cb11-16"><a href="#cb11-16"></a><span class="co">// This is the final closing bracket.</span></span>
 <span id="cb11-17"><a href="#cb11-17"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">&gt;</span></span>
-<span id="cb11-18"><a href="#cb11-18"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">']'</span><span class="op">&gt;,</span> InList<span class="op">&gt;,</span> </span>
-<span id="cb11-19"><a href="#cb11-19"></a>                  OutList<span class="op">,</span> </span>
+<span id="cb11-18"><a href="#cb11-18"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">']'</span><span class="op">&gt;,</span> InList<span class="op">&gt;,</span></span>
+<span id="cb11-19"><a href="#cb11-19"></a>                  OutList<span class="op">,</span></span>
 <span id="cb11-20"><a href="#cb11-20"></a>                  <span class="dv">1</span><span class="op">&gt;</span> <span class="op">{</span></span>
 <span id="cb11-21"><a href="#cb11-21"></a>    <span class="co">// We're done. The user can now choose...</span></span>
 <span id="cb11-22"><a href="#cb11-22"></a></span>
@@ -403,33 +406,33 @@ The next closing <code>]</code> bracket we see, while the counter is back at val
 <span id="cb11-29"><a href="#cb11-29"></a></span>
 <span id="cb11-30"><a href="#cb11-30"></a><span class="co">// Match: counter is != 1, command is ']'</span></span>
 <span id="cb11-31"><a href="#cb11-31"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">,</span> <span class="dt">size_t</span> N<span class="op">&gt;</span></span>
-<span id="cb11-32"><a href="#cb11-32"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">']'</span><span class="op">&gt;,</span> InList<span class="op">&gt;,</span> </span>
-<span id="cb11-33"><a href="#cb11-33"></a>                  OutList<span class="op">,</span> </span>
+<span id="cb11-32"><a href="#cb11-32"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">']'</span><span class="op">&gt;,</span> InList<span class="op">&gt;,</span></span>
+<span id="cb11-33"><a href="#cb11-33"></a>                  OutList<span class="op">,</span></span>
 <span id="cb11-34"><a href="#cb11-34"></a>                  N<span class="op">&gt;</span></span>
 <span id="cb11-35"><a href="#cb11-35"></a>    <span class="co">// Add character to outlist, decrement counter</span></span>
-<span id="cb11-36"><a href="#cb11-36"></a>    <span class="op">:</span> <span class="kw">public</span> find_brace<span class="op">&lt;</span>InList<span class="op">,</span> </span>
-<span id="cb11-37"><a href="#cb11-37"></a>                       <span class="dt">append_t</span><span class="op">&lt;</span>OutList<span class="op">,</span> <span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">']'</span><span class="op">&gt;&gt;,</span> </span>
+<span id="cb11-36"><a href="#cb11-36"></a>    <span class="op">:</span> <span class="kw">public</span> find_brace<span class="op">&lt;</span>InList<span class="op">,</span></span>
+<span id="cb11-37"><a href="#cb11-37"></a>                       <span class="dt">append_t</span><span class="op">&lt;</span>OutList<span class="op">,</span> <span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">']'</span><span class="op">&gt;&gt;,</span></span>
 <span id="cb11-38"><a href="#cb11-38"></a>                       N <span class="op">-</span> <span class="dv">1</span><span class="op">&gt;</span></span>
 <span id="cb11-39"><a href="#cb11-39"></a><span class="op">{};</span></span>
 <span id="cb11-40"><a href="#cb11-40"></a></span>
 <span id="cb11-41"><a href="#cb11-41"></a><span class="co">// Match: counter is != 1, command is '['</span></span>
 <span id="cb11-42"><a href="#cb11-42"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">,</span> <span class="dt">size_t</span> N<span class="op">&gt;</span></span>
-<span id="cb11-43"><a href="#cb11-43"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'['</span><span class="op">&gt;,</span> InList<span class="op">&gt;,</span> </span>
-<span id="cb11-44"><a href="#cb11-44"></a>                  OutList<span class="op">,</span> </span>
+<span id="cb11-43"><a href="#cb11-43"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'['</span><span class="op">&gt;,</span> InList<span class="op">&gt;,</span></span>
+<span id="cb11-44"><a href="#cb11-44"></a>                  OutList<span class="op">,</span></span>
 <span id="cb11-45"><a href="#cb11-45"></a>                  N<span class="op">&gt;</span></span>
 <span id="cb11-46"><a href="#cb11-46"></a>    <span class="co">// Add character to outlist, increment counter</span></span>
-<span id="cb11-47"><a href="#cb11-47"></a>    <span class="op">:</span> <span class="kw">public</span> find_brace<span class="op">&lt;</span>InList<span class="op">,</span> </span>
-<span id="cb11-48"><a href="#cb11-48"></a>                        <span class="dt">append_t</span><span class="op">&lt;</span>OutList<span class="op">,</span> <span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'['</span><span class="op">&gt;&gt;,</span> </span>
+<span id="cb11-47"><a href="#cb11-47"></a>    <span class="op">:</span> <span class="kw">public</span> find_brace<span class="op">&lt;</span>InList<span class="op">,</span></span>
+<span id="cb11-48"><a href="#cb11-48"></a>                        <span class="dt">append_t</span><span class="op">&lt;</span>OutList<span class="op">,</span> <span class="dt">char_t</span><span class="op">&lt;</span><span class="ch">'['</span><span class="op">&gt;&gt;,</span></span>
 <span id="cb11-49"><a href="#cb11-49"></a>                        N <span class="op">+</span> <span class="dv">1</span><span class="op">&gt;</span></span>
 <span id="cb11-50"><a href="#cb11-50"></a><span class="op">{};</span></span>
 <span id="cb11-51"><a href="#cb11-51"></a></span>
 <span id="cb11-52"><a href="#cb11-52"></a><span class="co">// Match: Any yet unmatched case</span></span>
 <span id="cb11-53"><a href="#cb11-53"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="dt">char</span> C<span class="op">,</span> <span class="kw">class</span> InList<span class="op">,</span> <span class="kw">class</span> OutList<span class="op">,</span> <span class="dt">size_t</span> N<span class="op">&gt;</span></span>
-<span id="cb11-54"><a href="#cb11-54"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span>C<span class="op">&gt;,</span> InList<span class="op">&gt;,</span> </span>
-<span id="cb11-55"><a href="#cb11-55"></a>                  OutList<span class="op">,</span> </span>
+<span id="cb11-54"><a href="#cb11-54"></a><span class="kw">struct</span> find_brace<span class="op">&lt;</span>tl<span class="op">&lt;</span><span class="dt">char_t</span><span class="op">&lt;</span>C<span class="op">&gt;,</span> InList<span class="op">&gt;,</span></span>
+<span id="cb11-55"><a href="#cb11-55"></a>                  OutList<span class="op">,</span></span>
 <span id="cb11-56"><a href="#cb11-56"></a>                  N<span class="op">&gt;</span></span>
 <span id="cb11-57"><a href="#cb11-57"></a>    <span class="co">// Add character to outlist</span></span>
-<span id="cb11-58"><a href="#cb11-58"></a>    <span class="op">:</span> <span class="kw">public</span> find_brace<span class="op">&lt;</span>InList<span class="op">,</span> </span>
+<span id="cb11-58"><a href="#cb11-58"></a>    <span class="op">:</span> <span class="kw">public</span> find_brace<span class="op">&lt;</span>InList<span class="op">,</span></span>
 <span id="cb11-59"><a href="#cb11-59"></a>                        <span class="dt">append_t</span><span class="op">&lt;</span>OutList<span class="op">,</span> <span class="dt">char_t</span><span class="op">&lt;</span>C<span class="op">&gt;&gt;,</span></span>
 <span id="cb11-60"><a href="#cb11-60"></a>                        N<span class="op">&gt;</span></span>
 <span id="cb11-61"><a href="#cb11-61"></a><span class="op">{};</span></span></code></pre></div>
@@ -489,7 +492,7 @@ If the cursor value is zero, skip the whole loop, and continue with the rest of 
 <span id="cb12-25"><a href="#cb12-25"></a>        <span class="co">// ...else, execute the BFM on the loop body,</span></span>
 <span id="cb12-26"><a href="#cb12-26"></a>        <span class="co">//    as if it was the whole program...</span></span>
 <span id="cb12-27"><a href="#cb12-27"></a>        run_tm<span class="op">&lt;</span></span>
-<span id="cb12-28"><a href="#cb12-28"></a>            <span class="kw">typename</span> run_tm<span class="op">&lt;</span>IOBFM<span class="op">,</span> </span>
+<span id="cb12-28"><a href="#cb12-28"></a>            <span class="kw">typename</span> run_tm<span class="op">&lt;</span>IOBFM<span class="op">,</span></span>
 <span id="cb12-29"><a href="#cb12-29"></a>                            <span class="kw">typename</span> blocks<span class="op">::</span>brace_block</span>
 <span id="cb12-30"><a href="#cb12-30"></a>                      <span class="op">&gt;::</span>type<span class="op">,</span></span>
 <span id="cb12-31"><a href="#cb12-31"></a>            <span class="co">// ...and then confront it with the</span></span>
@@ -498,12 +501,12 @@ If the cursor value is zero, skip the whole loop, and continue with the rest of 
 <span id="cb12-34"><a href="#cb12-34"></a>    <span class="op">&gt;::</span>type<span class="op">;</span></span>
 <span id="cb12-35"><a href="#cb12-35"></a><span class="op">};</span></span>
 <span id="cb12-36"><a href="#cb12-36"></a></span>
-<span id="cb12-37"><a href="#cb12-37"></a><span class="co">// Matches: Base case. </span></span>
+<span id="cb12-37"><a href="#cb12-37"></a><span class="co">// Matches: Base case.</span></span>
 <span id="cb12-38"><a href="#cb12-38"></a><span class="co">// Any of the 6 _simple_ brainfuck commands.</span></span>
 <span id="cb12-39"><a href="#cb12-39"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> IOBFM<span class="op">,</span> <span class="dt">char</span> Command<span class="op">,</span> <span class="kw">class</span> RestProg<span class="op">&gt;</span></span>
 <span id="cb12-40"><a href="#cb12-40"></a><span class="kw">struct</span> run_tm<span class="op">&lt;</span>IOBFM<span class="op">,</span> <span class="op">::</span>tl<span class="op">::</span>tl<span class="op">&lt;::</span><span class="dt">char_t</span><span class="op">&lt;</span>Command<span class="op">&gt;,</span> RestProg<span class="op">&gt;&gt;</span> <span class="op">{</span></span>
 <span id="cb12-41"><a href="#cb12-41"></a>    <span class="kw">using</span> type <span class="op">=</span> <span class="kw">typename</span> run_tm<span class="op">&lt;</span></span>
-<span id="cb12-42"><a href="#cb12-42"></a>                      <span class="dt">interpret_step_t</span><span class="op">&lt;</span>IOBFM<span class="op">,</span> Command<span class="op">&gt;,</span> </span>
+<span id="cb12-42"><a href="#cb12-42"></a>                      <span class="dt">interpret_step_t</span><span class="op">&lt;</span>IOBFM<span class="op">,</span> Command<span class="op">&gt;,</span></span>
 <span id="cb12-43"><a href="#cb12-43"></a>                      RestProg</span>
 <span id="cb12-44"><a href="#cb12-44"></a>                 <span class="op">&gt;::</span>type<span class="op">;</span></span>
 <span id="cb12-45"><a href="#cb12-45"></a><span class="op">};</span></span>
@@ -520,12 +523,12 @@ We can now execute brainfuck programs at compile time, and produce binaries, whi
 <p>Let’s throw all the code into a .cpp file and write a <code>main()</code> function, which will print our compile time results.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">// The program input is provided by a string provider.</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">// The type list transformation article explains, how these work.</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> program_str <span class="op">{</span> </span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="at">const</span> <span class="dt">char</span> <span class="op">*</span> str<span class="op">()</span> <span class="op">{</span> </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> program_str <span class="op">{</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">static</span> <span class="kw">constexpr</span> <span class="at">const</span> <span class="dt">char</span> <span class="op">*</span> str<span class="op">()</span> <span class="op">{</span></span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        <span class="co">// &quot;Hello World&quot; Brainfuck implementation from wikipedia</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">&quot;++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;++.&gt;+.+++++++.&quot;</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="st">&quot;++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;++.&gt;+.+++++++.&quot;</span></span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;.+++.&gt;++.&lt;&lt;+++++++++++++++.&gt;.+++.------.--------.&gt;+.&gt;.+++.&quot;</span><span class="op">;</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
@@ -539,7 +542,7 @@ We can now execute brainfuck programs at compile time, and produce binaries, whi
 <span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Compose an initialized IOBFM from an empty BFM, and the empty input</span></span>
 <span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> BFM <span class="op">=</span> bfm<span class="op">::</span>io_bfm<span class="op">&lt;</span>bfm<span class="op">::</span><span class="dt">make_t</span><span class="op">,</span> input_list<span class="op">,</span> tl<span class="op">::</span><span class="dt">null_t</span><span class="op">&gt;;</span></span>
 <span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The BFM's machine output is obtained by _running_ the IOBFM </span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The BFM's machine output is obtained by _running_ the IOBFM</span></span>
 <span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// together with the brainfuck program in the run_tm function.</span></span>
 <span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> output <span class="op">=</span> bfm<span class="op">::</span><span class="dt">run_tm_t</span><span class="op">&lt;</span>BFM<span class="op">,</span> prog<span class="op">&gt;::</span>output<span class="op">;</span></span>
 <span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
@@ -565,7 +568,7 @@ In the end, it looks like this:</p>
 <p>Printing at compile time looks like this:</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Jacek.Galowicz</span> ~/src/tmp_brainfuck $ g++ <span class="at">-o</span> main main.cpp <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-DPROGRAM_STR</span><span class="op">=</span><span class="st">'&quot;++++++++++[&gt;+++++++&gt;++++++++++&gt;+++&gt;+&lt;&lt;&lt;&lt;-]&gt;++.&gt;+.+++++++..+++.&gt;++.&lt;&lt;+++++++++++++++.&gt;.+++.------.--------.&gt;+.&gt;.+++.&quot;'</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="ex">main.cpp:31:51:</span> error: implicit instantiation of undefined template </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="ex">main.cpp:31:51:</span> error: implicit instantiation of undefined template</span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="st">'debug_t&lt;char_tl&lt;'</span><span class="ex">H</span><span class="st">', '</span><span class="ex">e</span><span class="st">', '</span><span class="ex">l</span><span class="st">', '</span><span class="ex">l</span><span class="st">', '</span><span class="ex">o</span><span class="st">', '</span> <span class="st">', '</span>W<span class="st">', '</span>o<span class="st">', '</span>r<span class="st">', '</span>l<span class="st">', '</span>d<span class="st">', '</span>!<span class="st">', '</span><span class="dt">\n</span><span class="st">', '</span><span class="dt">\x</span>0D<span class="st">'&gt; &gt;'</span></span>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">debug_t</span><span class="op">&lt;</span>typename tl_to_varlist<span class="op">&lt;</span>output<span class="op">&gt;</span>::list<span class="op">&gt;</span> t<span class="kw">;</span></span>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                                                  <span class="ex">^</span></span>

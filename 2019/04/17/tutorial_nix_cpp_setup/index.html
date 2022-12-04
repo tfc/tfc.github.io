@@ -35,6 +35,9 @@
 </div>
 <div class="content container"><h1>Setting up a C++ project environment with nix</h1>
 <div class="post"><span class="post-date">April 17, 2019</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'nix'." href="../../../../tags/nix.html">nix</a>, <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html">c++</a>
+</span>
 <p>This article explains how to quickly set up a C++ project environment with
 complete toolchain- and dependency management with <code>nix</code>.
 <a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and
@@ -133,21 +136,21 @@ and running the app looks like this:</p>
 <p>Running the compiled binary can of course be done without <code>nix-shell</code>.</p>
 </blockquote>
 <p>One would typically add a file called <code>default.nix</code> to the project folder:</p>
-<pre class="nix"><code>with import &lt;nixpkgs&gt; {};
-
-stdenv.mkDerivation {
-  name = &quot;my-app&quot;;
-  src = ./.;
-
-  buildInputs = [ boost poco ];
-
-  buildPhase = &quot;c++ -o main main.cpp -lPocoFoundation -lboost_system&quot;;
-
-  installPhase = ''
-    mkdir -p $out/bin
-    cp main $out/bin/
-  '';
-}</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">with</span> <span class="bu">import</span> &lt;nixpkgs&gt; <span class="op">{};</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>stdenv.mkDerivation <span class="op">{</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;my-app&quot;</span><span class="op">;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">src</span> <span class="op">=</span> <span class="ss">./.</span><span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildInputs</span> <span class="op">=</span> <span class="op">[</span> boost poco <span class="op">];</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildPhase</span> <span class="op">=</span> <span class="st">&quot;c++ -o main main.cpp -lPocoFoundation -lboost_system&quot;</span><span class="op">;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="va">installPhase</span> <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="st">    mkdir -p $out/bin</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="st">    cp main $out/bin/</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="st">  ''</span><span class="op">;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>This buys us that we can simply run <code>nix-build</code> to configure, build and package
 the project into the nix store with a single command.
 Developers would still use <code>nix-shell</code> for incremental builds between source
@@ -440,21 +443,21 @@ will allow us to build and execute these 32 binaries with a single <code>nix-bui
 <code>derivation.nix</code> and another file <code>release.nix</code>.</p>
 <p>The new <code>derivation.nix</code> file contains the pure package description without
 knowledge about where the dependencies come from:</p>
-<pre class="nix"><code>{ boost, poco, stdenv }:
-
-stdenv.mkDerivation {
-  name = &quot;my-app&quot;;
-  src = ./.;
-
-  buildInputs = [ boost poco ];
-
-  buildPhase = &quot;c++ -std=c++17 -o main main.cpp -lPocoFoundation -lboost_system&quot;;
-
-  installPhase = ''
-    mkdir -p $out/bin
-    cp main $out/bin/
-  '';
-}</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="va">boost</span><span class="op">,</span> <span class="va">poco</span><span class="op">,</span> <span class="va">stdenv</span> <span class="op">}</span>:</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>stdenv.mkDerivation <span class="op">{</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;my-app&quot;</span><span class="op">;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">src</span> <span class="op">=</span> <span class="ss">./.</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildInputs</span> <span class="op">=</span> <span class="op">[</span> boost poco <span class="op">];</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildPhase</span> <span class="op">=</span> <span class="st">&quot;c++ -std=c++17 -o main main.cpp -lPocoFoundation -lboost_system&quot;</span><span class="op">;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="va">installPhase</span> <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">    mkdir -p $out/bin</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">    cp main $out/bin/</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">  ''</span><span class="op">;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>The first line states that the content of this file is a <em>function</em> that
 accepts a dictionary with the keys <code>boost</code>, <code>poco</code>, and <code>stdenv</code> as input
 arguments.
@@ -465,54 +468,54 @@ A derivation can be materialized into a package with the binary by <code>nix</co
 <p>The next step is then to use that function <span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em></span> and feed it with the cartesian
 product of all 32 input combinations.
 The file <code>release.nix</code> does just that:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource numberLines nix"><code class="sourceCode"><span id="cb9-1"><a href="#cb9-1"></a>{</span>
-<span id="cb9-2"><a href="#cb9-2"></a>  nixpkgs ? &lt;nixpkgs&gt;,</span>
-<span id="cb9-3"><a href="#cb9-3"></a>  pkgs ? import nixpkgs {}</span>
-<span id="cb9-4"><a href="#cb9-4"></a>}:</span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource numberLines nix"><code class="sourceCode nix"><span id="cb9-1"><a href="#cb9-1"></a><span class="op">{</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="va">nixpkgs</span> <span class="op">?</span> &lt;nixpkgs&gt;<span class="op">,</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>  <span class="va">pkgs</span> <span class="op">?</span> <span class="bu">import</span> nixpkgs <span class="op">{}</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="op">}</span>:</span>
 <span id="cb9-5"><a href="#cb9-5"></a></span>
-<span id="cb9-6"><a href="#cb9-6"></a>let</span>
-<span id="cb9-7"><a href="#cb9-7"></a>  compilers = with pkgs; {</span>
-<span id="cb9-8"><a href="#cb9-8"></a>    gcc7 = stdenv;</span>
-<span id="cb9-9"><a href="#cb9-9"></a>    gcc8 = overrideCC stdenv gcc8;</span>
-<span id="cb9-10"><a href="#cb9-10"></a>    clang7 = overrideCC stdenv clang_7;</span>
-<span id="cb9-11"><a href="#cb9-11"></a>    clang8 = overrideCC stdenv clang_8;</span>
-<span id="cb9-12"><a href="#cb9-12"></a>  };</span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="kw">let</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>  <span class="va">compilers</span> <span class="op">=</span> <span class="kw">with</span> pkgs<span class="op">;</span> <span class="op">{</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>    <span class="va">gcc7</span> <span class="op">=</span> stdenv<span class="op">;</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a>    <span class="va">gcc8</span> <span class="op">=</span> overrideCC stdenv gcc8<span class="op">;</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a>    <span class="va">clang7</span> <span class="op">=</span> overrideCC stdenv clang_7<span class="op">;</span></span>
+<span id="cb9-11"><a href="#cb9-11"></a>    <span class="va">clang8</span> <span class="op">=</span> overrideCC stdenv clang_8<span class="op">;</span></span>
+<span id="cb9-12"><a href="#cb9-12"></a>  <span class="op">};</span></span>
 <span id="cb9-13"><a href="#cb9-13"></a></span>
-<span id="cb9-14"><a href="#cb9-14"></a>  pocoLibs = {</span>
-<span id="cb9-15"><a href="#cb9-15"></a>    poco190 = pkgs.poco;</span>
-<span id="cb9-16"><a href="#cb9-16"></a>    poco191 = pkgs.poco.overrideAttrs (oldAttrs: {</span>
-<span id="cb9-17"><a href="#cb9-17"></a>      name = &quot;poco-1.9.1&quot;;</span>
-<span id="cb9-18"><a href="#cb9-18"></a>      src = pkgs.fetchgit {</span>
-<span id="cb9-19"><a href="#cb9-19"></a>        url = &quot;https://github.com/pocoproject/poco.git&quot;;</span>
-<span id="cb9-20"><a href="#cb9-20"></a>        rev = &quot;196540ce34bf884921ff3f9ce338e38fc938acdd&quot;;</span>
-<span id="cb9-21"><a href="#cb9-21"></a>        sha256 = &quot;0q0xihkm2z8kndx40150inq7llcyny59cv016gxsx0vbzzbdkcnd&quot;;</span>
-<span id="cb9-22"><a href="#cb9-22"></a>      };</span>
-<span id="cb9-23"><a href="#cb9-23"></a>    });</span>
-<span id="cb9-24"><a href="#cb9-24"></a>  };</span>
+<span id="cb9-14"><a href="#cb9-14"></a>  <span class="va">pocoLibs</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a>    <span class="va">poco190</span> <span class="op">=</span> pkgs.poco<span class="op">;</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a>    <span class="va">poco191</span> <span class="op">=</span> pkgs.poco.overrideAttrs <span class="op">(</span><span class="va">oldAttrs</span><span class="op">:</span> <span class="op">{</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a>      <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;poco-1.9.1&quot;</span><span class="op">;</span></span>
+<span id="cb9-18"><a href="#cb9-18"></a>      <span class="va">src</span> <span class="op">=</span> pkgs.fetchgit <span class="op">{</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>        <span class="va">url</span> <span class="op">=</span> <span class="st">&quot;https://github.com/pocoproject/poco.git&quot;</span><span class="op">;</span></span>
+<span id="cb9-20"><a href="#cb9-20"></a>        <span class="va">rev</span> <span class="op">=</span> <span class="st">&quot;196540ce34bf884921ff3f9ce338e38fc938acdd&quot;</span><span class="op">;</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a>        <span class="va">sha256</span> <span class="op">=</span> <span class="st">&quot;0q0xihkm2z8kndx40150inq7llcyny59cv016gxsx0vbzzbdkcnd&quot;</span><span class="op">;</span></span>
+<span id="cb9-22"><a href="#cb9-22"></a>      <span class="op">};</span></span>
+<span id="cb9-23"><a href="#cb9-23"></a>    <span class="op">});</span></span>
+<span id="cb9-24"><a href="#cb9-24"></a>  <span class="op">};</span></span>
 <span id="cb9-25"><a href="#cb9-25"></a></span>
-<span id="cb9-26"><a href="#cb9-26"></a>  boostLibs = {</span>
-<span id="cb9-27"><a href="#cb9-27"></a>    inherit (pkgs) boost166 boost167 boost168 boost169;</span>
-<span id="cb9-28"><a href="#cb9-28"></a>  };</span>
+<span id="cb9-26"><a href="#cb9-26"></a>  <span class="va">boostLibs</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb9-27"><a href="#cb9-27"></a>    <span class="kw">inherit</span> <span class="op">(</span>pkgs<span class="op">)</span> boost166 boost167 boost168 boost169<span class="op">;</span></span>
+<span id="cb9-28"><a href="#cb9-28"></a>  <span class="op">};</span></span>
 <span id="cb9-29"><a href="#cb9-29"></a></span>
-<span id="cb9-30"><a href="#cb9-30"></a>  originalDerivation = [ (pkgs.callPackage (import ./derivation.nix) {}) ];</span>
+<span id="cb9-30"><a href="#cb9-30"></a>  <span class="va">originalDerivation</span> <span class="op">=</span> <span class="op">[</span> <span class="op">(</span>pkgs.callPackage <span class="op">(</span><span class="bu">import</span> <span class="ss">./derivation.nix</span><span class="op">)</span> <span class="op">{})</span> <span class="op">];</span></span>
 <span id="cb9-31"><a href="#cb9-31"></a></span>
-<span id="cb9-32"><a href="#cb9-32"></a>  f = libname: libs: derivs: with pkgs.lib;</span>
-<span id="cb9-33"><a href="#cb9-33"></a>    concatMap (deriv:</span>
-<span id="cb9-34"><a href="#cb9-34"></a>      mapAttrsToList (libVers: lib:</span>
-<span id="cb9-35"><a href="#cb9-35"></a>        (deriv.override { &quot;${libname}&quot; = lib; }).overrideAttrs</span>
-<span id="cb9-36"><a href="#cb9-36"></a>          (old: { name = &quot;${old.name}-${libVers}&quot;; })</span>
-<span id="cb9-37"><a href="#cb9-37"></a>      ) libs</span>
-<span id="cb9-38"><a href="#cb9-38"></a>    ) derivs;</span>
+<span id="cb9-32"><a href="#cb9-32"></a>  <span class="va">f</span> <span class="op">=</span> <span class="va">libname</span><span class="op">:</span> <span class="va">libs</span><span class="op">:</span> <span class="va">derivs</span><span class="op">:</span> <span class="kw">with</span> pkgs.lib<span class="op">;</span></span>
+<span id="cb9-33"><a href="#cb9-33"></a>    concatMap <span class="op">(</span><span class="va">deriv</span><span class="op">:</span></span>
+<span id="cb9-34"><a href="#cb9-34"></a>      mapAttrsToList <span class="op">(</span><span class="va">libVers</span><span class="op">:</span> <span class="va">lib</span><span class="op">:</span></span>
+<span id="cb9-35"><a href="#cb9-35"></a>        <span class="op">(</span>deriv.override <span class="op">{</span> <span class="st">&quot;</span><span class="sc">${</span>libname<span class="sc">}</span><span class="st">&quot;</span> <span class="op">=</span> lib<span class="op">;</span> <span class="op">})</span>.overrideAttrs</span>
+<span id="cb9-36"><a href="#cb9-36"></a>          <span class="op">(</span><span class="va">old</span><span class="op">:</span> <span class="op">{</span> <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;</span><span class="sc">${</span>old.name<span class="sc">}</span><span class="st">-</span><span class="sc">${</span>libVers<span class="sc">}</span><span class="st">&quot;</span><span class="op">;</span> <span class="op">})</span></span>
+<span id="cb9-37"><a href="#cb9-37"></a>      <span class="op">)</span> libs</span>
+<span id="cb9-38"><a href="#cb9-38"></a>    <span class="op">)</span> derivs<span class="op">;</span></span>
 <span id="cb9-39"><a href="#cb9-39"></a></span>
-<span id="cb9-40"><a href="#cb9-40"></a>  overrides = [</span>
-<span id="cb9-41"><a href="#cb9-41"></a>    (f &quot;stdenv&quot; compilers)</span>
-<span id="cb9-42"><a href="#cb9-42"></a>    (f &quot;poco&quot;   pocoLibs)</span>
-<span id="cb9-43"><a href="#cb9-43"></a>    (f &quot;boost&quot;  boostLibs)</span>
-<span id="cb9-44"><a href="#cb9-44"></a>  ];</span>
-<span id="cb9-45"><a href="#cb9-45"></a>in</span>
-<span id="cb9-46"><a href="#cb9-46"></a>  pkgs.lib.foldl (a: b: a // { &quot;${b.name}&quot; = b; }) {} (</span>
-<span id="cb9-47"><a href="#cb9-47"></a>    pkgs.lib.foldl (a: f: f a) originalDerivation overrides</span>
-<span id="cb9-48"><a href="#cb9-48"></a>  )</span></code></pre></div>
+<span id="cb9-40"><a href="#cb9-40"></a>  <span class="va">overrides</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb9-41"><a href="#cb9-41"></a>    <span class="op">(</span>f <span class="st">&quot;stdenv&quot;</span> compilers<span class="op">)</span></span>
+<span id="cb9-42"><a href="#cb9-42"></a>    <span class="op">(</span>f <span class="st">&quot;poco&quot;</span>   pocoLibs<span class="op">)</span></span>
+<span id="cb9-43"><a href="#cb9-43"></a>    <span class="op">(</span>f <span class="st">&quot;boost&quot;</span>  boostLibs<span class="op">)</span></span>
+<span id="cb9-44"><a href="#cb9-44"></a>  <span class="op">];</span></span>
+<span id="cb9-45"><a href="#cb9-45"></a><span class="kw">in</span></span>
+<span id="cb9-46"><a href="#cb9-46"></a>  pkgs.lib.foldl <span class="op">(</span><span class="va">a</span><span class="op">:</span> <span class="va">b</span><span class="op">:</span> a <span class="op">//</span> <span class="op">{</span> <span class="st">&quot;</span><span class="sc">${</span>b.name<span class="sc">}</span><span class="st">&quot;</span> <span class="op">=</span> b<span class="op">;</span> <span class="op">})</span> <span class="op">{}</span> <span class="op">(</span></span>
+<span id="cb9-47"><a href="#cb9-47"></a>    pkgs.lib.foldl <span class="op">(</span><span class="va">a</span><span class="op">:</span> <span class="va">f</span><span class="op">:</span> f a<span class="op">)</span> originalDerivation overrides</span>
+<span id="cb9-48"><a href="#cb9-48"></a>  <span class="op">)</span></span></code></pre></div>
 <p>This code looks a bit more complicated, but it does a lot of things:</p>
 <ul>
 <li>It defines the variety of compilers and libraries in the variables
