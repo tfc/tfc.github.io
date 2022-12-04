@@ -2,8 +2,8 @@
   description = "blog.galowicz.de static page generator";
 
   inputs = {
-    nixpkgs.url = github:nixos/nixpkgs/nixos-22.05;
-    flake-utils.url = github:numtide/flake-utils;
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = { self, nixpkgs, flake-utils }:
