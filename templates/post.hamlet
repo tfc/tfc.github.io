@@ -1,5 +1,10 @@
 <div .post>
   <span .post-date>$date$
+  <span .post-tags>
+    \$if(tags)$
+    Tags: $tags$
+    \$endif$
+
   \$body$
 
 <div #disqus_thread>

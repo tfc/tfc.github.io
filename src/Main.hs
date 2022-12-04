@@ -16,18 +16,20 @@ main = hakyll $ do
 
     match "templates/*.hamlet" $ compile hamlTemplateCompiler
 
+    tags <- buildTags "posts/*" (fromCapture "tags/*.html")
+
     indexPages <- buildPaginateWith grouper "posts/*" makeId
 
-    paginateRules indexPages $ \pageNum pat -> do
+    paginateRules indexPages $ \pageNum pattern -> do
       route idRoute
       compile $ do
-          posts <- recentFirst =<< loadAll pat
+          posts <- recentFirst =<< loadAll pattern
           let paginateCtx = paginateContext indexPages pageNum
               ctx =
                   constField "title" ("Posts" ++ if pageNum > 1
                                 then " (Page " ++ show pageNum ++ ")"
                                 else "") <>
-                  listField "posts" teaserCtx (return posts) <>
+                  listField "posts" (teaserCtx tags) (return posts) <>
                   paginateCtx <>
                   defaultContext
           makeItem ""
@@ -35,12 +37,26 @@ main = hakyll $ do
               >>= loadAndApplyTemplate "templates/default.hamlet" ctx
               >>= relativizeUrls
 
+    tagsRules tags $ \tag pattern -> do
+        let title = "Posts tagged \"" <> tag <> "\""
+        route idRoute
+        compile $ do
+            posts <- recentFirst =<< loadAll pattern
+            let ctx = constField "title" title
+                      `mappend` listField "posts" (teaserCtx tags) (return posts)
+                      `mappend` defaultContext
+            makeItem ""
+                >>= loadAndApplyTemplate "templates/tag.hamlet" ctx
+                >>= loadAndApplyTemplate "templates/default.hamlet" ctx
+                >>= relativizeUrls
+
+
     match "posts/*" $ do
         route postRoute
         compile $ pandocCompiler
             >>= saveSnapshot "post_content"
-            >>= loadAndApplyTemplate "templates/post.hamlet" postCtx
-            >>= loadAndApplyTemplate "templates/default.hamlet" postCtx
+            >>= loadAndApplyTemplate "templates/post.hamlet" (postCtx tags)
+            >>= loadAndApplyTemplate "templates/default.hamlet" (postCtx tags)
             >>= relativizeUrls
 
     match "about.md" $ do
@@ -55,16 +71,16 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
             >>= relativizeUrls
 
-    createFeed "atom.xml" renderAtom
-    createFeed "feed.xml" renderRss
+    createFeed tags "atom.xml" renderAtom
+    createFeed tags "feed.xml" renderRss
 
 --------------------------------------------------------------------------------
 
-createFeed fileName feedFunction =
+createFeed tags fileName feedFunction =
     create [fileName] $ do
         route idRoute
         compile $ do
-            let feedCtx = postCtx <>
+            let feedCtx = postCtx tags <>
                           bodyField "description"
             posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "post_content"
             feedFunction feedConfig feedCtx posts
@@ -73,13 +89,15 @@ dropIndexHtml :: String -> Context a
 dropIndexHtml key = mapContext transform (urlField key) where
     transform = reverse . tail . dropWhile (/= '/') . reverse
 
-postCtx :: Context String
-postCtx = dateField "date" "%B %e, %Y" <>
-          dropIndexHtml "url" <>
-          defaultContext
+postCtx :: Tags -> Context String
+postCtx tags = dateField "date" "%B %e, %Y"
+            <> tagsField "tags" tags
+            <> dropIndexHtml "url"
+            <> defaultContext
 
-teaserCtx :: Context String
-teaserCtx = teaserField "teaser" "post_content" <> postCtx
+teaserCtx :: Tags -> Context String
+teaserCtx tags = teaserField "teaser" "post_content"
+              <> postCtx tags
 
 grouper :: (MonadFail m, MonadMetadata m) => [Identifier] -> m [[Identifier]]
 grouper = fmap (paginateEvery 10) . sortRecentFirst
