@@ -3,6 +3,10 @@ import           Control.Monad (liftM)
 import           Data.Monoid   ((<>))
 import           Hakyll
 import           Hakyll.Web.Hamlet
+import qualified Text.Blaze.Html5                as H
+import qualified Text.Blaze.Html5.Attributes     as A
+import           Text.Blaze.Html                 (toHtml, toValue, (!))
+import           Data.List                       (intersperse)
 
 main :: IO ()
 main = hakyll $ do
@@ -91,9 +95,20 @@ dropIndexHtml key = mapContext transform (urlField key) where
 
 postCtx :: Tags -> Context String
 postCtx tags = dateField "date" "%B %e, %Y"
-            <> tagsField "tags" tags
+            <> styledTagsField "tags" tags
             <> dropIndexHtml "url"
             <> defaultContext
+
+styledTagsField :: String -> Tags -> Context a
+styledTagsField = tagsFieldWith getTags simpleRenderLink (mconcat . intersperse " ")
+  where
+    simpleRenderLink :: String -> (Maybe FilePath) -> Maybe H.Html
+    simpleRenderLink _   Nothing         = Nothing
+    simpleRenderLink tag (Just filePath) = Just $
+        H.a ! A.title (H.stringValue ("All pages tagged '"++tag++"'."))
+            ! A.href (toValue $ toUrl filePath)
+            ! A.class_ "tag-link"
+            $ toHtml tag
 
 teaserCtx :: Tags -> Context String
 teaserCtx tags = teaserField "teaser" "post_content"
