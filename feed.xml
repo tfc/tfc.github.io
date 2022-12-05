@@ -7,8 +7,221 @@
         <description><![CDATA[This blog is about programming]]></description>
         <atom:link href="https://blog.galowicz.de/feed.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Sat, 26 Nov 2022 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Mon, 05 Dec 2022 00:00:00 UT</lastBuildDate>
         <item>
+    <title>Book Review: A Philosophy of Software Design</title>
+    <link>https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design</link>
+    <description><![CDATA[<p>What does separate the truly great software developers from the average ones?
+People have lots of opinions about this, but it’s often hard to describe what
+makes the code of a great engineer so good - and what part of it novice
+programmers should really try to learn from.
+John Ousterhout’s book <a href="https://amzn.to/3B8ufgM">A philosophy of Software Design</a>
+aims to answer this question and actually introduces some extraordinarily
+appropriate vocabulary for <strong>your</strong> next discussion about software quality.</p>
+<!--more-->
+<div class="book-cover">
+<figure>
+<img src="/images/books/a-philosophy-of-software-design.png" alt="Book Cover of “A philosophy of Software Design”" />
+<figcaption aria-hidden="true">Book Cover of “A philosophy of Software Design”</figcaption>
+</figure>
+</div>
+<h2 id="the-book">The Book</h2>
+<p>The book is originally from 2018 and its second edition has been released in 2021.
+It has ~180 pages, so it is a very quick read.</p>
+<p>John Ousterhout is a computer science professor for computer who has worked on
+all kinds of software related topics, but also spent some time teaching how
+to <em>design</em> software in general - or more precisely, looking at the design
+itself of software as the underlying challenge.</p>
+<p>In his university lectures, as he also describes in this book, he lets his
+students exercise the design of different kinds of software solutions for small
+systems.
+While doing that, he tried to find ways to explain the pitfalls that novice
+programmers fall into, and what exactly experienced programmers do differently
+so that the software they create not only works, but stays maintainable.</p>
+<p>The experiences and insights he describes, were not new to me.
+Most of the time I thought “Yeah I know this situation, and it’s also clear to
+me how to do it differently - but the problem is always <em>explaining</em> it to
+programmers who don’t think this way (yet)!”
+But for all the principles and strategies that experienced developers follow
+with their gut-feel that they developed over time, John found awesome vocabulary
+and ways to explain them to programmers who don’t know them yet.</p>
+<h2 id="content-and-structure">Content and Structure</h2>
+<p>I experienced the book like a journey over 2 main topics, which shall get their
+own subsection each.
+As the book is already relatively short and every programmer should read it
+anyway, I won’t go much into detail and instead just state the most important
+points and principles.</p>
+<h3 id="symptoms-and-causes-of-complexity-abstraction-modules-and-interfaces">Symptoms and Causes of Complexity, Abstraction, Modules, and Interfaces</h3>
+<p>The preface of the book begins with an observation that is frustratingly apt:</p>
+<blockquote>
+<p>People have been writing programs for electronic computers for more than 80
+years, but there has been surprisingly little conversation about how to design
+those programs or what good programs should look like.</p>
+</blockquote>
+<p>Apart from all the computer languages with their different specialties,
+(non-)agile development methodologies, tooling as debuggers, linters, version
+control systems, and techniques such as object-oriented/functional programs,
+schools, universities and developers’ book shelves typically lack material
+about how software should generally be <em>designed</em>.</p>
+<p>The average developer just changes their code until the tooling stops emitting
+errors/warnings and the code actually does what it is written for.
+In some cases, the rules from <em>clean code</em> literature are over-applied,
+resulting in short but entangled code.
+While doing that, the program’s complexity increases.
+Complexity is like a currency of programming: For more features, you give up
+your program’s initial simplicity.
+This typically ends in programs of huge complexity that cannot be maintained
+easily any longer.</p>
+<p>Complexity never comes with big leaps but always with a stepwise increase.
+The 3 main <strong>symptoms</strong> of complexity are:</p>
+<dl>
+<dt>Change Amplification</dt>
+<dd>
+<p>Seemingly simple changes require modifications in many different places.</p>
+</dd>
+<dt>Cognitive Load</dt>
+<dd>
+<p>The amount of project-knowledge that a developer needs to know in order to
+complete a task.</p>
+</dd>
+<dt>Unknown Unknowns</dt>
+<dd>
+<p>It is not obvious which pieces of code must be modified to complete a task.</p>
+</dd>
+</dl>
+<p>The 2 main <strong>causes</strong> of complexity are:</p>
+<dl>
+<dt>Dependencies</dt>
+<dd>
+<p>A dependency exists when a given piece of code cannot be understood and
+modified in isolation. They can’t be eliminated, but designed carefully.
+(This is a definition for the discussions in the book.
+Dependencies like installable libraries are not meant in this case)</p>
+</dd>
+<dt>Obscurity</dt>
+<dd>
+<p>Obscurity occures when important information is not obvious.</p>
+</dd>
+</dl>
+<p>In order to keep complexity under control (i.e. reach sustainable tradeoffs)
+developers need the right mindset.
+John distinguishes between two of them:</p>
+<dl>
+<dt>Tactical Programmers</dt>
+<dd>
+<p>The main focus of the tactical programmer is to <em>get something working</em>, such
+as new features or bug fixes.</p>
+</dd>
+<dt>Strategic Programmers</dt>
+<dd>
+<p>The strategic programmer does not think of “working code” as their primary
+goal (although accepting that delivered code must always be working).
+Their primary goal is a <em>great design</em>.</p>
+</dd>
+</dl>
+<p>Most real companies’ work culture and deadline pressure facilitates the rise of
+tactical programmers (also called <em>tactical tornados</em>), which typically write
+code with uncontrollable complexity.
+Strategical programming requires an <strong>investment mindset</strong> for trading initial
+upfront slowdown against long-term improvements.
+The fight against continuously increasing complexity are continuous investments.
+Discussions between strategic and tactical programmers are often frustrating.</p>
+<p>The next topic is the organisation of code into modules (as in classes,
+subsystems, or services) that communicate via interfaces.
+Modules encapsulate the complexity of systems into domain-specific units.
+John coins terms for 2 different kinds of modules:</p>
+<dl>
+<dt>Deep Modules</dt>
+<dd>
+<p>The best modules provide powerful functionality over simple interfaces.
+They provide good abstraction by providing complex functionality but only
+exposing a small fraction of their internal complexity.
+One example are the 5 basic system calls for I/O in UNIX operating systems.</p>
+</dd>
+<dt>Shallow Modules</dt>
+<dd>
+<p>In contrast to deep modules, shallow ones have relatively complex interfaces,
+compared to the functionality they provide.
+Many shallow interfaces do not even provide much keystroke saving when used,
+compared to their reimplementation.</p>
+</dd>
+</dl>
+<p>Shallow modules are often a result of <em>classitis</em>.
+Students at university, or readers of <em>clean code</em> lecture are often advised to
+break code into small units.
+If this advise is followed without much strategy, it often results in shallow
+modules which are not much more than leaking abstractions.</p>
+<p>Another interesting word that John introduces in this context is <em>temporal
+decomposition</em>:
+Developers often structure code modules according to the order
+in which operations occur.
+This does often lead to code that shares knowledge, but at different places in
+the code, leading to change amplification, higher cognitive load, and unknown
+unknowns again.</p>
+<p>A good rule of thumb in module design that John comes up with is:</p>
+<blockquote>
+<p>It is more important for a module to have a simple interface than a simple
+implementation.</p>
+</blockquote>
+<p>If a module ends up being too complex, but its interface is very simple, then
+this means that it can easily be substituted by a better one.
+Also, changes on such a module do not increase change amplification.</p>
+<p>Another great principle is <em>define errors out of existence</em>:
+John argues that error handling and exceptions make programs much more complex,
+and a good way to reduce such complexity is representing data, interfaces, and
+semantics in ways that make it impossible to encode erratic cases that need
+special handling.</p>
+<h3 id="how-to-write-code">How to Write Code</h3>
+<p>The second half is about the act of designing and writing code.
+John argues that interfaces and modules should be designed twice:
+Implementing a design for the first time often exposes new insights that would
+lead to a different design in a second approach.</p>
+<p>Working hard on the first design attempt, just to throw it away becasue it was
+just a vehicle for learning how to do it right:
+This is clearly not the mindset of the average programmer.
+At first glance, it also looks like it would waste a lot of time, especially
+from the point of view of a tactical programmer.</p>
+<p>The next chapters are about comments, naming, modifying existing code,
+consistency (of style/documentation/etc. across the project), performance,
+and contain a lot of fine-grained advise that should not be unknown to the
+working programmer.
+Because it can’t be summarized by few principles, i do just drop some
+interesting highlights:
+(These read like rules, and such should never be over-applied in dogmatic
+fashion)</p>
+<ul>
+<li>If an interface <em>comment</em> describes its implementation, it indicates that
+the interface is shallow.</li>
+<li>If a variable or type <em>name</em> is inherently <em>hard to pick</em>, it indicates a
+bad abstraction.</li>
+<li>When <em>modifying</em> code:
+<ul>
+<li>After each change, the system should have the structure that it would have
+if yo had designed it from the start with that change in mind.</li>
+<li>If you’re not making the design better, you are probably making it worse.</li>
+</ul></li>
+<li>Software should be designed for <em>ease of reading</em>, not ease of writing.</li>
+<li>Test-driven development focuses attention on getting specific features
+working, rather than finding the best design.
+In other words, it facilitates tactical work more than strategic work.</li>
+</ul>
+<p>John summarizes in his book’s conclusion:</p>
+<blockquote>
+<p>The reward for being a good designer is that you get to spend a larger
+fraction of your time in the design phase, which is fun.
+Poor designers spend most of their time chasing bugs in complicated and
+brittle code.</p>
+</blockquote>
+<h2 id="summary">Summary</h2>
+<p>I really enjoyed this book because it gave me effective new vocabulary in the
+epic fight against complexity, which is often more social than technical when
+arguing with tactical programmers.</p>
+<p>Read it, as early as possible, in your developer career.</p>]]></description>
+    <pubDate>Mon, 05 Dec 2022 00:00:00 UT</pubDate>
+    <guid>https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design</guid>
+    <dc:creator>Jacek Galowicz</dc:creator>
+</item>
+<item>
     <title>NixOS Community Oceansprint late 2022 Report</title>
     <link>https://blog.galowicz.de/2022/11/26/nix-community-oceansprint3-report</link>
     <description><![CDATA[<p>This is my trip report from the late 2022 Oceansprint hackathon on Lanzarote.
@@ -2916,7 +3129,12 @@ It actually runs on a real Commodore in the end.</p>]]></description>
     <description><![CDATA[<p>This article is about the <a href="https://www.packtpub.com/application-development/c17-stl-cookbook"><strong>C++17 STL Cookbook</strong></a>, which got published this week.
 After about 6 months of writing, I am happy that it is out the door and hope it helps and inspires its readers to write modern C++ code.</p>
 <!--more-->
-<p><img align="left" style="margin: 0px 30px 10px 0px;" src="/images/cpp17_stl_cookbook_cover.png"></p>
+<div class="book-cover">
+<figure>
+<img src="/images/cpp17_stl_cookbook_cover.png" alt="Book cover of “C++17 STL Cookbook" />
+<figcaption aria-hidden="true">Book cover of “C++17 STL Cookbook</figcaption>
+</figure>
+</div>
 <h2 id="why-did-i-write-this-book">Why did I write this book?</h2>
 <p>Some day in October 2016, I was messaged by an acquisition editor of the British publishing company <em>PACKT Publishing</em> via LinkedIn.
 He asked me if I was interested in writing a book with the title <em>“C++17 STL Cookbook”</em>.</p>
@@ -2984,7 +3202,7 @@ While the first chapter concentrates solely on the most interesting new language
 </ol>
 <h2 id="book-formatsordering">Book formats/Ordering</h2>
 <p>The book will soon be available in <strong>printed form</strong>, but the <strong>ebook</strong> can be ordered already.</p>
-<p>If you want a <strong>DRM-free</strong> version of it, you should order it <a href="https://www.packtpub.com/application-development/c17-stl-cookbook">directly from PACKT</a>. Of course, <a href="http://amzn.to/2hqAyFX">Amazon has the book</a>, too.</p>
+<p>If you want a <strong>DRM-free</strong> version of it, you should order it <a href="https://www.packtpub.com/application-development/c17-stl-cookbook">directly from PACKT</a>. Of course, <a href="https://amzn.to/3up1Cb5">Amazon has the book</a>, too.</p>
 <h2 id="thank-you">Thank you</h2>
 <p>The best thing that can happen to you while writing a book is having <a href="https://arne-mertz.de/">Arne Mertz</a> as the reviewer!
 No book comes without mistakes, but he did a <strong>great job</strong> finding even the most subtle, but critical ones.</p>
@@ -3433,137 +3651,6 @@ This library builds on the faster list implementation.</p>
 <p>I’d be happy to hear that it is useful to others outside of my projects, too!</p>]]></description>
     <pubDate>Sat, 05 Nov 2016 00:00:00 UT</pubDate>
     <guid>https://blog.galowicz.de/2016/11/05/python_style_printf_for_cpp</guid>
-    <dc:creator>Jacek Galowicz</dc:creator>
-</item>
-<item>
-    <title>Do Not Fear Recursion</title>
-    <link>https://blog.galowicz.de/2016/09/11/dont_fear_recursion</link>
-    <description><![CDATA[<p>There are a lot of algorithms which can be implemented using <em>recursive</em> or <em>iterative</em> style.
-Actually, <strong>everything</strong> can be implemented in both styles.
-For a lot of algorithms, the recursive version is simpler to read, write, and understand.
-But nevertheless, programmers know, that recursive functions burden a lot of memory consumption, because there is usually a <code>call</code> instruction per recursive call, which puts another call frame on the stack.
-Interestingly, this is not true for some special cases.</p>
-<!--more-->
-<p>The idea to write this article came into my mind when I thought about a discussion which I listened to many years ago.
-At that time I worked at a company as a freelancer, before I started studying at university.
-The whole discussion was very open, but I felt a bit disturbed when a colleague said, that C/C++ is very limited in their optimization potential.
-One example for that point was, that languages like <em>Scala</em> can eliminate the stack growth in some recursion cases.
-I was very unexperienced, so I didn’t know better.
-Not too much later, I learned at university, that this special kind of recursion is called <a href="https://en.wikipedia.org/wiki/Tail_call"><strong>tail recursion</strong></a>.
-I was pretty happy when I realized that the optimization potential which that brings, is not a question of the language, but more a question of the compiler implementation.</p>
-<p>As of today, this topic came to my attention multiple times.
-Since C++11, it is possible to let the compiler execute <em>normal</em> functions (instead of template meta code) at compile time, and get a guarantee that the result will be embedded in the binary, reducing execution time.
-Such functions are called <code>constexpr</code> functions.
-However, those functions had to be implemented recursively, as it is not possible to define variables and loops in <code>constexpr</code> functions in C++11.
-(This is fixed and allowed in C++14)
-At this occasion (and because of template meta-programming and learning Haskell) I got some more practice in thinking recursion aware.</p>
-<h2 id="tail-recursion">Tail Recursion</h2>
-<p>Some algorithms are very short and pretty, when implemented recursively.
-However, because of the fear that they would be inefficient, coders often just think how to implement them iteratively.
-Iterative versions do not increase the stack size, so they feel better.</p>
-<p>Alternatively, by thinking of a <strong>tail</strong> recursive version, both simplicity of recursion, and performance of iterative style can be combined.</p>
-<p>First: What <em>is</em> tail recursion?</p>
-<p>Tail recursion occurs, when the result of a recursive function call completely depends on the same function call, just with other parameters.</p>
-<p>Example:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> f<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Some nonsense-algorithm which shows tail recursion</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>a <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> b<span class="op">;</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> f<span class="op">(</span>a <span class="op">*</span> b<span class="op">,</span> b <span class="op">-</span> <span class="dv">1</span><span class="op">);</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>In this case, only the parameters need to be refreshed with the values the next recursion call shall get.
-Then, instead of <code>call</code>ing the function (which jumps to the function beginning again, but also adds the return address on the stack), it can just be <code>jmp</code>ed at, which completely preserves the stack.
-(At this point I am talking about the <em>assembler</em> instructions <code>call</code> and <code>jmp</code>, which work similarly for most processor architectures, but may have slightly different names.)</p>
-<p>An example case in which this would not work:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> f<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">)</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>a <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> b<span class="op">;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">1</span> <span class="op">+</span> f<span class="op">(</span>a <span class="op">*</span> b<span class="op">,</span> b <span class="op">-</span> <span class="dv">1</span><span class="op">);</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>In this case, the <code>1 +</code> part needs to be executed for <em>every</em> recursive call, which happens <strong>after</strong> the recursive call.
-And for that, real function calls instead of tail jumps are assembled by the compiler.
-That can be fixed, however:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> f<span class="op">(</span><span class="dt">int</span> a<span class="op">,</span> <span class="dt">int</span> b<span class="op">,</span> <span class="dt">int</span> sum <span class="op">=</span> <span class="dv">0</span><span class="op">)</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>a <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> b <span class="op">+</span> sum<span class="op">;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> f<span class="op">(</span>a <span class="op">*</span> b<span class="op">,</span> b <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> sum <span class="op">+</span> <span class="dv">1</span><span class="op">);</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This way, we pushed the information of that “post-adding 1” into the parameter variables and transformed the nonoptimal recursion into a tail recursion.
-(At this point, this algorithm does not look nicer than an iterative implementation using a loop. However, other algorithms do.)</p>
-<p>That was just a cheap example.
-There are actually nice and very generic rules in literature, which describe how to transform between the different coding styles. (See also the Wikipedia article about tail recursion)</p>
-<h2 id="gcd-example">GCD Example</h2>
-<p>In order to proof the point of tail recursion, and to motivate people to use more recursion for tidy, but still fast code, I chose the <a href="https://en.wikipedia.org/wiki/Greatest_common_divisor">GCD (<em>Greatest Common Divisor</em>)</a> algorithm, and the two typical different implementations of it:</p>
-<p>The recursive version, which looks very similar to a math formula (at least in terms of C syntax):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">unsigned</span> gcd_rec<span class="op">(</span><span class="dt">unsigned</span> a<span class="op">,</span> <span class="dt">unsigned</span> b<span class="op">)</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> b <span class="op">?</span> gcd_rec<span class="op">(</span>b<span class="op">,</span> a <span class="op">%</span> b<span class="op">)</span> <span class="op">:</span> a<span class="op">;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>… and the iterative version, which would have a better performance, if the compiler did not know about tail recursion:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">unsigned</span> gcd_itr<span class="op">(</span><span class="dt">unsigned</span> a<span class="op">,</span> <span class="dt">unsigned</span> b<span class="op">)</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span>b<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">unsigned</span> tmp <span class="op">{</span>b<span class="op">};</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        b <span class="op">=</span> a <span class="op">%</span> b<span class="op">;</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        a <span class="op">=</span> tmp<span class="op">;</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a<span class="op">;</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>In my opinion, the recursive version looks much cleaner.
-What I particularly dislike when regarding the iterative version, is the fact that it is telling the compiler how exactly to temporarily save the value of <code>b</code>, in order to refresh <code>a</code> with it after the modulo operation.
-This is as primitive as “Well, do <code>a % b</code>, but I want <code>b</code> saved <strong>here</strong> and then written back <strong>there</strong>”, which is something which has nothing to do with the <em>actual</em> problem (calculating a GCD).</p>
-<h2 id="comparing-compiler-output">Comparing compiler output</h2>
-<p>Putting those two functions into a <code>.cpp</code> file and compiling it with <code>clang++ -c main.cpp -O2</code> reveals something interesting:</p>
-<p>First, having a look at the recursive version shows, that it does indeed not contain any <code>call</code> instructions because it is implemented using solely jumps (conditional <code>je</code> and <code>jne</code> instructions).
-This shows, that this recursive version of the GCD algorithm can never lead to steep stack growth.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>0000000000000000 &lt;_Z7gcd_recjj<span class="op">&gt;:</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>   0:	89 f2                	mov    <span class="op">%</span><span class="kw">esi</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>   2:	89 f8                	mov    <span class="op">%</span><span class="kw">edi</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>   4:	85 d2                	test   <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>   6:	74 17                	<span class="cf">je</span>     <span class="fl">1</span><span class="bn">f</span> <span class="op">&lt;</span>_Z7gcd_recjj<span class="op">+</span><span class="bn">0x1f</span><span class="op">&gt;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>   8:	0f 1f 84 00 00 00 00 	nopl   <span class="bn">0x0</span><span class="op">(%</span><span class="kw">rax</span><span class="op">,%</span><span class="kw">rax</span><span class="op">,</span><span class="dv">1</span><span class="op">)</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">f:</span>	00</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  10:	89 d1                	mov    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">ecx</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  12:	31 d2                	<span class="op">xor</span>    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  14:	f7 f1                	div    <span class="op">%</span><span class="kw">ecx</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  16:	85 d2                	test   <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  18:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  1a:	75 f4                	jne    <span class="dv">10</span> <span class="op">&lt;</span>_Z7gcd_recjj<span class="op">+</span><span class="bn">0x10</span><span class="op">&gt;</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  1c:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  1e:	c3                   	retq</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  1f:	c3                   	retq</span></code></pre></div>
-<p>However, looking at the iterative version shows, that both versions are completely <strong>identical</strong>.
-This is pretty cool, because this way we can profit from the performance of iterative code, although our C++ code is a slick and tidy recursive implementation!</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode asm"><code class="sourceCode fasm"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>0000000000000020 &lt;_Z7gcd_itrjj<span class="op">&gt;:</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  20:	89 f2                	mov    <span class="op">%</span><span class="kw">esi</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  22:	89 f8                	mov    <span class="op">%</span><span class="kw">edi</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  24:	85 d2                	test   <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  26:	74 17                	<span class="cf">je</span>     <span class="fl">3</span><span class="bn">f</span> <span class="op">&lt;</span>_Z7gcd_itrjj<span class="op">+</span><span class="bn">0x1f</span><span class="op">&gt;</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  28:	0f 1f 84 00 00 00 00 	nopl   <span class="bn">0x0</span><span class="op">(%</span><span class="kw">rax</span><span class="op">,%</span><span class="kw">rax</span><span class="op">,</span><span class="dv">1</span><span class="op">)</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  2f:	00</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  30:	89 d1                	mov    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">ecx</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  32:	31 d2                	<span class="op">xor</span>    <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  34:	f7 f1                	div    <span class="op">%</span><span class="kw">ecx</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  36:	85 d2                	test   <span class="op">%</span><span class="kw">edx</span><span class="op">,%</span><span class="kw">edx</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  38:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  3a:	75 f4                	jne    <span class="dv">30</span> <span class="op">&lt;</span>_Z7gcd_itrjj<span class="op">+</span><span class="bn">0x10</span><span class="op">&gt;</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  3c:	89 c8                	mov    <span class="op">%</span><span class="kw">ecx</span><span class="op">,%</span><span class="kw">eax</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  3e:	c3                   	retq</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  3f:	c3                   	retq</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span></code></pre></div>
-<h2 id="summary">Summary</h2>
-<p>The GCD algorithm is a very short example for the behaviour of telling the compiler much more than needed to solve the actual problem, because imperative programming is all about telling the computer <em>what</em> to do, and <em>how</em> to do it.
-On the level of writing assembler code, it is pretty normal that the question “<em>what</em> data?” is pretty much the same as “which memory <em>address</em>/register and size?”, because there is no abstraction from the hardware implementation nature (a <em>von Neumann</em> machine with untyped memory).</p>
-<p>When using languages like C++, a lot of abstraction can be gained with <em>no cost</em>, which is a favorable thing.
-<em>Tail recursion</em> is a nice step towards such simplifying abstractions, and can be used for free, which is pretty much worth knowing about it.</p>]]></description>
-    <pubDate>Sun, 11 Sep 2016 00:00:00 UT</pubDate>
-    <guid>https://blog.galowicz.de/2016/09/11/dont_fear_recursion</guid>
     <dc:creator>Jacek Galowicz</dc:creator>
 </item>
 

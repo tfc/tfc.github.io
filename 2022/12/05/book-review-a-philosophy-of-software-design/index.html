@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's Blog &middot; Book Review: A Philosophy of Software Design</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jαcεκ's <del>C++</del> Bλog</a>
+</h1>
+<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About</a>
+<a class="sidebar-nav-item" href="https://galowicz.de">CV Info</a>
+<a class="sidebar-nav-item" href="../../../../impressum.html">Impressum/Datenschutz</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Book Review: A Philosophy of Software Design</h1>
+<div class="post"><span class="post-date">December  5, 2022</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'book'." href="../../../../tags/book.html" class="tag-link">book</a>
+</span>
+<p>What does separate the truly great software developers from the average ones?
+People have lots of opinions about this, but it’s often hard to describe what
+makes the code of a great engineer so good - and what part of it novice
+programmers should really try to learn from.
+John Ousterhout’s book <a href="https://amzn.to/3B8ufgM">A philosophy of Software Design</a>
+aims to answer this question and actually introduces some extraordinarily
+appropriate vocabulary for <strong>your</strong> next discussion about software quality.</p>
+<!--more-->
+<div class="book-cover">
+<figure>
+<img src="../../../../images/books/a-philosophy-of-software-design.png" alt="Book Cover of “A philosophy of Software Design”" />
+<figcaption aria-hidden="true">Book Cover of “A philosophy of Software Design”</figcaption>
+</figure>
+</div>
+<h2 id="the-book">The Book</h2>
+<p>The book is originally from 2018 and its second edition has been released in 2021.
+It has ~180 pages, so it is a very quick read.</p>
+<p>John Ousterhout is a computer science professor for computer who has worked on
+all kinds of software related topics, but also spent some time teaching how
+to <em>design</em> software in general - or more precisely, looking at the design
+itself of software as the underlying challenge.</p>
+<p>In his university lectures, as he also describes in this book, he lets his
+students exercise the design of different kinds of software solutions for small
+systems.
+While doing that, he tried to find ways to explain the pitfalls that novice
+programmers fall into, and what exactly experienced programmers do differently
+so that the software they create not only works, but stays maintainable.</p>
+<p>The experiences and insights he describes, were not new to me.
+Most of the time I thought “Yeah I know this situation, and it’s also clear to
+me how to do it differently - but the problem is always <em>explaining</em> it to
+programmers who don’t think this way (yet)!”
+But for all the principles and strategies that experienced developers follow
+with their gut-feel that they developed over time, John found awesome vocabulary
+and ways to explain them to programmers who don’t know them yet.</p>
+<h2 id="content-and-structure">Content and Structure</h2>
+<p>I experienced the book like a journey over 2 main topics, which shall get their
+own subsection each.
+As the book is already relatively short and every programmer should read it
+anyway, I won’t go much into detail and instead just state the most important
+points and principles.</p>
+<h3 id="symptoms-and-causes-of-complexity-abstraction-modules-and-interfaces">Symptoms and Causes of Complexity, Abstraction, Modules, and Interfaces</h3>
+<p>The preface of the book begins with an observation that is frustratingly apt:</p>
+<blockquote>
+<p>People have been writing programs for electronic computers for more than 80
+years, but there has been surprisingly little conversation about how to design
+those programs or what good programs should look like.</p>
+</blockquote>
+<p>Apart from all the computer languages with their different specialties,
+(non-)agile development methodologies, tooling as debuggers, linters, version
+control systems, and techniques such as object-oriented/functional programs,
+schools, universities and developers’ book shelves typically lack material
+about how software should generally be <em>designed</em>.</p>
+<p>The average developer just changes their code until the tooling stops emitting
+errors/warnings and the code actually does what it is written for.
+In some cases, the rules from <em>clean code</em> literature are over-applied,
+resulting in short but entangled code.
+While doing that, the program’s complexity increases.
+Complexity is like a currency of programming: For more features, you give up
+your program’s initial simplicity.
+This typically ends in programs of huge complexity that cannot be maintained
+easily any longer.</p>
+<p>Complexity never comes with big leaps but always with a stepwise increase.
+The 3 main <strong>symptoms</strong> of complexity are:</p>
+<dl>
+<dt>Change Amplification</dt>
+<dd>
+<p>Seemingly simple changes require modifications in many different places.</p>
+</dd>
+<dt>Cognitive Load</dt>
+<dd>
+<p>The amount of project-knowledge that a developer needs to know in order to
+complete a task.</p>
+</dd>
+<dt>Unknown Unknowns</dt>
+<dd>
+<p>It is not obvious which pieces of code must be modified to complete a task.</p>
+</dd>
+</dl>
+<p>The 2 main <strong>causes</strong> of complexity are:</p>
+<dl>
+<dt>Dependencies</dt>
+<dd>
+<p>A dependency exists when a given piece of code cannot be understood and
+modified in isolation. They can’t be eliminated, but designed carefully.
+(This is a definition for the discussions in the book.
+Dependencies like installable libraries are not meant in this case)</p>
+</dd>
+<dt>Obscurity</dt>
+<dd>
+<p>Obscurity occures when important information is not obvious.</p>
+</dd>
+</dl>
+<p>In order to keep complexity under control (i.e. reach sustainable tradeoffs)
+developers need the right mindset.
+John distinguishes between two of them:</p>
+<dl>
+<dt>Tactical Programmers</dt>
+<dd>
+<p>The main focus of the tactical programmer is to <em>get something working</em>, such
+as new features or bug fixes.</p>
+</dd>
+<dt>Strategic Programmers</dt>
+<dd>
+<p>The strategic programmer does not think of “working code” as their primary
+goal (although accepting that delivered code must always be working).
+Their primary goal is a <em>great design</em>.</p>
+</dd>
+</dl>
+<p>Most real companies’ work culture and deadline pressure facilitates the rise of
+tactical programmers (also called <em>tactical tornados</em>), which typically write
+code with uncontrollable complexity.
+Strategical programming requires an <strong>investment mindset</strong> for trading initial
+upfront slowdown against long-term improvements.
+The fight against continuously increasing complexity are continuous investments.
+Discussions between strategic and tactical programmers are often frustrating.</p>
+<p>The next topic is the organisation of code into modules (as in classes,
+subsystems, or services) that communicate via interfaces.
+Modules encapsulate the complexity of systems into domain-specific units.
+John coins terms for 2 different kinds of modules:</p>
+<dl>
+<dt>Deep Modules</dt>
+<dd>
+<p>The best modules provide powerful functionality over simple interfaces.
+They provide good abstraction by providing complex functionality but only
+exposing a small fraction of their internal complexity.
+One example are the 5 basic system calls for I/O in UNIX operating systems.</p>
+</dd>
+<dt>Shallow Modules</dt>
+<dd>
+<p>In contrast to deep modules, shallow ones have relatively complex interfaces,
+compared to the functionality they provide.
+Many shallow interfaces do not even provide much keystroke saving when used,
+compared to their reimplementation.</p>
+</dd>
+</dl>
+<p>Shallow modules are often a result of <em>classitis</em>.
+Students at university, or readers of <em>clean code</em> lecture are often advised to
+break code into small units.
+If this advise is followed without much strategy, it often results in shallow
+modules which are not much more than leaking abstractions.</p>
+<p>Another interesting word that John introduces in this context is <em>temporal
+decomposition</em>:
+Developers often structure code modules according to the order
+in which operations occur.
+This does often lead to code that shares knowledge, but at different places in
+the code, leading to change amplification, higher cognitive load, and unknown
+unknowns again.</p>
+<p>A good rule of thumb in module design that John comes up with is:</p>
+<blockquote>
+<p>It is more important for a module to have a simple interface than a simple
+implementation.</p>
+</blockquote>
+<p>If a module ends up being too complex, but its interface is very simple, then
+this means that it can easily be substituted by a better one.
+Also, changes on such a module do not increase change amplification.</p>
+<p>Another great principle is <em>define errors out of existence</em>:
+John argues that error handling and exceptions make programs much more complex,
+and a good way to reduce such complexity is representing data, interfaces, and
+semantics in ways that make it impossible to encode erratic cases that need
+special handling.</p>
+<h3 id="how-to-write-code">How to Write Code</h3>
+<p>The second half is about the act of designing and writing code.
+John argues that interfaces and modules should be designed twice:
+Implementing a design for the first time often exposes new insights that would
+lead to a different design in a second approach.</p>
+<p>Working hard on the first design attempt, just to throw it away becasue it was
+just a vehicle for learning how to do it right:
+This is clearly not the mindset of the average programmer.
+At first glance, it also looks like it would waste a lot of time, especially
+from the point of view of a tactical programmer.</p>
+<p>The next chapters are about comments, naming, modifying existing code,
+consistency (of style/documentation/etc. across the project), performance,
+and contain a lot of fine-grained advise that should not be unknown to the
+working programmer.
+Because it can’t be summarized by few principles, i do just drop some
+interesting highlights:
+(These read like rules, and such should never be over-applied in dogmatic
+fashion)</p>
+<ul>
+<li>If an interface <em>comment</em> describes its implementation, it indicates that
+the interface is shallow.</li>
+<li>If a variable or type <em>name</em> is inherently <em>hard to pick</em>, it indicates a
+bad abstraction.</li>
+<li>When <em>modifying</em> code:
+<ul>
+<li>After each change, the system should have the structure that it would have
+if yo had designed it from the start with that change in mind.</li>
+<li>If you’re not making the design better, you are probably making it worse.</li>
+</ul></li>
+<li>Software should be designed for <em>ease of reading</em>, not ease of writing.</li>
+<li>Test-driven development focuses attention on getting specific features
+working, rather than finding the best design.
+In other words, it facilitates tactical work more than strategic work.</li>
+</ul>
+<p>John summarizes in his book’s conclusion:</p>
+<blockquote>
+<p>The reward for being a good designer is that you get to spend a larger
+fraction of your time in the design phase, which is fun.
+Poor designers spend most of their time chasing bugs in complicated and
+brittle code.</p>
+</blockquote>
+<h2 id="summary">Summary</h2>
+<p>I really enjoyed this book because it gave me effective new vocabulary in the
+epic fight against complexity, which is often more social than technical when
+arguing with tactical programmers.</p>
+<p>Read it, as early as possible, in your developer career.</p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design/';
+this.page.identifier = 'nicecpp/2022/12/05/book-review-a-philosophy-of-software-design/';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS"></script>
+<script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WZ3FX4G3XS');</script>
+</body>
+</head>
+</html>
