@@ -1,6 +1,6 @@
 ---
 title: C++17 STL Cookbook
-tags: c++
+tags: c++, book
 ---
 
 This article is about the [**C++17 STL Cookbook**](https://www.packtpub.com/application-development/c17-stl-cookbook), which got published this week.
@@ -8,7 +8,9 @@ After about 6 months of writing, I am happy that it is out the door and hope it 
 
 <!--more-->
 
-<img align="left" style="margin: 0px 30px 10px 0px;" src="/images/cpp17_stl_cookbook_cover.png">
+<div class="book-cover">
+  ![Book cover of "C++17 STL Cookbook](/images/cpp17_stl_cookbook_cover.png)
+</div>
 
 ## Why did I write this book?
 
@@ -114,7 +116,7 @@ In roughly 500 pages, the book covers the following topics:
 
 The book will soon be available in **printed form**, but the **ebook** can be ordered already.
 
-If you want a **DRM-free** version of it, you should order it [directly from PACKT](https://www.packtpub.com/application-development/c17-stl-cookbook). Of course, [Amazon has the book](http://amzn.to/2hqAyFX), too.
+If you want a **DRM-free** version of it, you should order it [directly from PACKT](https://www.packtpub.com/application-development/c17-stl-cookbook). Of course, [Amazon has the book](https://amzn.to/3up1Cb5), too.
 
 ## Thank you
 

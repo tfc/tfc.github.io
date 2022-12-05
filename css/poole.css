@@ -426,3 +426,17 @@ div.sourceCode {
   -webkit-box-shadow: inset 0 0 10px #000000;
   box-shadow:         inset 0 0 10px #000000;
 }
+
+.book-cover figure {
+  max-width: 300px;
+  float: left
+}
+
+.book-cover img {
+  border: 1px solid gray;
+  box-shadow: 10px 10px 5px #ccc;
+}
+
+.book-cover figcaption {
+  font-size: 90%;
+}

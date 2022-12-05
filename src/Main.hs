@@ -10,7 +10,7 @@ import           Data.List                       (intersperse)
 
 main :: IO ()
 main = hakyll $ do
-    match "images/*" $ do
+    match "images/**" $ do
         route   idRoute
         compile copyFileCompiler
 
