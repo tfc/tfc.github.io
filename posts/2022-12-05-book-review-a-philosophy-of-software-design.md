@@ -18,15 +18,16 @@ appropriate vocabulary for **your** next discussion about software quality.
   ![Book Cover of "A philosophy of Software Design"](/images/books/a-philosophy-of-software-design.png)
 </div>
 
-## The Book
+## Book & Author
 
 The book is originally from 2018 and its second edition has been released in 2021.
 It has ~180 pages, so it is a very quick read.
 
-John Ousterhout is a computer science professor for computer who has worked on
-all kinds of software related topics, but also spent some time teaching how
-to *design* software in general - or more precisely, looking at the design
-itself of software as the underlying challenge.
+[John Ousterhout](https://en.wikipedia.org/wiki/John_Ousterhout) is a computer
+science professor for computer science at [Stanford](https://web.stanford.edu/~ouster)
+who has worked on all kinds of software related topics, but also spent a lot of
+time teaching how to *design* software in general - or more precisely, looking
+at the design itself of software as the underlying challenge.
 
 In his university lectures, as he also describes in this book, he lets his
 students exercise the design of different kinds of software solutions for small
