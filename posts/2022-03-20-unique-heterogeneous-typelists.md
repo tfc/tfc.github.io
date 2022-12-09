@@ -3,7 +3,8 @@ title: Filtering Unique Items from Heterogeneous Lists at Compile Time
 tags: haskell, meta-programming
 ---
 
-<!-- cSpell:disable -->
+<!-- cSpell:words Hengchu Zhang Maguire Lemmer HList -->
+<!-- cSpell:ignore ababca dontCare -->
 
 This article is about how to filter unique items from heterogeneous lists on
 the type level in Haskell.
@@ -66,9 +67,13 @@ import           GHC.TypeLits (ErrorMessage (Text), TypeError)
 
 First, we need a way to create a way to describe lists of items that have different types (without polymorphy).
 
-So let's create the type `HList` (as in "**H**eterogeneous **List**") whose GADT constructors help us constructing a list at compile time:
+<!-- cSpell:disable -->
+So let's create the type `HList` (as in "**H**eterogeneous **List**") whose GADT
+<!-- cSpell:enable -->
+constructors help us constructing a list at compile time:
 
 
+<!-- cSpell:ignore infixr -->
 ```haskell
 data HList :: [Type] -> Type where
   HNil :: HList '[]
@@ -89,7 +94,7 @@ abc = A 1 :# B 2 :# C 3 :# HNil
 :type abc
 ```
 
-
+<!-- cSpell:disable -->
 <style>/* Styles used for the Hoogle display in the pager */
 .hoogle-doc {
 display: block;
@@ -172,6 +177,7 @@ color: red;
 font-weight: bold;
 }
 </style><span class='get-type'>abc :: HList '[A, B, C]</span>
+<!-- cSpell:enable -->
 
 
 Although other tutorials and books cover this topic already, let us also create at least the `Show` instance for our `HList` in order to be able to print not only their types but also their values:
@@ -203,7 +209,11 @@ Fine. Off to the more complicated things now.
 
 ## Reversing HLists
 
-All the examples on the internet first show how to write functions on hlists: First, implement a type class and then all the relevant instances for them. These are usually not too hard to understand and write, because the output type does not really depend on the inputs - just like our `Show` instance from before.
+All the examples on the internet first show how to write functions on HLists:
+First, implement a type class and then all the relevant instances for them.
+These are usually not too hard to understand and write, because the output type
+does not really depend on the inputs - just like our `Show` instance from
+before.
 
 Having understood that, the next thing that I found hard to achieve was *reversing* a heterogeneous list.
 The reason is, that the return type of a reverse function would completely depend on the input:
@@ -242,89 +252,7 @@ This works as expected:
 :kind! Reverse '[ A, B, C ]
 ```
 
-
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>Reverse '[ A, B, C ] :: [*]
+<span class='get-type'>Reverse '[ A, B, C ] :: [*]
 = '[C, B, A]</span>
 
 
@@ -390,88 +318,7 @@ rev abc
 ```
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>rev abc :: HList '[C, B, A]</span>
+<span class='get-type'>rev abc :: HList '[C, B, A]</span>
 
 
 
@@ -507,174 +354,12 @@ type family Contains (inputList :: [Type]) (inputType :: Type) :: Bool where
 ```
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>Contains '[A, B, C] A :: Bool
+<span class='get-type'>Contains '[A, B, C] A :: Bool
 = 'True</span>
 
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>Contains '[B, C] A :: Bool
+<span class='get-type'>Contains '[B, C] A :: Bool
 = 'False</span>
 
 
@@ -697,174 +382,12 @@ type family If (condition :: Bool) (thenCase :: k) (elseCase :: k) :: k where
 ```
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>If 'True A B :: *
+<span class='get-type'>If 'True A B :: *
 = A</span>
 
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>If 'False A B :: *
+<span class='get-type'>If 'False A B :: *
 = B</span>
 
 
@@ -885,88 +408,7 @@ type family Uniques (xs :: [Type]) :: [Type] where
 ```
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>Uniques '[A, B, A, C] :: [*]
+<span class='get-type'>Uniques '[A, B, A, C] :: [*]
 = '[B, A, C]</span>
 
 
@@ -995,260 +437,17 @@ type family ContainsHead (listToCheckAgainst :: [Type])
 ```
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>ContainsHead '[ A, B, C ] '[ B, C ] :: Bool
+<span class='get-type'>ContainsHead '[ A, B, C ] '[ B, C ] :: Bool
 = 'True</span>
 
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>ContainsHead '[ A ] '[ B, C ] :: Bool
+<span class='get-type'>ContainsHead '[ A ] '[ B, C ] :: Bool
 = 'False</span>
 
 
 
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style><span class='get-type'>ContainsHead '[ A, B, C ] '[ ] :: Bool
+<span class='get-type'>ContainsHead '[ A, B, C ] '[ ] :: Bool
 = (TypeError ...)</span>
 
 
@@ -1278,7 +477,11 @@ The recursion terminal instance is the one where the input list is empty.
 In this case we simply return the accumulator.
 It is not interesting what the value of the bool argument is in this special case.
 
-I named the class function `ulr'` as in "**u**nique **l**ist **reversed**", because due to the accumulator interface of this function, the accumulator will contain all the items in reversed order when we consumed the input list.
+<!-- cSpell:disable -->
+I named the class function `ulr'` as in "**u**nique **l**ist **reversed**",
+<!-- cSpell:enable -->
+because due to the accumulator interface of this function, the accumulator will
+contain all the items in reversed order when we consumed the input list.
 We will turn it around later.
 
 
@@ -1287,8 +490,12 @@ instance UniqueHList '[] uniqueList uniqueList dontCare where
   ulr' _ x = x
 ```
 
-In all of the following instances, I used some very much abbreviated type variable names:
-`is` stands for **i**nput item**s**", `as` for "**a**ccumulator item**s**", and `us` for "**u**nique item**s**".
+In all of the following instances, I used some very much abbreviated type
+variable names:
+<!-- cSpell:disable -->
+`is` stands for **i**nput item**s**", `as` for "**a**ccumulator item**s**", and
+`us` for "**u**nique item**s**".
+<!-- cSpell:enable -->
 
 The `'False` value in the `nextElementIsContainedAlready` argument says that this instance is for the cases where the next input list item is not yet contained by the accumulator.
 So by removing it from the input list and prepending it to the accumulator, we do the right thing.
