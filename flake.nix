@@ -83,13 +83,10 @@
                 brittany.enable = true;
                 cabal-fmt.enable = true;
                 deadnix.enable = true;
-                #hlint.enable = true;
                 nixpkgs-fmt.enable = true;
                 shellcheck.enable = true;
                 shfmt.enable = true;
                 statix.enable = true;
-                #markdownlint.enable = true;
-                #hunspell.enable = true;
               };
             };
           };
