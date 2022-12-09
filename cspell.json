@@ -5,9 +5,12 @@
       "Brainfuck",
       "CRTP",
       "Oceansprint",
+      "Ousterhout",
       "Polymorphy",
       "SFINAE",
-      "pprintpp"
+      "classitis",
+      "pprintpp",
+      "reimplementation"
     ],
     "ignoreWords": [
       "struct"

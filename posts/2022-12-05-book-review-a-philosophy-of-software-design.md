@@ -3,8 +3,6 @@ title: "Book Review: A Philosophy of Software Design"
 tags: book
 ---
 
-<!-- cSpell:disable -->
-
 What separates the truly great software developers from the average ones?
 People have lots of opinions about this, but it's often hard to describe what
 makes the code of a great engineer so good - and what part of it novice
@@ -131,7 +129,7 @@ The fight against continuously increasing complexity is fought with continuous
 investments.
 Discussions between strategic and tactical programmers are often frustrating.
 
-The next topic is the organisation of code into modules (as in classes,
+The next topic is the organization of code into modules (as in classes,
 subsystems, or services) that communicate via interfaces.
 Modules encapsulate the complexity of systems into domain-specific units.
 John coins terms for two different qualities of modules:
