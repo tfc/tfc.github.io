@@ -3,7 +3,11 @@ title: NixOS Community Oceansprint late 2022 Report
 tags: nix
 ---
 
-<!-- cSpell:disable -->
+<!--
+  cSpell:words Domen Kozar Neyts Zupan Raito Bezarius Niklas Sturm Noogle
+  cSpell:words Florian Friesdorf Lanzarote Kirschbauer strandings kiosko
+  cSpell:words Stecklina lanzaboote Hauer
+-->
 
 This is my trip report from the late 2022 Oceansprint hackathon on Lanzarote.
 For more information please also have a look on the website:
@@ -128,7 +132,7 @@ In addition to that, i put some effort into convincing secunet to sponsor the
 oceansprint, too, as we do work together with this awesome technology and they
 are also interested having their colleagues to grow into the community.
 
-After having spoken with the organisers [Neyts](https://twitter.com/nzupan) and
+After having spoken with the organizers [Neyts](https://twitter.com/nzupan) and
 [Domen](https://twitter.com/domenkozar) at the
 [NixCon 2022 in Paris](https://2022.nixcon.org/) about the topic of sponsoring,
 i learned that they found it easier to motivate small businesses to participate
@@ -147,7 +151,7 @@ sponsor/invest in conferences and hackathons like this:
   often already.
 - The exposure to long-year community members helps a lot understanding the
   used technology better. Especially less experienced colleagues come back with
-  a lot of enlightment, which is why we try to send different colleagues every
+  a lot of enlightenment, which is why we try to send different colleagues every
   time.
 - Having your own employees hack together on things with people that are not on
   your payroll is a very efficient way to get work done for all participating
