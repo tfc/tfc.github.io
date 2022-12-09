@@ -81,7 +81,7 @@
               src = ./.;
               hooks = {
                 #brittany.enable = true;
-                #cabal-fmt.enable = true;
+                cabal-fmt.enable = true;
                 deadnix.enable = true;
                 #hlint.enable = true;
                 nixpkgs-fmt.enable = true;

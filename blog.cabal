@@ -1,22 +1,24 @@
-cabal-version:       2.4
-name:                blog
-version:             0.1.0.0
-homepage:            blog.galowicz.de
-license:             NONE
-license-file:        LICENSE
-author:              Jacek Galowicz
-maintainer:          jacek@galowicz.de
-category:            Web
-extra-source-files:  CHANGELOG.md
+cabal-version:      2.4
+name:               blog
+version:            0.1.0.0
+homepage:           blog.galowicz.de
+license:
+license-file:       LICENSE
+author:             Jacek Galowicz
+maintainer:         jacek@galowicz.de
+category:           Web
+extra-source-files: CHANGELOG.md
 
 executable blog-generator
   main-is:          Main.hs
   hs-source-dirs:   src
-  build-depends:    base
-                  , blaze-html
-                  , containers
-                  , hakyll
-                  , hakyll-shakespeare
-                  , shakespeare
-                  , text
+  build-depends:
+    , base
+    , blaze-html
+    , containers
+    , hakyll
+    , hakyll-shakespeare
+    , shakespeare
+    , text
+
   default-language: Haskell2010
