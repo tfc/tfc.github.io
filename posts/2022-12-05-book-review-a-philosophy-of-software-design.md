@@ -3,13 +3,13 @@ title: "Book Review: A Philosophy of Software Design"
 tags: book
 ---
 
-What does separate the truly great software developers from the average ones?
+What separates the truly great software developers from the average ones?
 People have lots of opinions about this, but it's often hard to describe what
 makes the code of a great engineer so good - and what part of it novice
 programmers should really try to learn from.
 John Ousterhout's book [A philosophy of Software Design](https://amzn.to/3B8ufgM)
 aims to answer this question and actually introduces some extraordinarily
-appropriate vocabulary for **your** next discussion about software quality.
+appropriate vocabulary for *your* next discussion about software quality.
 
 <!--more-->
 
@@ -182,8 +182,11 @@ The second half is about the act of designing and writing code.
 John argues that interfaces and modules should be designed twice:
 Implementing a design for the first time often exposes new insights that would
 lead to a different design in a second approach.
+I myself often designed things not only twice but tried three or four different
+approaches, in order to come up with the one that leads to the best result.
+It's a game changer for complexity.
 
-Working hard on the first design attempt, just to throw it away becasue it was
+Working hard on the first design attempt, just to throw it away because it was
 just a vehicle for learning how to do it right:
 This is clearly not the mindset of the average programmer.
 At first glance, it also looks like it would waste a lot of time, especially
@@ -204,7 +207,7 @@ fashion)
   bad abstraction.
 - When *modifying* code:
   - After each change, the system should have the structure that it would have
-    if yo had designed it from the start with that change in mind.
+    if you had designed it from the start with that change in mind.
   - If you're not making the design better, you are probably making it worse.
 - Software should be designed for *ease of reading*, not ease of writing.
 - Test-driven development focuses attention on getting specific features
