@@ -15,13 +15,13 @@ appropriate vocabulary for *your* next discussion about software quality.
 
 
 <div class="book-cover">
-  ![Book Cover of "A philosophy of Software Design"](/images/books/a-philosophy-of-software-design.png)
+  ![Book Cover of "A Philosophy of Software Design"](/images/books/a-philosophy-of-software-design.png)
 </div>
 
 ## Book & Author
 
-The book is originally from 2018 and its second edition has been released in 2021.
-It has ~180 pages, so it is a very quick read.
+The book is originally from 2018 and its second edition was released in 2021.
+It it ~180 pages, so it should be a very quick read.
 
 [John Ousterhout](https://en.wikipedia.org/wiki/John_Ousterhout) is a computer
 science professor for computer science at [Stanford](https://web.stanford.edu/~ouster)
@@ -46,8 +46,8 @@ and ways to explain them to programmers who don't know them yet.
 
 ## Content and Structure
 
-I experienced the book like a journey over 2 main topics, which shall get their
-own subsection each.
+I experienced the book like a journey over two main topics, which shall get
+their own subsection each.
 As the book is already relatively short and every programmer should read it
 anyway, I won't go much into detail and instead just state the most important
 points and principles.
@@ -61,10 +61,10 @@ The preface of the book begins with an observation that is frustratingly apt:
 > those programs or what good programs should look like.
 
 Apart from all the computer languages with their different specialties,
-(non-)agile development methodologies, tooling as debuggers, linters, version
-control systems, and techniques such as object-oriented/functional programs,
-schools, universities and developers' book shelves typically lack material
-about how software should generally be *designed*.
+agile or non-agile development methodologies, tooling as debuggers, linters,
+version control systems, and techniques such as object-oriented/functional
+programs, schools, universities and developers' book shelves typically lack
+material about how software should generally be *designed*.
 
 The average developer just changes their code until the tooling stops emitting
 errors/warnings and the code actually does what it is written for.
@@ -77,7 +77,7 @@ This typically ends in programs of huge complexity that cannot be maintained
 easily any longer.
 
 Complexity never comes with big leaps but always with a stepwise increase.
-The 3 main **symptoms** of complexity are:
+The three main **symptoms** of complexity are:
 
 Change Amplification
 
@@ -92,20 +92,20 @@ Unknown Unknowns
 
 : It is not obvious which pieces of code must be modified to complete a task.
 
-The 2 main **causes** of complexity are:
+The two main **causes** of complexity are:
 
 Dependencies
 
 : A dependency exists when a given piece of code cannot be understood and
   modified in isolation. They can't be eliminated, but designed carefully.
   (This is a definition for the discussions in the book.
-  Dependencies like installable libraries are not meant in this case)
+  Software dependencies like installable libraries mean something different.)
 
 Obscurity
 
-: Obscurity occures when important information is not obvious.
+: Obscurity occurs when important information is not obvious.
 
-In order to keep complexity under control (i.e. reach sustainable tradeoffs)
+In order to keep complexity under control (i.e. to reach sustainable tradeoffs)
 developers need the right mindset.
 John distinguishes between two of them:
 
@@ -125,20 +125,21 @@ tactical programmers (also called *tactical tornados*), which typically write
 code with uncontrollable complexity.
 Strategical programming requires an **investment mindset** for trading initial
 upfront slowdown against long-term improvements.
-The fight against continuously increasing complexity are continuous investments.
+The fight against continuously increasing complexity is fought with continuous
+investments.
 Discussions between strategic and tactical programmers are often frustrating.
 
 The next topic is the organisation of code into modules (as in classes,
 subsystems, or services) that communicate via interfaces.
 Modules encapsulate the complexity of systems into domain-specific units.
-John coins terms for 2 different kinds of modules:
+John coins terms for two different qualities of modules:
 
 Deep Modules
 
 : The best modules provide powerful functionality over simple interfaces.
   They provide good abstraction by providing complex functionality but only
   exposing a small fraction of their internal complexity.
-  One example are the 5 basic system calls for I/O in UNIX operating systems.
+  One example are the five basic system calls for I/O in UNIX operating systems.
 
 Shallow Modules
 
@@ -170,7 +171,7 @@ If a module ends up being too complex, but its interface is very simple, then
 this means that it can easily be substituted by a better one.
 Also, changes on such a module do not increase change amplification.
 
-Another great principle is *define errors out of existence*:
+Another great principle is to *define errors out of existence*:
 John argues that error handling and exceptions make programs much more complex,
 and a good way to reduce such complexity is representing data, interfaces, and
 semantics in ways that make it impossible to encode erratic cases that need
@@ -196,10 +197,10 @@ The next chapters are about comments, naming, modifying existing code,
 consistency (of style/documentation/etc. across the project), performance,
 and contain a lot of fine-grained advise that should not be unknown to the
 working programmer.
-Because it can't be summarized by few principles, i do just drop some
+Because it can't be summarized by few principles, i will just drop some
 interesting highlights:
-(These read like rules, and such should never be over-applied in dogmatic
-fashion)
+(These read like rules, but they are not and should never be over-applied in a
+dogmatic fashion)
 
 - If an interface *comment* describes its implementation, it indicates that
   the interface is shallow.
@@ -223,8 +224,8 @@ John summarizes in his book's conclusion:
 
 ## Summary
 
-I really enjoyed this book because it gave me effective new vocabulary in the
+I really enjoyed this book because it gave me an effective new vocabulary in the
 epic fight against complexity, which is often more social than technical when
 arguing with tactical programmers.
 
-Read it, as early as possible, in your developer career.
+Read it - as early as possible - in your developer career.
