@@ -3,6 +3,8 @@ title: "Book Review: A Philosophy of Software Design"
 tags: book
 ---
 
+<!-- cSpell:disable -->
+
 What separates the truly great software developers from the average ones?
 People have lots of opinions about this, but it's often hard to describe what
 makes the code of a great engineer so good - and what part of it novice

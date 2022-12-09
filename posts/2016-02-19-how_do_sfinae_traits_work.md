@@ -3,6 +3,8 @@ title: How Does the Typical SFINAE Type Trait Work?
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 C++ type traits can be implemented using an interesting technique which uses the *SFINAE* principle.
 This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.
 

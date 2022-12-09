@@ -3,6 +3,8 @@ title: ON_EXIT - Combining Automatic Destruction and Lambdas
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can't easily stick with the *RAII* principle.
 Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again.
 When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.

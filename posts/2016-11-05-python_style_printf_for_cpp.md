@@ -3,6 +3,8 @@ title: Python Style printf for C++ with pprintpp
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 The C++ STL comes with *stream* style character output, which is an alternative to the classic `printf` like format function collection of the C library.
 For different reasons, some C++ programmers still stick to `printf` like formatting.
 This article demonstrates the `pprintpp` [(open source, and available on Github)](https://github.com/tfc/pprintpp) library, which tries to make `printf` use comfortable and safe while avoiding any runtime overhead.

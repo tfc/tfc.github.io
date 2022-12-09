@@ -3,6 +3,8 @@ title: Generating Integer Sequences at Compile Time
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 In some situations, it can be useful ot generate sequences of numbers at compile time.
 This article shows how to generate integer sequences with C++ templates, and gives an example how to use it.
 

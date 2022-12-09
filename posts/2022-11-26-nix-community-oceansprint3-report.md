@@ -3,6 +3,8 @@ title: NixOS Community Oceansprint late 2022 Report
 tags: nix
 ---
 
+<!-- cSpell:disable -->
+
 This is my trip report from the late 2022 Oceansprint hackathon on Lanzarote.
 For more information please also have a look on the website:
 [https://oceansprint.org](https://oceansprint.org)

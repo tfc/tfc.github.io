@@ -3,6 +3,8 @@ title: Implementing a Turing Tape for Use at Compile Time
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table.
 Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages.
 It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++.

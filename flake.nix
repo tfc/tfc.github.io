@@ -82,6 +82,11 @@
               hooks = {
                 brittany.enable = true;
                 cabal-fmt.enable = true;
+                cspell = {
+                  enable = true;
+                  entry = "${pkgs.nodePackages.cspell}/bin/cspell --words-only";
+                  types = [ "markdown" ];
+                };
                 deadnix.enable = true;
                 nixpkgs-fmt.enable = true;
                 shellcheck.enable = true;

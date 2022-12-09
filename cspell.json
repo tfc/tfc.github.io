@@ -1,0 +1,18 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "words": [
+      "Brainfuck",
+      "CRTP",
+      "Oceansprint",
+      "Polymorphy",
+      "SFINAE",
+      "pprintpp"
+    ],
+    "ignoreWords": [
+      "struct"
+    ],
+    "ignorePaths": [
+      "impressum.md"
+    ]
+}

@@ -3,6 +3,8 @@ title: C++17 STL Cookbook
 tags: c++, book
 ---
 
+<!-- cSpell:disable -->
+
 This article is about the [**C++17 STL Cookbook**](https://www.packtpub.com/application-development/c17-stl-cookbook), which got published this week.
 After about 6 months of writing, I am happy that it is out the door and hope it helps and inspires its readers to write modern C++ code.
 

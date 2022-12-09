@@ -3,6 +3,8 @@ title: Transformations between User Input/Output and Type Lists
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 Type lists are an important way to represent ordered and unordered sets of types at compile time.
 These types can be real structure- or class types bundling runtime algorithms etc., but they can also convey actual data at compile time.
 In order to apply certain compile time processing to data, this data needs to be transformed from and to other representations, which can be provided by the programmer and consumed by run time programs.

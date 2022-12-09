@@ -3,6 +3,8 @@ title: Type Lists
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 Homogenuous data in purely functional programs is typically managed in *lists*.
 Items can be appended or prepended to lists, different lists can be concatenated.
 Lists can be filtered, transformed, mapped, reduced, etc.

@@ -3,6 +3,8 @@ title: Setting up a C++ project environment with nix
 tags: nix, c++
 ---
 
+<!-- cSpell:disable -->
+
 This article explains how to quickly set up a C++ project environment with
 complete toolchain- and dependency management with `nix`.
 [`nix`](https://nixos.org/nix/) is a powerful package manager for Linux and

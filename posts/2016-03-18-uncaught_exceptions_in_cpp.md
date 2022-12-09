@@ -3,6 +3,8 @@ title: Uncaught Exceptions in C++
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 What does actually happen, if an exception is thrown somewhere in the middle of a C++ program, but there is no try-catch clause which handles it?
 The program gets terminated.
 That is fine in general, but what happens to all objects which need to be properly destructed?

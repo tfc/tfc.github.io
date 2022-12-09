@@ -3,6 +3,8 @@ title: Filtering Unique Items from Heterogeneous Lists at Compile Time
 tags: haskell, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 This article is about how to filter unique items from heterogeneous lists on
 the type level in Haskell.
 This example, without further context, might look a bit esoteric by itself,

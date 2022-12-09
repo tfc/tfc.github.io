@@ -2,6 +2,8 @@
 title: About
 ---
 
+<!-- cSpell:disable -->
+
 My name is Jacek Galowicz, and my professional main interests are programming
 (i used to do a lot of C++ and Haskell) and software architecture.
 Before getting a job in the industry, i graduated with a Master of Science in Electrical Engineering.

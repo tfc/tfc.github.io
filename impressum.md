@@ -2,6 +2,8 @@
 title: "Impressum / Datenschutz"
 ---
 
+<!-- cSpell:disable -->
+
 Angaben gemäß § 5 TMG sowie verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:
 
 | Jacek Galowicz

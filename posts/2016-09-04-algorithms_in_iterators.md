@@ -3,6 +3,8 @@ title: Wrapping Algorithms into Iterators
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 Sometimes there is the requirement to generate a range of numbers from some algorithm.
 Be it a simple range of increasing numbers, or only odd numbers, or only primes, or whatever.
 Some calculations can be optimized by *memorizing* some values for the calculation of the next number, just as this applies for **fibonacci numbers**.

@@ -3,6 +3,8 @@ title: Type List Compile Time Performance
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times.
 I came up with rules of thumb like "*Prefer pattern matching over if_else_t*", and "*Prefer nested type lists over variadic type lists*".
 But i did not know how much faster which pattern is, i just knew about tendencies.

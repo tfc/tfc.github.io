@@ -3,6 +3,8 @@ title: How to Use the CRTP to Reduce Duplication
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 Some objects have different interfaces for doing the same thing in a different way.
 One could either check if two objects are *equal*, or if both are *not different*.
 Or one could ask if some container is *empty*, or if it has *zero size*.

@@ -3,6 +3,8 @@ title: Static Polymorphy in C++
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 In order to use *polymorphy*, virtual functions are the way to go in C++.
 They are nice and easy to use.
 However, polymorphy is not always needed at actual runtime.

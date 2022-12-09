@@ -3,6 +3,8 @@ title: What is a Type Trait?
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 This article explains, how so called *type traits* in C++ work.
 Type traits have been there for quite a long time now. They are a meta programming technique which appears to use types and their sub types like functions at compile time, to control what the compiler actually compiles.
 

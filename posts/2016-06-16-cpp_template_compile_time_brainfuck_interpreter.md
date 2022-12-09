@@ -3,6 +3,8 @@ title: Executing Brainfuck at Compile Time with C++ Templates
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.
 
 <!--more-->

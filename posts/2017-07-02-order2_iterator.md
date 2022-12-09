@@ -3,6 +3,8 @@ title: Iterators are also part of the C++ zero cost abstractions
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 This article picks up an example operating system kernel code snippet that is written in C++, but looks like "C with classes".
 I think it is a great idea to implement Embedded projects/kernels in C++ instead of C and it's nice to see that the number of embedded system developers that use C++ is rising.
 Unfortunately, I see stagnation in terms of modern programming in embedded/kernel projects in the industry.

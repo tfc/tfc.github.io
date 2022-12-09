@@ -3,6 +3,8 @@ title: Managing libraries with Nix
 tags: c++, nix
 ---
 
+<!-- cSpell:disable -->
+
 While learning Haskell and using its really smart library dependency management tools ([`cabal`](https://www.haskell.org/cabal/) and [`stack`](https://docs.haskellstack.org/en/stable/README/)), i realized that the C++ eco system has a problem:
 There are no handy _established_ tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way.
 [`Nix`](https://nixos.org/nix/) however convinced me to be more versatile and powerful than [Conan](https://www.conan.io/) and handier than [Docker](https://www.docker.com/), [Vagrant](https://www.vagrantup.com/), etc. (although it's fair to say that i am mixing use cases here a little bit!)

@@ -3,6 +3,8 @@ title: A reinterpret_cast Trap
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 Sometimes, casting is just inevitable.
 And then there's even not much science behind it, at least it seems so.
 Once some address is provided in a variable of the right size, a typed pointer can be casted out of it, and then the object can be accessed via its members and methods as usual.

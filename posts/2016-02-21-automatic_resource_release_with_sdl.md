@@ -3,6 +3,8 @@ title: A Nice Way to Manage SDL Resource Lifetime
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 I happen to use the SDL library when i need to display graphics on the screen, but want to do it simpler than with OpenGL.
 SDL is easy to use and portable, but it is a C-style library.
 Because of that C nature, the library does not really help the user to write elegant, modern code.

@@ -3,6 +3,8 @@ title: Template Meta Programming Basics
 tags: c++, meta-programming
 ---
 
+<!-- cSpell:disable -->
+
 C++ template meta programs are at first really hard to read.
 This is because the template mechanism accidentally became turing complete, although it was invented to enable for type-agnostic programming of generic algorithms.
 However, now the world knows that the C++ template  part of the language *is* turing complete, people started writing full programs in it, and it enhances the power and flexibility of libraries quite a lot.

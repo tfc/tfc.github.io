@@ -3,6 +3,8 @@ title: Do Not Fear Recursion
 tags: c++
 ---
 
+<!-- cSpell:disable -->
+
 There are a lot of algorithms which can be implemented using *recursive* or *iterative* style.
 Actually, **everything** can be implemented in both styles.
 For a lot of algorithms, the recursive version is simpler to read, write, and understand.
