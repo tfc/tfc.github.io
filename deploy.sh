@@ -4,7 +4,7 @@ set -euxo pipefail
 
 tmpDir=$(mktemp -d)
 function cleanup() {
-  rm -rf "$tmpDir"
+	rm -rf "$tmpDir"
 }
 trap cleanup EXIT
 
