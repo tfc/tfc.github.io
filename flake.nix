@@ -80,7 +80,7 @@
             pre-commit-check = pre-commit-hooks.lib.${system}.run {
               src = ./.;
               hooks = {
-                #brittany.enable = true;
+                brittany.enable = true;
                 cabal-fmt.enable = true;
                 deadnix.enable = true;
                 #hlint.enable = true;
