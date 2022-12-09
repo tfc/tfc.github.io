@@ -45,6 +45,8 @@
 <strong><small>Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html" class="tag-link">haskell</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:words Hengchu Zhang Maguire Lemmer HList -->
+<!-- cSpell:ignore ababca dontCare -->
 <p>This article is about how to filter unique items from heterogeneous lists on
 the type level in Haskell.
 This example, without further context, might look a bit esoteric by itself,
@@ -67,6 +69,7 @@ but I learned a lot writing it and wanted to share the experience.</p>
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>The C++ STL comes with <em>stream</em> style character output, which is an alternative to the classic <code>printf</code> like format function collection of the C library.
 For different reasons, some C++ programmers still stick to <code>printf</code> like formatting.
 This article demonstrates the <code>pprintpp</code> <a href="https://github.com/tfc/pprintpp">(open source, and available on Github)</a> library, which tries to make <code>printf</code> use comfortable and safe while avoiding any runtime overhead.</p>
@@ -88,6 +91,7 @@ This article demonstrates the <code>pprintpp</code> <a href="https://github.com/
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times.
 I came up with rules of thumb like “<em>Prefer pattern matching over if_else_t</em>”, and “<em>Prefer nested type lists over variadic type lists</em>”.
 But i did not know how much faster which pattern is, i just knew about tendencies.
@@ -110,6 +114,7 @@ Finally, i sat down to write some compile time benchmarks, and this blog posts p
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>In some situations, it can be useful ot generate sequences of numbers at compile time.
 This article shows how to generate integer sequences with C++ templates, and gives an example how to use it.</p>
 
@@ -130,6 +135,7 @@ This article shows how to generate integer sequences with C++ templates, and giv
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.</p>
 
 <p><a class="btn btn-sm btn-primary" href="../2016/06/16/cpp_template_compile_time_brainfuck_interpreter" role="button">Read more 
@@ -149,6 +155,7 @@ This article shows how to generate integer sequences with C++ templates, and giv
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table.
 Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages.
 It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++.
@@ -171,6 +178,7 @@ As a preparation for the next article, i will show how to implement a turing tap
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>Type lists are an important way to represent ordered and unordered sets of types at compile time.
 These types can be real structure- or class types bundling runtime algorithms etc., but they can also convey actual data at compile time.
 In order to apply certain compile time processing to data, this data needs to be transformed from and to other representations, which can be provided by the programmer and consumed by run time programs.
@@ -193,6 +201,7 @@ This article shows how to transform back and forth between strings and character
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>Homogenuous data in purely functional programs is typically managed in <em>lists</em>.
 Items can be appended or prepended to lists, different lists can be concatenated.
 Lists can be filtered, transformed, mapped, reduced, etc.
@@ -215,6 +224,7 @@ Having all this nice stuff as a template meta library is quite an enabler for co
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>C++ template meta programs are at first really hard to read.
 This is because the template mechanism accidentally became turing complete, although it was invented to enable for type-agnostic programming of generic algorithms.
 However, now the world knows that the C++ template part of the language <em>is</em> turing complete, people started writing full programs in it, and it enhances the power and flexibility of libraries quite a lot.
@@ -237,6 +247,7 @@ This article aims to explain some very basic things one needs to know about the 
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way.
 Unfortunately, they are extremely bloaty to implement.
 The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive.
@@ -259,6 +270,7 @@ This article shows a nice one-liner approach to define new SFINAE type traits.</
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>C++ type traits can be implemented using an interesting technique which uses the <em>SFINAE</em> principle.
 This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.</p>
 
@@ -279,6 +291,7 @@ This article explains what SFINAE means, how it works and how it can be used to 
 <strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../tags/meta-programming.html" class="tag-link">meta-programming</a></small>
 </strong>
 </span>
+<!-- cSpell:disable -->
 <p>This article explains, how so called <em>type traits</em> in C++ work.
 Type traits have been there for quite a long time now. They are a meta programming technique which appears to use types and their sub types like functions at compile time, to control what the compiler actually compiles.</p>
 

@@ -38,6 +38,8 @@
 <span class="post-tags">
 Tags: <a title="All pages tagged 'haskell'." href="../../../../tags/haskell.html" class="tag-link">haskell</a> <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html" class="tag-link">meta-programming</a>
 </span>
+<!-- cSpell:words Hengchu Zhang Maguire Lemmer HList -->
+<!-- cSpell:ignore ababca dontCare -->
 <p>This article is about how to filter unique items from heterogeneous lists on
 the type level in Haskell.
 This example, without further context, might look a bit esoteric by itself,
@@ -90,7 +92,11 @@ The full code of this article is <a href="https://gist.github.com/tfc/a525ef630a
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span>           <span class="dt">GHC.TypeLits</span> (<span class="dt">ErrorMessage</span> (<span class="dt">Text</span>), <span class="dt">TypeError</span>)</span></code></pre></div>
 <h2 id="heterogeneous-lists">Heterogeneous Lists</h2>
 <p>First, we need a way to create a way to describe lists of items that have different types (without polymorphy).</p>
-<p>So let’s create the type <code>HList</code> (as in “<strong>H</strong>eterogeneous <strong>List</strong>”) whose GADT constructors help us constructing a list at compile time:</p>
+<!-- cSpell:disable -->
+<p>So let’s create the type <code>HList</code> (as in “<strong>H</strong>eterogeneous <strong>List</strong>”) whose GADT
+<!-- cSpell:enable -->
+constructors help us constructing a list at compile time:</p>
+<!-- cSpell:ignore infixr -->
 <div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">HList</span><span class="ot"> ::</span> [<span class="dt">Type</span>] <span class="ot">-&gt;</span> <span class="dt">Type</span> <span class="kw">where</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">HNil</span><span class="ot"> ::</span> <span class="dt">HList</span> '[]</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  (:#) ::</span> x <span class="ot">-&gt;</span> <span class="dt">HList</span> xs <span class="ot">-&gt;</span> <span class="dt">HList</span> (x '<span class="op">:</span> xs)</span>
@@ -103,6 +109,7 @@ The full code of this article is <a href="https://gist.github.com/tfc/a525ef630a
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>abc <span class="ot">=</span> <span class="dt">A</span> <span class="dv">1</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">2</span> <span class="op">:#</span> <span class="dt">C</span> <span class="dv">3</span> <span class="op">:#</span> <span class="dt">HNil</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">:</span><span class="kw">type</span> abc</span></code></pre></div>
+<!-- cSpell:disable -->
 <style>/* Styles used for the Hoogle display in the pager */
 .hoogle-doc {
 display: block;
@@ -185,7 +192,8 @@ color: red;
 font-weight: bold;
 }
 </style>
-<p><span class="get-type">abc :: HList ’[A, B, C]</span></p>
+<p><span class="get-type">abc :: HList ’[A, B, C]</span>
+<!-- cSpell:enable --></p>
 <p>Although other tutorials and books cover this topic already, let us also create at least the <code>Show</code> instance for our <code>HList</code> in order to be able to print not only their types but also their values:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">HList</span> '[]) <span class="kw">where</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show</span> <span class="dt">HNil</span> <span class="ot">=</span> <span class="st">&quot;HNil&quot;</span></span>
@@ -199,7 +207,11 @@ font-weight: bold;
 <pre><code>A 1 :# B 2 :# C 3 :# HNil</code></pre>
 <p>Fine. Off to the more complicated things now.</p>
 <h2 id="reversing-hlists">Reversing HLists</h2>
-<p>All the examples on the internet first show how to write functions on hlists: First, implement a type class and then all the relevant instances for them. These are usually not too hard to understand and write, because the output type does not really depend on the inputs - just like our <code>Show</code> instance from before.</p>
+<p>All the examples on the internet first show how to write functions on HLists:
+First, implement a type class and then all the relevant instances for them.
+These are usually not too hard to understand and write, because the output type
+does not really depend on the inputs - just like our <code>Show</code> instance from
+before.</p>
 <p>Having understood that, the next thing that I found hard to achieve was <em>reversing</em> a heterogeneous list.
 The reason is, that the return type of a reverse function would completely depend on the input:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">aReverserFunction ::</span> <span class="dt">Hlist</span> '[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] <span class="ot">-&gt;</span> <span class="dt">HList</span> '[ <span class="dt">C</span>, <span class="dt">B</span>, <span class="dt">A</span> ]</span></code></pre></div>
@@ -220,88 +232,6 @@ As soon as the input list contains no items any longer, the accumulator is retur
 <p>As it would be otherwise uncomfortable to provide the input list <em>and</em> the accumulator, let’s call this type-level function <code>Reverse'</code> and define a type alias <code>Reverse</code> which just accepts the input list and hides the rest of the interface for us.</p>
 <p>This works as expected:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Reverse</span> '[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ]</span></code></pre></div>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">Reverse ‘[ A, B, C ] :: [*]
 =’[C, B, A]</span></p>
 <p>The type class <code>ReversedHList</code> will provide us a <code>rev'</code> function with just the same interface but at normal function level.
@@ -343,88 +273,6 @@ Thinking about it a bit longer, it does help reading the rest of the code becaus
 <div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span><span class="kw">type</span> rev abc</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>rev abc</span></code></pre></div>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">rev abc :: HList ’[C, B, A]</span></p>
 <pre><code>C 3 :# B 2 :# A 1 :# HNil</code></pre>
 <p>Thanks to the <code>Show</code> instance we can nicely inspect our reversed list both at the type- and value-level.</p>
@@ -442,172 +290,8 @@ font-weight: bold;
 <div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Contains</span> '[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span>] <span class="dt">A</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Contains</span> '[<span class="dt">B</span>, <span class="dt">C</span>] <span class="dt">A</span></span></code></pre></div>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">Contains ’[A, B, C] A :: Bool
 = ’True</span></p>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">Contains ’[B, C] A :: Bool
 = ’False</span></p>
 <p>This works great.</p>
@@ -618,172 +302,8 @@ It accepts a bool value on the type-level, and two types of which one is returne
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">If</span> <span class="dt">'False</span> _ b <span class="ot">=</span> b</span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">If</span> <span class="dt">'True</span>  <span class="dt">A</span> <span class="dt">B</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">If</span> <span class="dt">'False</span> <span class="dt">A</span> <span class="dt">B</span></span></code></pre></div>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">If ’True A B :: *
 = A</span></p>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">If ’False A B :: *
 = B</span></p>
 <h2 id="filtering-only-unique-items-from-a-list">Filtering Only Unique Items from a List</h2>
@@ -792,88 +312,6 @@ font-weight: bold;
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Uniques</span> (x '<span class="op">:</span> xs) <span class="ot">=</span> <span class="dt">If</span> (<span class="dt">Contains</span> xs x) (<span class="dt">Uniques</span> xs) (x '<span class="op">:</span> <span class="dt">Uniques</span> xs)</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Uniques</span> '[] <span class="ot">=</span> '[]</span></code></pre></div>
 <div class="sourceCode" id="cb20"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Uniques</span> '[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">A</span>, <span class="dt">C</span>]</span></code></pre></div>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">Uniques ‘[A, B, A, C] :: [*]
 =’[B, A, C]</span></p>
 <p>A helper that is going to be handy in the following is the type-level function <code>ContainsHead</code>:
@@ -890,256 +328,10 @@ In the special case that the second list is <em>empty</em>, we return a comprehe
 <div class="sourceCode" id="cb22"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> '[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] '[ <span class="dt">B</span>, <span class="dt">C</span> ]</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> '[ <span class="dt">A</span> ] '[ <span class="dt">B</span>, <span class="dt">C</span> ]</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> '[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] '[ ]</span></code></pre></div>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">ContainsHead ‘[ A, B, C ]’[ B, C ] :: Bool
 = ’True</span></p>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">ContainsHead ‘[ A ]’[ B, C ] :: Bool
 = ’False</span></p>
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
 <p><span class="get-type">ContainsHead ‘[ A, B, C ]’[ ] :: Bool
 = (TypeError …)</span></p>
 <p>Now we get to the part that turned out to look really complicated:
@@ -1161,12 +353,20 @@ As the name suggests, one instance fills it out for the next instance so they ca
 <p>The recursion terminal instance is the one where the input list is empty.
 In this case we simply return the accumulator.
 It is not interesting what the value of the bool argument is in this special case.</p>
-<p>I named the class function <code>ulr'</code> as in “<strong>u</strong>nique <strong>l</strong>ist <strong>reversed</strong>”, because due to the accumulator interface of this function, the accumulator will contain all the items in reversed order when we consumed the input list.
+<!-- cSpell:disable -->
+<p>I named the class function <code>ulr'</code> as in “<strong>u</strong>nique <strong>l</strong>ist <strong>reversed</strong>”,
+<!-- cSpell:enable -->
+because due to the accumulator interface of this function, the accumulator will
+contain all the items in reversed order when we consumed the input list.
 We will turn it around later.</p>
 <div class="sourceCode" id="cb24"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">UniqueHList</span> '[] uniqueList uniqueList dontCare <span class="kw">where</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  ulr' _ x <span class="ot">=</span> x</span></code></pre></div>
-<p>In all of the following instances, I used some very much abbreviated type variable names:
-<code>is</code> stands for <strong>i</strong>nput item<strong>s</strong>”, <code>as</code> for “<strong>a</strong>ccumulator item<strong>s</strong>”, and <code>us</code> for “<strong>u</strong>nique item<strong>s</strong>”.</p>
+<p>In all of the following instances, I used some very much abbreviated type
+variable names:
+<!-- cSpell:disable -->
+<code>is</code> stands for <strong>i</strong>nput item<strong>s</strong>”, <code>as</code> for “<strong>a</strong>ccumulator item<strong>s</strong>”, and
+<code>us</code> for “<strong>u</strong>nique item<strong>s</strong>”.
+<!-- cSpell:enable --></p>
 <p>The <code>'False</code> value in the <code>nextElementIsContainedAlready</code> argument says that this instance is for the cases where the next input list item is not yet contained by the accumulator.
 So by removing it from the input list and prepending it to the accumulator, we do the right thing.</p>
 <p>The many type application <code>@</code> things here are a bit noisy, but this time the compiler needs them as a hint.
