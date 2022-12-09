@@ -11,13 +11,13 @@
         <item>
     <title>Book Review: A Philosophy of Software Design</title>
     <link>https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design</link>
-    <description><![CDATA[<p>What does separate the truly great software developers from the average ones?
+    <description><![CDATA[<p>What separates the truly great software developers from the average ones?
 People have lots of opinions about this, but it’s often hard to describe what
 makes the code of a great engineer so good - and what part of it novice
 programmers should really try to learn from.
 John Ousterhout’s book <a href="https://amzn.to/3B8ufgM">A philosophy of Software Design</a>
 aims to answer this question and actually introduces some extraordinarily
-appropriate vocabulary for <strong>your</strong> next discussion about software quality.</p>
+appropriate vocabulary for <em>your</em> next discussion about software quality.</p>
 <!--more-->
 <div class="book-cover">
 <figure>
@@ -176,8 +176,11 @@ special handling.</p>
 <p>The second half is about the act of designing and writing code.
 John argues that interfaces and modules should be designed twice:
 Implementing a design for the first time often exposes new insights that would
-lead to a different design in a second approach.</p>
-<p>Working hard on the first design attempt, just to throw it away becasue it was
+lead to a different design in a second approach.
+I myself often designed things not only twice but tried three or four different
+approaches, in order to come up with the one that leads to the best result.
+It’s a game changer for complexity.</p>
+<p>Working hard on the first design attempt, just to throw it away because it was
 just a vehicle for learning how to do it right:
 This is clearly not the mindset of the average programmer.
 At first glance, it also looks like it would waste a lot of time, especially
@@ -198,7 +201,7 @@ bad abstraction.</li>
 <li>When <em>modifying</em> code:
 <ul>
 <li>After each change, the system should have the structure that it would have
-if yo had designed it from the start with that change in mind.</li>
+if you had designed it from the start with that change in mind.</li>
 <li>If you’re not making the design better, you are probably making it worse.</li>
 </ul></li>
 <li>Software should be designed for <em>ease of reading</em>, not ease of writing.</li>
