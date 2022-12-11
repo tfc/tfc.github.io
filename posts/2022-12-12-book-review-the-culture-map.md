@@ -3,8 +3,11 @@ title: "Book Review: The Culture Map"
 tags: book
 ---
 
+<!-- cSpell:words INSEAD Ringi -->
+<!-- cSpell:ignore erinmeyer -->
+
 Why do American coworkers always communicate so clearly, but at the same time
-critisize only in outlines?
+criticize rather indirectly?
 When do Asian coworkers finally say something in meetings?
 How do German coworkers get done *anything* innovative in their planning
 madness?
@@ -43,7 +46,7 @@ feel very familiar to every reader.
 ### The Eight Scales
 
 There are plenty of articles out there which discuss the differences between
-work cultures and even give great tipps about what to do and not to do in
+work cultures and also give handy tips about what to do and not to do in
 different cultures at work to not commit a blunder.
 
 What this book really makes different is that it does not simply explain
@@ -105,22 +108,22 @@ Evaluating: Direct Negative Feedback vs. Indirect negative Feedback
   - Direct
     - Negative feedback to a colleague is provided frankly, bluntly, honestly.
     - Negative messages stand alone, not softened by positive ones.
-    - Absolute descriptors are often used when critisizing.
+    - Absolute descriptors are often used when criticizing.
       (e.g. "totally inappropriate", "completely unprofessional")
-    - Critisizm may be given to an individual in front of a *group*.
+    - Criticism may be given to an individual in front of a *group*.
   - Indirect
     - Negative feedback to a colleague is provided softly, subtly,
       diplomatically.
     - Positive messages are used to wrap negative ones.
-    - Qualifying descriptors are often used when critisizing.
+    - Qualifying descriptors are often used when criticizing.
       (e.g. "sort of inappropriate", "slightly unprofessional")
-    - Critisizm is given only in private
+    - Criticism is given only in private
 
   Especially cultures that are at the same time low-context and
   direct-negative-feedback, like the US and UK, at first sight seem like a
   strange combination, but are well explained in this chapter.
 
-  What is more important when giving *good critisizm*? Making sure that it is
+  What is more important when giving *good criticism*? Making sure that it is
   conveyed in a polite way at the price of maybe being overlooked or not
   understood to full extent -- or conveying it in its clearest form, which also
   conveys a form of trust on the strength of the (work) relation?
@@ -221,7 +224,7 @@ Trusting: Task-Based vs. Relationship-Based
   increases trust on a personal level.
 
   Another highlight of this chapter is the "Peach vs. Coconut" principle:
-  People from different cultures might misinterpret friendlyness as too much of
+  People from different cultures might misinterpret friendliness as too much of
   an invitation for personal connection or an offer of friendship, which might
   look "fake" to them.
   In that regard, peach cultures are friendly and soft with people they have
@@ -233,7 +236,7 @@ Disagreeing: Confrontational vs. Avoids Confrontation
 
 : How do colleagues disagree?
 
-  - Controntational
+  - Confrontational
     - Disagreement and debate are positive for the team or organization.
     - Open confrontation is appropriate and will not negatively impact the
       relationship.
@@ -285,14 +288,14 @@ Erin addresses these worries in the introductory chapter:
 > After i published an online article on the differences among Asian cultures
 > [...], one reader commented, "Speaking of cultural differences leads us to
 > stereotype and therefore put individuals in boxes with 'general traits'.
-> Instead of talking about culture, it is importnat to judge people as
+> Instead of talking about culture, it is important to judge people as
 > individuals, not just products of their environment."
 
 This is indeed a good point, but her answer puts it in a great perspective:
 
 > If you go into every interaction assuming that culture doesn't matter, your
 > default mechanism will be to view others through **your own** cultural lens
-> and to judge or misjudge them accordintly.
+> and to judge or misjudge them accordingly.
 
 ## Summary
 
