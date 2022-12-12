@@ -442,10 +442,11 @@ div.sourceCode {
   text-align: center;
 }
 
-.centered-image img {
-  margin: auto;
+figure > img {
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.centered-image figcaption {
+figure > figcaption {
   text-align: center;
 }

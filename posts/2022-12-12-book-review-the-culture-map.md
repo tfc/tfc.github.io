@@ -56,9 +56,7 @@ one scale each.
 Every scale's extremes on the left and right describe opposing behavior/rules
 in certain scenarios:
 
-<div class="centered-image">
-  ![Cultural Traits on the 8 scales. ([source: erinmeyer.com](https://erinmeyer.com/mapping-out-cultural-differences-on-teams/))](/images/books/erin_meyer_multicultural_characteristics_chart.jpg)
-</div>
+![Cultural Traits on the 8 scales. ([source: erinmeyer.com](https://erinmeyer.com/mapping-out-cultural-differences-on-teams/))](/images/books/erin_meyer_multicultural_characteristics_chart.jpg)
 
 Each chapter of the book explains one of the scales.
 The advantage of the approach to looking at these traits in isolation and then
