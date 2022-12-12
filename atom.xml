@@ -8,8 +8,363 @@
         <name>Jacek Galowicz</name>
         <email>jacek@galowicz.de</email>
     </author>
-    <updated>2022-12-05T00:00:00Z</updated>
+    <updated>2022-12-12T00:00:00Z</updated>
     <entry>
+    <title>Book Review: The Culture Map</title>
+    <link href="https://blog.galowicz.de/2022/12/12/book-review-the-culture-map" />
+    <id>https://blog.galowicz.de/2022/12/12/book-review-the-culture-map</id>
+    <published>2022-12-12T00:00:00Z</published>
+    <updated>2022-12-12T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<!-- cSpell:words INSEAD Ringi -->
+<!-- cSpell:ignore erinmeyer -->
+<p>Why do American coworkers always communicate so clearly and directly, but at the
+same time criticize rather indirectly and cushioned?
+When do Asian coworkers finally jump in and say something in a meeting?
+How do German coworkers get done <em>anything</em> innovative in their fixated planning
+madness?
+After having experienced many strange situations in projects with people from
+around the world, I found Erin Meyer’s book
+<a href="https://amzn.to/3h7RAZ6">The Culture Map</a> to be so insightful that I would
+declare it a must-read for any software professional who works with or in
+international teams.</p>
+<!--more-->
+<div class="book-cover">
+<figure>
+<img src="/images/books/the-culture-map.jpg" alt="Book Cover of “The Culture Map”" />
+<figcaption aria-hidden="true">Book Cover of “The Culture Map”</figcaption>
+</figure>
+</div>
+<h2 id="book-author">Book &amp; Author</h2>
+<p>The book is originally from 2014 but got its new yellow cover in 2016, which
+is still called the first edition.
+It presents 8 handy chapters distributed over ~290 pages.</p>
+<p><a href="https://erinmeyer.com">Erin Meyer</a> is a professor at
+<a href="https://www.insead.edu/faculty-research/faculty/erin-meyer">INSEAD</a>, one of the
+world’s leading business schools.
+After having lived in many parts of the world and having helped global leaders
+to manage the complexities of cultural differences, she presents this amazing
+book that explains the cultural differences that she studied in striking
+clarity.</p>
+<h2 id="content-and-structure">Content and Structure</h2>
+<p>There are plenty of articles out there that discuss the differences between
+work cultures <em>per country</em> and also give handy tips about what to do and not to
+do in different cultures at work to not commit a blunder.</p>
+<p>What this book makes different is that it does not simply explain
+“Colleagues from country A are like this and colleagues from country B are like
+that”.
+Instead, it categorizes certain <em>traits</em> which are common among all humans, and
+puts each work culture in relation to each other on one scale for each trait.</p>
+<h3 id="the-eight-scales">The Eight Scales</h3>
+<p>Erin argues that there are eight different traits that can be projected onto
+one scale each.
+Every scale’s extremes on the left and right describe opposing behavior/rules
+in certain scenarios:</p>
+<figure>
+<img src="/images/books/erin_meyer_multicultural_characteristics_chart.jpg" alt="Cultural Traits on the 8 scales. (source: erinmeyer.com)" />
+<figcaption aria-hidden="true">Cultural Traits on the 8 scales. (<a href="https://erinmeyer.com/mapping-out-cultural-differences-on-teams/">source: erinmeyer.com</a>)</figcaption>
+</figure>
+<p>Each chapter of the book explains one of the scales.
+The advantage of the approach to looking at these traits in isolation and then
+putting them together for each culture is that each chapter is short,
+comprehensible, and easy to memorize.
+On top of that, it is relatively simple to assess cultures that are not treated
+in this book on this map of scales.</p>
+<p>Apart from per-country culture, many companies have developed their own work
+culture which may be different from companies in the same country, but can be
+explained quickly and efficiently to outsiders.</p>
+<p>Let’s get to these traits.
+I will briefly summarize them and maybe give some highlights, but apart from a
+few highlights, won’t cover the long list of practicable advice from the full
+book.
+Every trait is also presented with a scale that positions each country according
+to its culture.</p>
+<dl>
+<dt>1.) Communicating: Low-Context vs. High-Context</dt>
+<dd>
+<p>Different cultures have a different perspectives on what <em>good communication</em>
+means:</p>
+</dd>
+</dl>
+<ul>
+<li><u>Low-Context</u>:
+<ul>
+<li>Precise, simple, clear.</li>
+<li>Messages are expressed and understood at face value.</li>
+<li>Repetition is appreciated if it helps clarify the communication.</li>
+</ul></li>
+<li><u>High-Context</u>:
+<ul>
+<li>Sophisticated, nuanced, and layered.</li>
+<li>Messages are both spoken and read between the lines.</li>
+<li>Messages are often implied but not plainly expressed.</li>
+</ul></li>
+</ul>
+<p>An interesting perspective covering this scale is that the low-context
+communication style could be taken as an affront to high-context people
+because it can make them feel “This simple and redundant language gives me the
+feeling that they think I am stupid.” – while the other way around might be
+like “This layered language gives me the feeling that I am not trustworthy,
+otherwise they would just speak straight.”, or “If the matter was important to
+them, they would be more direct about it.”</p>
+<p>A rule of thumb is that humans from countries with very old history and to
+some extent isolation share a lot of context in their language, giving them
+the possibility to say more with less. People with very different backgrounds
+don’t have as much common context, hence the need for more precise
+communication.</p>
+<dl>
+<dt>2.) Evaluating: Direct Negative Feedback vs. Indirect Negative Feedback</dt>
+<dd>
+<p>This scale is about different ways to give <em>negative</em> feedback:</p>
+</dd>
+</dl>
+<ul>
+<li><u>Direct</u>
+<ul>
+<li>Negative feedback to a colleague is provided frankly, bluntly, and
+honestly.</li>
+<li>Negative messages stand alone, not softened by positive ones.</li>
+<li>Absolute descriptors are often used when criticizing.
+(e.g. “totally inappropriate”, “completely unprofessional”)</li>
+<li>Criticism may be given to an individual in front of a <em>group</em>.</li>
+</ul></li>
+<li><u>Indirect</u>
+<ul>
+<li>Negative feedback to a colleague is provided softly, subtly,
+and diplomatically.</li>
+<li>Positive messages are used to wrap negative ones.</li>
+<li>Qualifying descriptors are often used when criticizing.
+(e.g. “sort of inappropriate”, “slightly unprofessional”)</li>
+<li>Criticism is given only in private</li>
+</ul></li>
+</ul>
+<p>Especially cultures that are at the same time low-context and
+direct-negative-feedback, like the US and UK, at first sight, seem like a
+strange combination but are well explained in this chapter.</p>
+<p>What is more important when giving <em>good criticism</em>? Making sure that it is
+conveyed politely at the price of maybe being overlooked or not
+understood to the full extent – or conveying it in its clearest form, which
+also emphasizes a form of trust on the strength of the (work) relation?</p>
+<dl>
+<dt>3.) Persuading: Principles-First vs. Applications-First</dt>
+<dd>
+<p>Here, it is about how new ideas and approaches are explained to an audience:</p>
+</dd>
+</dl>
+<ul>
+<li><u>Principles First</u>
+<ul>
+<li>Individuals have been trained to first develop the theory or complex
+concept before presenting a fact, statement, or opinion.</li>
+<li>The preference is to begin a message or report by building up a
+theoretical argument before moving on to a conclusion.</li>
+<li>The conceptual principles underlying each situation are valued.</li>
+</ul></li>
+<li><u>Applications First</u>
+<ul>
+<li>Individuals are trained to begin with a fact, statement, or opinion and
+later add concepts to back up or explain the conclusion as necessary.</li>
+<li>The preference is to begin a message or report with an executive summary
+or bullet points.</li>
+<li>Discussions are approached in a practical, concrete manner.</li>
+<li>Theoretical or philosophical discussions are avoided in a business
+environment.</li>
+</ul></li>
+</ul>
+<p>I found this distinction not only to be valid when talking to humans of
+different cultures but also when talking to professionals from different
+departments.</p>
+<p>This part of the model does not fully apply to Asian cultures, to which the
+chapter devotes another subsection.</p>
+<dl>
+<dt>4.) Leading: Egalitarian vs. Hierarchical</dt>
+<dd>
+<p>Different cultures prefer different leading styles:</p>
+</dd>
+</dl>
+<ul>
+<li><u>Egalitarian</u>
+<ul>
+<li>The ideal distance between a boss and a subordinate is low.</li>
+<li>The best boss is a facilitator among equals.</li>
+<li>Organizational structures are <em>flat</em>.</li>
+<li>Communication often skips hierarchical lines.</li>
+</ul></li>
+<li><u>Hierarchical</u>
+<ul>
+<li>The ideal distance between a boss and a subordinate is high.</li>
+<li>The best boss is a strong director who leads from the front.</li>
+<li><em>Status</em> is important.</li>
+<li>Organizational structures are <em>multilayered and fixed</em>.</li>
+<li>Communication follows set hierarchical lines.</li>
+</ul></li>
+</ul>
+<p>This chapter is especially interesting for the reason that it is easy to
+accidentally undermine someone’s feeling of authority by e.g. skipping the
+hierarchy when mailing questions to people etc.
+Also, in hierarchical cultures, it may be pointless to ask about peoples’
+opinions in the presence of their boss.
+This chapter is full of examples and advice.</p>
+<dl>
+<dt>5.) Deciding: Consensual vs. Top-Down</dt>
+<dd>
+<p>How are decisions formed in organizations?</p>
+</dd>
+</dl>
+<ul>
+<li><u>Consensual</u>: Decisions are made in groups through unanimous agreement.</li>
+<li><u>Top-Down</u>: Decisions are made by individuals (usually the boss).</li>
+</ul>
+<p>The principle is straightforward but the most interesting case are cultures
+that combine strict hierarchy with consensual decision-making.
+The strongest example of this is Japan with its <a href="https://en.wikipedia.org/wiki/Japanese_management_culture#Managerial_style">Ringi-Process</a>, but this is only the strongest
+example of many (Germany also cultivates a bit of this mixture).</p>
+<p>My highlight of this chapter is the <u>big D vs. little d</u> model that
+helps explain to people from cultures that are at opposite ends of this scale,
+what kind of decision is needed or made when.
+When a <em>big D</em> decision is made, then it is to be seen as strict, while a
+<em>little d</em> decision allows for flexibility even after the decision was made.
+This distinction helps set expectations of groups that appear
+chaotic or inflexible to each other.
+The big D vs. little d model helped in the collaboration between US-American
+and German teams in one of the book’s examples.
+I really felt this one.</p>
+<dl>
+<dt>6.) Trusting: Task-Based vs. Relationship-Based</dt>
+<dd>
+<p>How do people build trust?</p>
+</dd>
+</dl>
+<ul>
+<li><u>Task-Based</u>
+<ul>
+<li>Trust is built through business-related activities.</li>
+<li>Work relationships are built and dropped easily, based on the practicality
+of the situation.</li>
+<li>“You do good work consistently, you are reliable, I enjoy working with
+you, I trust you.”</li>
+</ul></li>
+<li><u>Relationship-Based</u>
+<ul>
+<li>Trust is built through sharing meals, evening drinks, and visits to the
+coffee machine.</li>
+<li>Work relationships build up slowly over the long term.</li>
+<li>“I’ve seen who you are at a deep level, I’ve shared personal time with
+you, I know others well who trust you, I trust you.”</li>
+</ul></li>
+</ul>
+<p>I felt this difference myself while working for US-American companies that
+also have for example Indian offices.
+Collaborating with my Indian colleagues got much better after getting to
+know them in person at dinner, while I got to know my American colleagues only
+at office times.
+The book also explains that especially in Asian cultures it can be beneficial
+to drink together:
+Having seen each other with guards down increases trust on a personal level.</p>
+<p>Another highlight of this chapter is the <u>Peach vs. Coconut</u> principle:
+People from different cultures might misinterpret friendliness as too much of
+an invitation for a personal connection or an offer of friendship, which might
+look “fake” to them.
+In that regard, <em>peach</em> cultures are friendly and soft with people they have
+just met, but the real self stays protected professionally. <em>Coconut</em> cultures
+in contrast present a hard protecting shell at first but an even softer core
+inside (once you got through the shell).</p>
+<dl>
+<dt>7.) Disagreeing: Confrontational vs. Avoids Confrontation</dt>
+<dd>
+<p>How do colleagues disagree?</p>
+</dd>
+</dl>
+<ul>
+<li><u>Confrontational</u>
+<ul>
+<li>Disagreement and debate are positive for the team or organization.</li>
+<li>Open confrontation is appropriate and will not negatively impact the
+relationship.</li>
+</ul></li>
+<li><u>Avoids Confrontation</u>
+<ul>
+<li>Disagreement and debate are negative for the team or organization.</li>
+<li>Open confrontation is inappropriate and will break group harmony or
+negatively impact the relationship.</li>
+</ul></li>
+</ul>
+<p>Confrontational cultures are also emotionally more expressive, which can be
+overwhelming for people of different cultures – what looks like a normal
+discussion to one can seem to another like a fight that is about to break out.</p>
+<p>As the styles of disagreeing and decision-making can cause incompatibilities,
+especially in big international companies, the chapter explains how to deal
+with this on large scale, and how to present decisions/discussions to a mixed
+audience.</p>
+<dl>
+<dt>8.) Scheduling: Linear-Time vs. Flexible-Time</dt>
+<dd>
+<p>How do cultures approach plans, projects, and appointments?</p>
+</dd>
+</dl>
+<ul>
+<li><u>Linear Time</u>
+<ul>
+<li>Project steps are approached sequentially, completing one task
+before beginning the next.</li>
+<li>One thing at a time. No interruptions.</li>
+<li>The focus is on the deadline and sticking to the schedule.</li>
+<li>Emphasis is on promptness and good organization over flexibility.</li>
+</ul></li>
+<li><u>Flexible Time</u>
+<ul>
+<li>Project steps are approached fluidly, changing tasks as opportunities
+arise.</li>
+<li>Many things are dealt with at once and interruptions are accepted.</li>
+<li>The focus is on adaptability, and flexibility is valued over organization.</li>
+</ul></li>
+</ul>
+<p>Living in Germany, I regularly see two different kinds of linear planning
+extremes:</p>
+<ul>
+<li>Planning everything down to the smallest detail.</li>
+<li>Sticking to a plan no matter what, even if the circumstances that led to
+this plan, changed.</li>
+</ul>
+<p>Planning has advantages, but flexibility has advantages (hello lean and
+scrum), too, and different cultures picked their favorite.
+It seems that the political history of countries has affected the planning
+mentality of their citizens.</p>
+<p>This chapter puts some effort into giving tips on how to combine both in
+multicultural companies.</p>
+<h3 id="arent-stereotypes-racist">Aren’t Stereotypes Racist?</h3>
+<p>For some, the book may trigger the question, of whether books like this may
+propagate a school of thought that facilitates box-thinking or even racism.
+Erin addresses these worries in the introductory chapter:</p>
+<blockquote>
+<p>After I published an online article on the differences among Asian cultures
+[…], one reader commented, “Speaking of cultural differences leads us to
+stereotype and therefore put individuals in boxes with ‘general traits’.
+Instead of talking about culture, it is important to judge people as
+individuals, not just products of their environment.”</p>
+</blockquote>
+<p>This is indeed a good point, but her answer puts it in a great perspective:</p>
+<blockquote>
+<p>If you go into every interaction assuming that culture doesn’t matter, your
+default mechanism will be to view others through <em>your</em> cultural lens
+and to judge or misjudge them accordingly.</p>
+</blockquote>
+<h2 id="summary">Summary</h2>
+<p>As so often with books about culture and psychology, there are no big surprises
+in it, or nothing <em>completely</em> new.
+The value I took out of this book is that it puts everything in a structured
+perspective that I would not have come up with myself.
+After reading through it, I felt inspired and empowered on how to deal with
+cultural differences in the future, and get more out of intercultural
+collaboration!</p>
+<p>Apart from cultural differences, many people within the same/your country
+show different traits that can be found on the presented scales, too.
+It helps make sense of behavior that could otherwise be considered
+strange.
+It is easier to show empathy when you understand where people are coming from.</p>
+<p>I declare this book a must-read for every (not only) software engineer
+professional who works internationally.</p>]]></summary>
+</entry>
+<entry>
     <title>Book Review: A Philosophy of Software Design</title>
     <link href="https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design" />
     <id>https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design</id>
@@ -2579,297 +2934,6 @@ Do the <code>reinterpret_cast</code> only if it is really inevitable, and even t
 <p><code>reinterpret_cast</code>-<code>static_cast</code> <em>chains</em> will not make your code prettier.
 As Stroustrup states in his original C++ books, the C++ style casts are <em>intentionally ugly</em>, because they are also potentionally <strong>dangerous</strong>.</p>
 <p><em>EDIT on 2017-01-27: Changed the type from <code>uint64_t</code> to <code>std::uintptr_t</code>, as a comment on <a href="https://www.reddit.com/r/cpp/comments/5pju7q/a_reinterpret_cast_trap/">reddit.com/r/cpp</a> suggested. Thanks for the input!</em></p>]]></summary>
-</entry>
-<entry>
-    <title>Python Style printf for C++ with pprintpp</title>
-    <link href="https://blog.galowicz.de/2016/11/05/python_style_printf_for_cpp" />
-    <id>https://blog.galowicz.de/2016/11/05/python_style_printf_for_cpp</id>
-    <published>2016-11-05T00:00:00Z</published>
-    <updated>2016-11-05T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<!-- cSpell:disable -->
-<p>The C++ STL comes with <em>stream</em> style character output, which is an alternative to the classic <code>printf</code> like format function collection of the C library.
-For different reasons, some C++ programmers still stick to <code>printf</code> like formatting.
-This article demonstrates the <code>pprintpp</code> <a href="https://github.com/tfc/pprintpp">(open source, and available on Github)</a> library, which tries to make <code>printf</code> use comfortable and safe while avoiding any runtime overhead.</p>
-<!--more-->
-<h2 id="c-streams-vs.-printf">C++ Streams vs. <code>printf</code></h2>
-<p>So, I am presenting a <code>printf</code> frontend library which tries to enhance it.
-But what is wrong with <code>printf</code>?
-Let’s compare it with C++ stream style printing in different situations:</p>
-<h3 id="round-1-inconvenience">Round 1: Inconvenience</h3>
-<p>Consider the following simple program:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cstdio&gt;</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, </span><span class="sc">%0.8f</span><span class="st">, </span><span class="sc">%0.8lf</span><span class="st">, </span><span class="sc">%s\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="dv">123</span><span class="bu">u</span><span class="op">,</span> <span class="bn">0x123</span><span class="bu">u</span><span class="op">,</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">2.0</span><span class="op">,</span> <span class="st">&quot;Hello World&quot;</span><span class="op">);</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>It’s simply no fun to tell <code>printf</code> of which type all variables are.
-The compiler <em>knows</em> the types already, so why must the programmer type the type names <em>again</em>?</p>
-<p>C++ streams fix this, as the <code>operator&lt;&lt;</code> is properly overloaded for any type, which selects the right formatting method automatically.
-Let’s have a look how to get exactly the same output with C++ streams:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cstdio&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%u</span><span class="st">, </span><span class="sc">%x</span><span class="st">, </span><span class="sc">%0.8f</span><span class="st">, </span><span class="sc">%0.8lf</span><span class="st">, </span><span class="sc">%s\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="dv">123</span><span class="bu">u</span><span class="op">,</span> <span class="bn">0x123</span><span class="bu">u</span><span class="op">,</span> <span class="fl">1.0</span><span class="bu">f</span><span class="op">,</span> <span class="fl">2.0</span><span class="op">,</span> <span class="st">&quot;Hello World&quot;</span><span class="op">);</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="dv">123</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> <span class="bu">std::</span>hex<span class="op"> &lt;&lt;</span> <span class="bn">0x123</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> <span class="bu">std::</span>fixed<span class="op"> &lt;&lt;</span> <span class="bu">std::</span>setprecision<span class="op">(</span><span class="dv">6</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="fl">1.0</span><span class="bu">f</span> <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> <span class="fl">2.0</span> <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> <span class="st">&quot;Hello World</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">;</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>All type safety aside, at this point most likely everyone will agree that this is, from a readability and comfort perspective, <em>no</em> improvement over to <code>printf</code>.</p>
-<blockquote>
-<p>Although I must say that I do not format floating point numbers every day and had to guess here and there while being too lazy to look at the documentation.
-In order to see if the <code>printf</code> format works as I hoped, I had to run the program.
-At the same time, the C++ iostream format just did not compile when I did it wrong!</p>
-</blockquote>
-<h3 id="round-2-type-pitfalls">Round 2: Type Pitfalls</h3>
-<p>When compiling the following program on a 64-bit machine, everything is fine:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%ld\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="kw">static_cast</span><span class="op">&lt;</span><span class="dt">uint64_t</span><span class="op">&gt;(</span><span class="dv">123</span><span class="op">));</span></span></code></pre></div>
-<p>Compiling it on a 32-bit machine, the compiler quickly comes up with errors like:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">error:</span> format <span class="st">&#39;%ld&#39;</span> expects argument of type <span class="st">&#39;long int&#39;</span>, but argument 2 has type <span class="st">&#39;uint64_t {aka long long unsigned int}&#39;</span> [-Werror=format=]</span></code></pre></div>
-<p>So on 32bit systems, one should better have used <code>%lld</code>.
-This feels needlessly complicated because in both cases, the compiler knows the *@!#* type, but nevertheless the programmer has to deal with this now.</p>
-<p>There is a portable solution: <code>PRIu64</code>.
-The header file <cinttypes> brings a lot of PRI macros.
-Using this here looks like the following:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>printf<span class="op">(</span><span class="st">&quot;%&quot;</span> PRIu64 <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="kw">static_cast</span><span class="op">&lt;</span><span class="dt">uint64_t</span><span class="op">&gt;(</span><span class="dv">123</span><span class="op">));</span></span></code></pre></div>
-<p>All the <code>printf</code> fans who laughed at the ugliness of C++ streams, now again look a <em>little bit</em> like fools.</p>
-<h3 id="round-3-repetition">Round 3: Repetition</h3>
-<p>There are certain types which are a data composition of multiple values.
-A very typical example are <em>vectors</em> of data, e.g. geometric vectors:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> vec3d <span class="op">{</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">double</span> x<span class="op">;</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">double</span> y<span class="op">;</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">double</span> z<span class="op">;</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code></pre></div>
-<p>When printing some game state or similar, one usually wants to see vectors formatted like <code>(1.000, 2.000, 0.000)</code>.</p>
-<p>Okay, easy:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>printf<span class="op">(</span><span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">)</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span> v<span class="op">.</span>x<span class="op">,</span> v<span class="op">.</span>y<span class="op">,</span> v<span class="op">.</span>z<span class="op">);</span></span></code></pre></div>
-<p>What if there are a lot of vectors?</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>printf<span class="op">(</span><span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">), &quot;</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>       <span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">), &quot;</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>       <span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">)</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>       v1<span class="op">.</span>x<span class="op">,</span> v1<span class="op">.</span>y<span class="op">,</span> v1<span class="op">.</span>z<span class="op">,</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>       v2<span class="op">.</span>x<span class="op">,</span> v2<span class="op">.</span>y<span class="op">,</span> v2<span class="op">.</span>z<span class="op">,</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>       v2<span class="op">.</span>x<span class="op">,</span> v3<span class="op">.</span>y<span class="op">,</span> v3<span class="op">.</span>z<span class="op">);</span></span></code></pre></div>
-<p>Okay, it starts to get very repetitive.</p>
-<blockquote>
-<p>And we have a bug: I mistyped the <code>x</code> value of the third vector.
-Would you have seen it in a code review?</p>
-</blockquote>
-<p>C++ iostream users would just overload <code>operator&lt;&lt;</code> for <code>std::ostream</code> <strong>once</strong> and be done with this forever:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>ostream<span class="op">&amp;</span> <span class="kw">operator</span><span class="op">&lt;&lt;(</span><span class="bu">std::</span>ostream<span class="op"> &amp;</span>os<span class="op">,</span> <span class="at">const</span> vec3d <span class="op">&amp;</span>v<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> os <span class="op">&lt;&lt;</span> <span class="st">&quot;(&quot;</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> <span class="bu">std::</span>setprecision<span class="op">(</span><span class="dv">4</span><span class="op">)</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> v<span class="op">.</span>x <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span> <span class="op">&lt;&lt;</span> v<span class="op">.</span>y <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span> <span class="op">&lt;&lt;</span> v<span class="op">.</span>z</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>              <span class="op">&lt;&lt;</span> <span class="st">&quot;)&quot;</span><span class="op">;</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>Printing multiple vectors now looks like this:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> v1 <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span> <span class="op">&lt;&lt;</span> v2 <span class="op">&lt;&lt;</span> <span class="st">&quot;, &quot;</span> <span class="op">&lt;&lt;</span> v3 <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span><span class="op">;</span></span></code></pre></div>
-<p><code>printf</code> users may start defining helpful macros:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define PRIvec3d       </span><span class="st">&quot;(</span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">, </span><span class="sc">%0.3lf</span><span class="st">)&quot;</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#define UNPACKvec3d</span><span class="op">(</span>v<span class="op">)</span><span class="pp"> </span><span class="op">(</span>v<span class="op">).</span>x<span class="op">,</span><span class="pp"> </span><span class="op">(</span>v<span class="op">).</span>y<span class="op">,</span><span class="pp"> </span><span class="op">(</span>v<span class="op">).</span>z</span></code></pre></div>
-<p>…and print their vectors like this:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>printf<span class="op">(</span>PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;, &quot;</span> PRIvec3d <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">,</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>       UNPACKvec3d<span class="op">(</span>v1<span class="op">),</span> UNPACKvec3d<span class="op">(</span>v2<span class="op">),</span> UNPACKvec3d<span class="op">(</span>v3<span class="op">));</span></span></code></pre></div>
-<p>In my opinion, C++ streams clearly win at this point.</p>
-<h2 id="being-stuck-with-printf.-for-reasons.">Being Stuck with <code>printf</code>. For Reasons.</h2>
-<p>Situations exist, where developers really can’t use stream printing.
-The reasons for those situations might be technical, but there are also social reasons:
-What are you going to do if you work in a team with <code>printf</code> dinosaurs, who <strong>just like it</strong>, and then it becomes a project convention to use <code>printf</code>?
-Right, nothing.</p>
-<p>I found myself in such a situation.
-And I made format string mistakes all the time, which led me to think about how to <em>fix</em> <code>printf</code> by removing a whole class of bug sources.
-Bjarne Stroustrupi’s C++ book proposes a type safe <code>printf</code> (Section 28.6.1), which is implemented using variadic templates.
-My team did not find this solution acceptable because it generates <em>custom code</em> for every <code>printf</code> invocation.</p>
-<h2 id="the-idea">The Idea</h2>
-<p>When using <code>printf</code>, the programmer asks himself “What is the type of the variable I am going to print?”, and as soon as that question is answered, the next question is “What is the right <code>%</code> format string for this type?”.
-The compiler can easily answer these questions.
-The next thing is: How to make the compiler do that, without generating additional runtime code?</p>
-<p>In the past, I wrote about <a href="/2016/05/08/compile_time_type_lists">type lists which can be used as compile-time data structures for metaprograms</a>.
-And building on top of that, I wrote about <a href="/2016/05/14/converting_between_c_strings_and_type_lists">transforming string literals to type lists, doing something with them and transforming back to string literals</a>.
-Understanding the ideas from those articles is crucial for understanding the code of this library.</p>
-<p>After a lot of inspiring discussions with my colleagues, we iterated towards the idea of having a compile time function, which takes a simplified format string, and a list of the types of the parameters the user provided.
-The syntax of the simplified format string was inspired by Python style printing.
-In Python, you can do the following:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>python shell <span class="op">&gt;&gt;&gt;</span> <span class="st">&quot;some </span><span class="sc">{}</span><span class="st"> with some var </span><span class="sc">{}</span><span class="st">&quot;</span>.<span class="bu">format</span>(<span class="st">&quot;string&quot;</span>, <span class="dv">123</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co">&#39;some string with some var 123&#39;</span></span></code></pre></div>
-<p>Being inspired from that, I hoped to be able to come up with something like…</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>printf<span class="op">(</span>metaprog_result<span class="op">(</span><span class="st">&quot;some </span><span class="sc">{}</span><span class="st"> with some var </span><span class="sc">{}</span><span class="st">&quot;</span><span class="op">,</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                       typelist<span class="op">&lt;</span><span class="at">const</span> <span class="dt">char</span> <span class="op">*,</span> <span class="dt">int</span><span class="op">&gt;),</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>       <span class="st">&quot;string&quot;</span><span class="op">,</span> <span class="dv">123</span><span class="op">);</span></span></code></pre></div>
-<p>…which collapses to the following during compile time:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>printf<span class="op">(</span><span class="st">&quot;some </span><span class="sc">%s</span><span class="st"> with some var </span><span class="sc">%d</span><span class="st">&quot;</span><span class="op">,</span> <span class="st">&quot;string&quot;</span><span class="op">,</span> <span class="dv">123</span><span class="op">);</span></span></code></pre></div>
-<p>With this design, it is also possible to use the meta-program as a frontend for not only <code>printf</code>, but also <code>sprintf</code>, <code>fprintf</code>, etc.</p>
-<h3 id="first-step-defining-an-autoformat-macro">First Step: Defining an <code>autoformat</code> Macro</h3>
-<p>The first problem is, that the parameters <code>"string", 123</code> need to be both present in the <code>printf</code> function call as parameters, and at the same time, a type list <code>&lt;const char*, int&gt;</code> needs to be extracted out of them.
-The only way I was able to come up with was a preprocessor macro:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#define AUTOFORMAT</span><span class="op">(</span>fmtstr<span class="op">,</span><span class="pp"> </span><span class="op">...)</span><span class="pp"> </span><span class="op">\</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="pp">    </span><span class="op">({</span><span class="pp"> </span><span class="op">\</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="pp">        </span><span class="kw">using</span><span class="pp"> </span>paramtypes<span class="pp"> </span><span class="op">=</span><span class="pp"> </span>create_typelist_from_params<span class="op">(</span><span class="ot">__VA_ARGS__</span><span class="op">));</span><span class="pp"> </span><span class="op">\</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="pp">        </span>return_preprocessed_format_str<span class="op">(</span>fmtstr<span class="op">,</span><span class="pp"> </span>paramtypes<span class="op">);</span><span class="pp"> </span><span class="op">\</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="pp">    </span><span class="op">})</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#define pprintf</span><span class="op">(</span>fmtstr<span class="op">,</span><span class="pp"> </span><span class="op">...)</span><span class="pp"> </span><span class="op">\</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="pp">    </span>printf<span class="op">(</span>AUTOFORMAT<span class="op">(</span>fmtstr<span class="op">,</span><span class="pp"> </span><span class="ot">__VA_ARGS__</span><span class="op">),</span><span class="pp"> </span>__VA_ARGS<span class="op">)</span></span></code></pre></div>
-<p>This way it is possible to extract a type list with all the parameter types, feed it into a metaprogram which preprocesses and transforms the simplified format string, and then puts a <code>printf</code> compatible result into <code>printf</code>.
-And that would then happen without adding any portion of additional runtime code.</p>
-<p>Unfortunately, in C++ (even including C++17) there is currently no other way to do this without C preprocessor macros.</p>
-<h3 id="second-step-obtaining-the-type-list">Second Step: Obtaining the Type List</h3>
-<p>What we have: <code>"some string", 123</code>.
-What we want: <code>const char*, int</code>.</p>
-<p>In the <code>AUTOFORMAT</code> macro, the parameters, separated by commas, are available via <code>__VA_ARGS__</code>.
-These can be put into a template function call, which deduces the types:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> <span class="op">...</span> Ts<span class="op">&gt;</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="dt">make_t</span><span class="op">&lt;</span>Ts<span class="op">...&gt;</span> tie_types<span class="op">(</span>Ts<span class="op">...);</span></span></code></pre></div>
-<p>This function does not even need to be defined because it is only used in a <code>decltype</code> environment.
-No runtime code will lever call it.
-Within the <code>pprintf</code> macro, it can now be used the following way:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> paramtypes <span class="op">=</span> <span class="kw">decltype</span><span class="op">(</span>tie_types<span class="op">(</span>__VA_ARGS__<span class="op">));</span></span></code></pre></div>
-<p><code>paramtypes</code> is now a type list.
-<code>make_t&lt;const char*, int&gt;</code> evaluates to <code>tl&lt;const char*, tl&lt;int, null_t&gt;&gt;</code> (Read more about how this in particular works in the <a href="/2016/05/08/compile_time_type_lists">type list article</a>).</p>
-<h3 id="third-step-transforming-the-simplified-format-string">Third Step: Transforming the Simplified Format String</h3>
-<p>Having the simplified format string with <code>{}</code> braces, and the list of types the user provided as <code>printf</code> arguments, this can be fed to some algorithm which constructs a <code>printf</code> compatible format string.</p>
-<p>The following statement will run the metaprogram function <code>autoformat_t</code>, which results in a struct with a static member function <code>str()</code>, which returns the <code>printf</code> compatible result string:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="dt">autoformat_t</span><span class="op">&lt;</span>strprov<span class="op">,</span> paramtypes<span class="op">&gt;::</span>str<span class="op">();</span></span></code></pre></div>
-<p>What <code>autoformat_t</code> does, is basically:</p>
-<ol type="1">
-<li>Iterate through the simplified format string.</li>
-<li>For every opening <code>{</code> brace, find the closing <code>}</code> brace.</li>
-<li>For every pair of braces, take the right argument type from the type list.</li>
-<li>Map from <code>type</code> to <code>%foo</code> format string (There is a lookup table of those), and substitute the braces by the format string piece.</li>
-</ol>
-<p>The brace match search algorithm looks really similar to the <a href="/2016/06/16/cpp_template_compile_time_brainfuck_interpreter">function of the compile-time brainfuck interpreter, which searches for matching <code>[]</code> pairs</a>.</p>
-<h3 id="detail-features">Detail Features</h3>
-<p>Just looking for <code>{}</code> braces and substituting them by format string pieces is not enough.
-There are different cases and use cases which must be handled:</p>
-<h4 id="printing-strings">Printing Strings</h4>
-<p>When a programmer writes <code>pprintf("Buffer address: {}\n", some_char_buffer);</code>, it is <strong>not</strong> wise to substitute the <code>{}</code> with <code>%s</code>.
-As the example already suggests, the parameter is of type <code>char*</code>, but it is not a null terminated string.</p>
-<p>Different implementation strategies can be applied:</p>
-<ol type="1">
-<li>Let the user cast the parameter to <code>void*</code>, then <code>autoformat_t</code> will substitute the braces with <code>%p</code> to print the address of the buffer.</li>
-<li>Let the user additionally type <code>{s}</code> between the braces, so <code>autoformat_t</code> knows that the user <strong>really</strong> wants to print it as a string.</li>
-</ol>
-<p>I chose method <em>2</em>.
-Printing a string now looks like this:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pprintf<span class="op">(</span><span class="st">&quot;Some string: {s}&quot;</span><span class="op">,</span> <span class="st">&quot;Hello World&quot;</span><span class="op">);</span></span></code></pre></div>
-<h4 id="formatting-integers-as-hex-numbers">Formatting Integers as Hex Numbers</h4>
-<p>When a programmer writes <code>pprintf("Some hex number: {}", 0x123);</code>, there must be some possibility to express “I want this integer printed as hex number instead of a decimal number”.</p>
-<p>I chose to let the user provide this information between the braces by writing <code>{x}</code>.
-This way any integer of any size will be printed correctly as <code>%x</code>, or <code>%lx</code>, or <code>%llx</code>.</p>
-<p><strong>Example</strong>: <code>pprintf("{x}", 0x123);</code> results in <code>printf("%x", 0x123);</code></p>
-<h4 id="adding-additional-format-info">Adding Additional Format Info</h4>
-<p>What if the user wants to print a <code>double</code> variable, but also needs to specify the precision?</p>
-<p>In that case, <code>autoformat_t</code> will just take anything which is not an <code>x</code> or <code>s</code> (as used as a special specifier for string or hex number formatting) and put it between the <code>%</code> and the <code>f</code> or <code>lf</code> for doubles.
-This works for any type.</p>
-<p>This strategy is applied to all types.
-This way it is possible to tamper with the indentation, precision, etc. whatever <code>printf</code> supports for which type.</p>
-<p><strong>Example</strong>: <code>pprintf("{0.3}", 1.23);</code> results in <code>printf("%0.3lf", 1.23);</code></p>
-<h4 id="printing-actual-braces">Printing Actual <code>{}</code> Braces</h4>
-<p>If the user wants to print actual <code>{}</code> braces, it must be possible to mask them somehow.</p>
-<p>If <code>autoformat_t</code> runs over an opening brace but finds it masked with <code>\</code>, it will ignore it.
-The closing brace is ignored already because the closing brace search function is not called.</p>
-<p>However, there are actually 2 backslashes needed because <code>\</code> alone does not result in an actual “" string part.
-The backslash must be masked itself, so only <code>\\{</code> will result in the <code>autoformat_t</code> function seeing a <code>\{</code>.</p>
-<p><strong>Example</strong>: <code>pprintf("var in braces: \\{ {} }", 123);</code> results in <code>printf("var in braces: { %d }", 123);</code>
-#### Catching Brace Mismatches</p>
-<p>The meta-program refuses to compile if…</p>
-<ul>
-<li>it does not find a closing brace for an opening one.</li>
-<li>it finds nested braces <code>{ {} }</code>, in which case it looks probable that the user wanted to mask the outer pair.</li>
-<li>it finds more <code>{}</code> placeholders than parameters provided by the user.</li>
-<li>it finds less <code>{}</code> placeholders than parameters provided by the user.</li>
-</ul>
-<h3 id="the-type-to-format-string-lookup-table">The Type-to-Format-String Lookup Table</h3>
-<p>All types are cleaned from any <code>const</code> etc. noise, and then fed into the <code>type2fmt</code> function:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">;</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Integral types</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">char</span><span class="op">&gt;</span>                <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;c&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">short</span><span class="op">&gt;</span>               <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;d&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">int</span><span class="op">&gt;</span>                 <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;d&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">long</span> <span class="dt">int</span><span class="op">&gt;</span>            <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;l&#39;</span><span class="op">,</span> <span class="ch">&#39;d&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">long</span> <span class="dt">long</span> <span class="dt">int</span><span class="op">&gt;</span>       <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;l&#39;</span><span class="op">,</span> <span class="ch">&#39;l&#39;</span><span class="op">,</span> <span class="ch">&#39;d&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">unsigned</span> <span class="dt">char</span><span class="op">&gt;</span>       <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;u&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">unsigned</span> <span class="dt">short</span><span class="op">&gt;</span>      <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;u&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">unsigned</span><span class="op">&gt;</span>            <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;u&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">unsigned</span> <span class="dt">long</span><span class="op">&gt;</span>       <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;l&#39;</span><span class="op">,</span> <span class="ch">&#39;u&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">unsigned</span> <span class="dt">long</span> <span class="dt">long</span><span class="op">&gt;</span>  <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;l&#39;</span><span class="op">,</span> <span class="ch">&#39;l&#39;</span><span class="op">,</span> <span class="ch">&#39;u&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co">// Floating point</span></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;</span>  <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;f&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="dt">double</span><span class="op">&gt;</span> <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;l&#39;</span><span class="op">,</span> <span class="ch">&#39;f&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a><span class="co">// Pointers</span></span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span><span class="bu">std::</span>nullptr_t<span class="op">&gt;</span> <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;p&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">typename</span> T<span class="op">&gt;</span> <span class="kw">struct</span> type2fmt<span class="op">&lt;</span>T<span class="op">*&gt;</span>   <span class="op">{</span> <span class="kw">using</span> type <span class="op">=</span> <span class="dt">char_tl_t</span><span class="op">&lt;</span><span class="ch">&#39;p&#39;</span><span class="op">&gt;;</span> <span class="op">};</span></span></code></pre></div>
-<p><code>type2fmt</code> will then return a character type list, which can be used to compose the right format string for <code>printf</code>.</p>
-<p>Note that the 32bit/64bit safety comes from here.
-For 64bit systems, <code>uint64_t</code> is an <code>unsigned long</code>, while it is an <code>unsigned long long</code> on 32bit systems.
-When the user writes <code>pprintf("Some 64bit unsigned: {}", uint64_t(123));</code>, the compiler will go through all the typedef aliases, and boil the type down to <code>unsigned long</code>, or <code>unsigned long long</code>, depending on what platform the code is compiled for.
-Because of this, <code>type2fmt</code> will automatically translate the <code>uint64_t</code> to the right format string: <code>%lu</code> or <code>%llu</code>.
-No <code>PRIu64</code> necessary.</p>
-<h2 id="no-runtime-overhead">No Runtime Overhead</h2>
-<p>What’s with the “no runtime overhead” and “no additional runtime code” promise?</p>
-<p>Compiling the program…</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cstdio&gt;</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;pprintpp.hpp&gt;</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    pprintf<span class="op">(</span><span class="st">&quot;</span><span class="sc">{}</span><span class="st"> hello {s}! </span><span class="sc">{}\n</span><span class="st">&quot;</span><span class="op">,</span> <span class="dv">1</span><span class="op">,</span> <span class="st">&quot;world&quot;</span><span class="op">,</span> <span class="dv">2</span><span class="op">);</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>…leads to the following <code>main</code> function in the binary:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> $ objdump <span class="at">-d</span> example</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="ex">0000000000400450</span> <span class="op">&lt;</span>main<span class="op">&gt;</span>:</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">400450:</span>       48 83 ec 08             sub    <span class="va">$0</span>x8,%rsp</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">400454:</span>       41 b8 02 00 00 00       mov    <span class="va">$0</span>x2,%r8d</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">40045a:</span>       b9 04 06 40 00          mov    <span class="va">$0</span>x400604,%ecx <span class="co"># &lt;-- &quot;world&quot;</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">40045f:</span>       ba 01 00 00 00          mov    <span class="va">$0</span>x1,%edx</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">400464:</span>       be 10 06 40 00          mov    <span class="va">$0</span>x400610,%esi <span class="co"># &lt;-- &quot;%d hello world %s!...&quot;</span></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">400469:</span>       bf 01 00 00 00          mov    <span class="va">$0</span>x1,%edi</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="ex">40046e:</span>       31 c0                   xor    %eax,%eax</span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="ex">400470:</span>       e8 bb ff ff ff          callq  400430 <span class="op">&lt;</span>__printf_chk@plt<span class="op">&gt;</span></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="ex">400475:</span>       31 c0                   xor    %eax,%eax</span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="ex">400477:</span>       48 83 c4 08             add    <span class="va">$0</span>x8,%rsp</span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="ex">40047b:</span>       c3                      retq</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span></code></pre></div>
-<p>Excerpt of the data section where the strings which are loaded reside:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> $ objdump <span class="at">-s</span> <span class="at">-j</span> .rodata example</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Contents</span> of section .rodata:</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a> <span class="ex">400600</span> 01000200 776f726c 64000000 00000000  ....world.......</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a> <span class="ex">400610</span> 25642068 656c6c6f 20257321 2025640a  %d hello %s! %d.</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a> <span class="ex">400620</span> 00                                   .</span></code></pre></div>
-<p>The string looks exactly as if one had written <code>printf("%d hello %s! %d\n", /* ... */);</code>.</p>
-<p>Having exactly that string embedded in the binary does <strong>not</strong> rely on optimization.
-It <em>may</em> happen, that the <code>str()</code> function which statically returns this string, is still called in an unoptimized binary.
-But this function does <em>nothing</em> else than returning this string, which is already composed in the binary.</p>
-<h2 id="limitations">Limitations</h2>
-<p>The <code>autoformat_t</code> meta-program does only substitute generic placeholders with the right <code>%</code> format strings, which are compatible with <code>printf</code>.</p>
-<p>It does <strong>not</strong> extend <code>printf</code> with more formatting capabilities.
-This way it is also not possible to print custom types because it is not possible to put some custom <code>%</code> format string into <code>printf</code>, which the original <code>printf</code> implementation does not know.</p>
-<p>Of course, it is possible to extend the type knowledge of the <code>type2fmt</code> meta function, in order to feed custom implementations of <code>printf</code> like functions with additional type format strings.</p>
-<p>There are libraries like <a href="https://github.com/fmtlib/fmt">libfmt</a> out there, which provide rich formatting capabilities.
-However, all such libraries add additional runtime overhead to the resulting program.</p>
-<h2 id="compilation-performance">Compilation Performance</h2>
-<p>Heavy template meta-programs tend to be slow.
-I invested a lot of time in measuring different type list implementations, in order to make this <code>printf</code> frontend <em>fast</em>.</p>
-<p>In another blog article, I <a href="/2016/06/25/cpp_template_type_list_performance">measured the performance of type lists</a> using variadic template parameters, and recursive type lists.
-This library builds on the faster list implementation.</p>
-<p>The resulting compile time overhead is <em>rarely</em> in measurable timing regions, which makes it useful for real life projects.</p>
-<h2 id="summary">Summary</h2>
-<p>I wrapped the code into a repository called <code>pprintpp</code> and published it on GitHub under the MIT license.
-(<a href="https://github.com/tfc/pprintpp">Link to the repository</a>)</p>
-<p>This library is in production use for some time now and helped get rid of a lot of typos and variable-type accidents while being very comfortable at the same time.</p>
-<p>I’d be happy to hear that it is useful to others outside of my projects, too!</p>]]></summary>
 </entry>
 
 </feed>

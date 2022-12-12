@@ -38,7 +38,29 @@
 <div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2016/09/11/dont_fear_recursion">Do Not Fear Recursion</a>
+<div class="posts"><div><h2><a href="./2016/11/05/python_style_printf_for_cpp">Python Style printf for C++ with pprintpp</a>
+</h2>
+<span class="post-tags">
+<strong><small>November  5, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="./tags/meta-programming.html" class="tag-link">meta-programming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>The C++ STL comes with <em>stream</em> style character output, which is an alternative to the classic <code>printf</code> like format function collection of the C library.
+For different reasons, some C++ programmers still stick to <code>printf</code> like formatting.
+This article demonstrates the <code>pprintpp</code> <a href="https://github.com/tfc/pprintpp">(open source, and available on Github)</a> library, which tries to make <code>printf</code> use comfortable and safe while avoiding any runtime overhead.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/11/05/python_style_printf_for_cpp" role="button">Read more 
+<i class="fa fa-arrow-circle-right"></i>
+</a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2016/09/11/dont_fear_recursion">Do Not Fear Recursion</a>
 </h2>
 <span class="post-tags">
 <strong><small>September 11, 2016,</small>
@@ -235,27 +257,6 @@ However, now the world knows that the C++ template part of the language <em>is</
 This article aims to explain some very basic things one needs to know about the C++ template meta programming language, in order to be able to do things with it, or even understand foreign programs.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/05/05/template_meta_programming_basics" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
-</p>
-</div>
-
-<hr>
-<div><h2><a href="./2016/03/23/const_reference_to_temporary_object">Const References to Temporary Objects</a>
-</h2>
-<span class="post-tags">
-<strong><small>March 23, 2016,</small>
-</strong>
-
-
-<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
-</strong>
-</span>
-<!-- cSpell:disable -->
-<p>In both C and C++, it is not a sane idea to hold a reference (or a pointer in C) to a temporarily created object, as the reference is quickly dangling as soon as the assignment is done.
-But actually, C++ provides an interesting feature, where the life time of a temporary object can be extended to the life time of the reference which points to it.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/03/23/const_reference_to_temporary_object" role="button">Read more 
 <i class="fa fa-arrow-circle-right"></i>
 </a>
 </p>
