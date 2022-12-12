@@ -439,4 +439,13 @@ div.sourceCode {
 
 .book-cover figcaption {
   font-size: 90%;
+  text-align: center;
+}
+
+.centered-image img {
+  margin: auto;
+}
+
+.centered-image figcaption {
+  text-align: center;
 }
