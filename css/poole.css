@@ -437,16 +437,20 @@ div.sourceCode {
   box-shadow: 10px 10px 5px #ccc;
 }
 
-.book-cover figcaption {
-  font-size: 90%;
-  text-align: center;
-}
-
 figure > img {
   margin-left: auto;
   margin-right: auto;
 }
 
 figure > figcaption {
+  font-size: 90%;
   text-align: center;
+}
+
+.floating-image-right figure {
+  float: right;
+}
+
+.black-border-image img {
+  border: 1px solid black;
 }
