@@ -537,3 +537,15 @@ figure > figcaption {
     50% { background-position: 400% 0; }
     100% { background-position: 0 0; }
 }
+
+.work-background > dl > dt {
+  font-weight: normal;
+  color: grey;
+  margin-bottom: 10px;
+}
+
+.work-background > dl > dt > strong {
+  font-weight: bold;
+  color: black;
+  text-decoration: underline;
+}
