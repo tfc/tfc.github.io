@@ -470,25 +470,30 @@ figure > figcaption {
   border-radius: 0;
 }
 
+@media (min-width: 1600px) {
+  .about-logos > p > img {
+    height: 150px;
+  }
+}
+
 .big-button {
   font-size: 150%;
   padding: 5px 10px;
+  color: #fff;
+  background-color: #268bd2;
 }
 
 .glow-on-hover {
     border: none;
     outline: none;
-    color: #fff;
-    background: #111;
     cursor: pointer;
     position: relative;
-    z-index: 0;
     border-radius: 10px;
 }
 
 .glow-on-hover:before {
     content: '';
-    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    background: linear-gradient(45deg, #eee, #268bd2, #eee);
     position: absolute;
     top: -2px;
     left:-2px;

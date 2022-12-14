@@ -4,15 +4,21 @@ title: About
 
 <!-- cSpell:disable -->
 
-My name is Jacek Galowicz, and i am a freelancer with professional main
-interests in **software development** (mainly **C++** and **Haskell**),
-**software architecture**, and **continuous integration & deployment** (CI/CD).
-Before getting a job in the industry, i graduated with a Master of Science in
-Electrical Engineering.
+<div class="floating-image-right">
+  ![Jacek Galowicz, M.Sc.](/images/about/jacek-galowicz-mini-portrait.jpg)
+</div>
+
+My name is Jacek Galowicz.
+I am a freelancer with professional main interests in **software development**,
+**software architecture**, and **continuous integration & deployment**
+(CI/CD, DevOps).
+
 
 <div style="text-align: center;">
+  *Do you have an interesting challenge?*
+
   <a href="https://calendly.com/jacek-galowicz/60-minute-meeting">
-    <button class="big-button glow-on-hover">Schedule a free<br />introductory call now</button>
+    <button class="big-button glow-on-hover"><i class="fa fa-calendar"></i> Schedule Introduction Call</button>
   </a>
 </div>
 
@@ -32,25 +38,28 @@ of the resulting product.
   <img alt="Qt Framework Logo" src="/images/about/qt.svg" />
 </div>
 
-- Teaching
-  - I give **talks** and **trainings**.
-    - Topics: C++, Nix, Software Architecture, Build Systems, Automation of
-      Build, Integration, Tests, and Deployment of Software
-  - I give a [**university lecture** on software quality](https://www.fh-muenster.de/eti/studierende/module/qualitaetssichernde-software-entwicklungsprozesse.php) at the [FH Münster](https://www.fh-muenster.de/).
-  - I am the **author** of the Book
-    [C++17 STL Cookbook](https://amzn.to/3Wyqjyb).
-  - **Editor** of the Book [C++17 in Detail](https://www.cppindetail.com/).
-- Software Development and Architecture
-  - Mainly C++ and Haskell Development on Linux
-    - Deployment of services on x86-64 and ARM (Raspberry Pi) hosts
-  - Backend Services
-    - REST Interfaces
-    - PostgreSQL databases
-  - Frontend
-    - [React](https://reactjs.org/) applications, implemented in
-      [Purescript](https://www.purescript.org/)
-    - Desktop applications with [Electron.js](https://www.electronjs.org/)
-    - [Qt Framework](https://www.qt.io/product/framework) for embedded apps
-  - I am the maintainer of the [Python](https://www.python.org/)
-    [NixOS Integration Test Driver](https://nixos.org/)
-    portion of the [nixos/nixpkgs Project on GitHub](https://github.com/nixos/nixpkgs)
+## Teaching
+
+- I give **talks** and **trainings**.
+  - Topics: C++, Nix, Software Architecture, Build Systems, Automation of
+    Build, Integration, Tests, and Deployment of Software
+- I give a [**university lecture** on software quality](https://www.fh-muenster.de/eti/studierende/module/qualitaetssichernde-software-entwicklungsprozesse.php) at the [FH Münster](https://www.fh-muenster.de/).
+- I am the **author** of the Book
+  [C++17 STL Cookbook](https://amzn.to/3Wyqjyb).
+- **Editor** of the Book [C++17 in Detail](https://www.cppindetail.com/).
+
+## Software Development & Architecture
+
+- Mainly C++ and Haskell Development on Linux
+  - Deployment of services on x86-64 and ARM (Raspberry Pi) hosts
+- Backend Services
+  - REST Interfaces
+  - PostgreSQL databases
+- Frontend
+  - [React](https://reactjs.org/) applications, implemented in
+    [Purescript](https://www.purescript.org/)
+  - Desktop applications with [Electron.js](https://www.electronjs.org/)
+  - [Qt Framework](https://www.qt.io/product/framework) for embedded apps
+- I am the maintainer of the [Python](https://www.python.org/)
+  [NixOS Integration Test Driver](https://nixos.org/)
+  portion of the [nixos/nixpkgs Project on GitHub](https://github.com/nixos/nixpkgs)
