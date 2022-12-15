@@ -165,8 +165,7 @@ Since 2017: **Co-Founder/Shareholder of Cyberus Technology GmbH**, Braunschweig/
 : Research & Teaching
 
   - MetalSVM (Kernel Functionality, Hypervisor, Documentation)
-  - Development of Benchmarks and GUI-frontends (C/C++, OpenMP, MPI, Java, Qt,
-    Gnuplot)
+  - Development of Benchmarks and GUI-frontends (C/C++, OpenMP, MPI, Qt)
   - Tutorials in Basics of Computer Science 4 (C, x86 Assembly, Virtual Memory,
     Processes/Threads, Shared Memory, Synchronization, etc.)
   - Lab Courses (C++, Object Oriented Programming)
