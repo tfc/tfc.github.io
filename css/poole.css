@@ -447,6 +447,14 @@ figure > figcaption {
   text-align: center;
 }
 
+.no-round-corners img {
+  border-radius: 0;
+}
+
+.floating-image-right > p { /* for images without a caption */
+  float: right;
+}
+
 .floating-image-right figure {
   float: right;
 }

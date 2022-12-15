@@ -50,9 +50,24 @@ of the resulting product.
   - Topics: C++, [Nix](https://nixos.org), Software Architecture, Build Systems,
     Automation of Build, Integration, Tests, and Deployment of Software
 - I give a [**university lecture** on software quality](https://www.fh-muenster.de/eti/studierende/module/qualitaetssichernde-software-entwicklungsprozesse.php) at the [FH Münster](https://www.fh-muenster.de/).
-- I am the **author** of the Book
+- I am the author of the Book
   [C++17 STL Cookbook](https://amzn.to/3Wyqjyb).
-- **Editor** of the Book [C++17 in Detail](https://www.cppindetail.com/).
+- Editor of the Book [C++17 in Detail](https://www.cppindetail.com/).
+- Author/Co-Author of Cyberus Technology Blog articles about Intel CPU
+  vulnerabilities:
+  - [Meltdown](https://cyberus-technology.de/posts/2018-01-03-meltdown.html)
+  - [Spectre V4](https://cyberus-technology.de/posts/2018-05-22-intel-store-load-spectre-vulnerability.html)
+  - [Intel LazyFP Vulnerability](https://cyberus-technology.de/posts/2018-06-06-intel-lazyfp-vulnerability.html)
+  - [L1 Terminal Fault Vulnerability](https://cyberus-technology.de/posts/2018-08-14-l1-terminal-fault.html)
+  - [Zombieload](https://cyberus-technology.de/posts/2019-05-14-zombieload.html)
+  - [TSX Asynchronous Abort](https://cyberus-technology.de/posts/2019-11-12-taa.html)
+- Co-Author of the scientific paper
+  ["Combining Mechanized Proofs and Model-Based Testing in the Formal Analysis of a Hypervisor"](https://link.springer.com/chapter/10.1007/978-3-319-48989-6_5),
+  FM 2016: Formal Methods
+- Co-Author of the scientific paper
+  ["Efficient Implementation of the bare-metal Hypervisor
+MetalSVM for the SCC"](https://hal.archives-ouvertes.fr/file/index/docid/719037/filename/MARC6_Efficient-Implementation-of-the-bare-metal-hypervisor-MetalSVM-for-the-SCC.pdf),
+  6th Many-core Applications Research Community (MARC) Symposium
 
 ## Software Development & Architecture
 
@@ -76,15 +91,22 @@ of the resulting product.
 
 <div class="work-background">
 
-2018 - now: **Visiting Lecturer**, FH Münster, Münster, Germany
+<div class="floating-image-right no-round-corners">
+  ![](/images/about/fh-muenster.svg){ width=150px }
+</div>
+
+Since 2018: **Visiting Lecturer**, FH Münster, Münster, Germany
 
 : I hold the lecture “Quality-Assuring Software Engineering Methods“ for master
   students every winter semester, which is about unit & integration testing,
   spec-driven testing, fuzzing, reproducibility, development processes in teams,
   bad established practices in the industry, etc.
 
-2017 - now: **Co-Founder/Shareholder of Cyberus Technology GmbH**,
-Braunschweig/Dresden, Germany
+<div class="floating-image-right no-round-corners">
+  ![](/images/about/cyberus-technology.svg){ width=150px }
+</div>
+
+Since 2017: **Co-Founder/Shareholder of Cyberus Technology GmbH**, Braunschweig/Dresden, Germany
 
 : Software Architect
 
@@ -95,6 +117,10 @@ Braunschweig/Dresden, Germany
     hypervisor team (Haskell, Python, REST Interfaces, NixOS, Raspberry Pi)
   - Implementation of low-level libraries for embedded systems
     (C++, Template Metaprogramming)
+
+<div class="floating-image-right no-round-corners">
+  ![](/images/about/fireeye.svg){ width=150px }
+</div>
 
 2014 - 2016: **Sr. Software Engineer at FireEye, Inc.**, Braunschweig, Germany
 
@@ -113,8 +139,12 @@ Braunschweig/Dresden, Germany
   - General kernel hacking (Linux, USB stack)
   - Library development (C++, Qt Framework, Mongo DB)
 
-2012 - 2013: **Student Intern/Master Thesis Worker at Intel Corporation**,
-Braunschweig, Germany
+
+<div class="floating-image-right no-round-corners">
+  ![](/images/about/intel.svg){ width=150px }
+</div>
+
+2012 - 2013: **Student Intern/Master Thesis Worker at Intel Corporation**, Braunschweig, Germany
 
 : Internship
 
@@ -126,8 +156,11 @@ Braunschweig, Germany
     (ACPI, PCI hot plugging, preserving TCP connections over migrations, Network
     trunking)
 
-2009 - 2012: **Student Assistant at Chair for Operating Systems**,
-RWTH Aachen University, Germany
+<div class="floating-image-right no-round-corners">
+  ![](/images/about/rwth-aachen.svg){ width=150px }
+</div>
+
+2009 - 2012: **Student Assistant at Chair for Operating Systems**, RWTH Aachen University, Germany
 
 : Research & Teaching
 
@@ -138,12 +171,9 @@ RWTH Aachen University, Germany
     Processes/Threads, Shared Memory, Synchronization, etc.)
   - Lab Courses (C++, Object Oriented Programming)
 
-2010: **Student Assistant at Chair for Software for Systems on Silicon**,
-RWTH Aachen University, Germany
+2010: **Student Assistant at Chair for Software for Systems on Silicon**, RWTH Aachen University, Germany
 
-: Teaching:
-
-  - Tutorials in Basics of Computer Science 1 (C, General Algorithms and Data
+: Teaching: Tutorials in Basics of Computer Science 1 (C, General Algorithms and Data
     Structures)
 
 2004 - 2009: **Freelancer at Academy GmbH & Co. KG**, Cologne, Germany
@@ -160,6 +190,10 @@ RWTH Aachen University, Germany
 ## Educational Background
 
 <div class="work-background">
+
+<div class="floating-image-right no-round-corners">
+  ![](/images/about/rwth-aachen.svg){ width=150px }
+</div>
 
 2011 - 2013: **M.Sc. Electrical Engineering**, RWTH Aachen University, Germany
 
