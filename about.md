@@ -1,5 +1,5 @@
 ---
-title: About
+title: About Jacek Galowicz
 ---
 
 <!-- cSpell:disable -->
@@ -8,24 +8,21 @@ title: About
   ![Jacek Galowicz, M.Sc.](/images/about/jacek-galowicz-mini-portrait.jpg)
 </div>
 
-My name is Jacek Galowicz.
-I am a freelancer with professional main interests in **software development**,
-**software architecture**, and **continuous integration & deployment**
-(CI/CD, DevOps).
-
+I am a freelancer with professional interests in **software development**,
+**software architecture**, **interface design**, and **continuous integration &
+deployment** (CI/CD, DevOps).
+Over the years I got into bigger and bigger **production projects** and
+developed a lot of competence in how projects should be structurally built,
+integrated, and tested to enable and maximize the developer's ownership of the
+**overall quality** of the resulting product.
 
 <div style="text-align: center;">
-  *Do you have an interesting challenge?*
+  *Do you have an interesting challenge that you like to get done?*
 
   <a href="https://calendly.com/jacek-galowicz/60-minute-meeting">
     <button class="big-button glow-on-hover"><i class="fa fa-calendar"></i> Schedule Introduction Call</button>
   </a>
 </div>
-
-Over the years i got into bigger and bigger production projects and developed
-a lot of competence in how projects and their **build systems** should be
-structured in order to maximize the developer's control of the overall quality
-of the resulting product.
 
 ---
 
@@ -46,21 +43,24 @@ of the resulting product.
 
 ## Teaching & Publications
 
-- I give **talks** and **trainings**.
-  - Topics: C++, [Nix](https://nixos.org), Software Architecture, Build Systems,
-    Automation of Build, Integration, Tests, and Deployment of Software
-- I give a [**university lecture** on software quality](https://www.fh-muenster.de/eti/studierende/module/qualitaetssichernde-software-entwicklungsprozesse.php) at the [FH Münster](https://www.fh-muenster.de/).
+- I give **talks** and **trainings** on the topics of
+  C++, [Nix](https://nixos.org), Software Architecture, Build Systems,
+  Automation of Builds, Integration, Tests, and Deployment of Software.
+- I give a
+  [**university lecture** on software quality](https://www.fh-muenster.de/eti/studierende/module/qualitaetssichernde-software-entwicklungsprozesse.php)
+  for Master students every winter semester at the
+  [FH Münster](https://www.fh-muenster.de/).
 - I am the author of the Book
   [C++17 STL Cookbook](https://amzn.to/3Wyqjyb).
 - Editor of the Book [C++17 in Detail](https://www.cppindetail.com/).
-- Author/Co-Author of Cyberus Technology Blog articles about Intel CPU
-  vulnerabilities:
-  - [Meltdown](https://cyberus-technology.de/posts/2018-01-03-meltdown.html)
-  - [Spectre V4](https://cyberus-technology.de/posts/2018-05-22-intel-store-load-spectre-vulnerability.html)
-  - [Intel LazyFP Vulnerability](https://cyberus-technology.de/posts/2018-06-06-intel-lazyfp-vulnerability.html)
-  - [L1 Terminal Fault Vulnerability](https://cyberus-technology.de/posts/2018-08-14-l1-terminal-fault.html)
-  - [Zombieload](https://cyberus-technology.de/posts/2019-05-14-zombieload.html)
-  - [TSX Asynchronous Abort](https://cyberus-technology.de/posts/2019-11-12-taa.html)
+- Author/Co-Author of Cyberus Technology Blog posts about Intel CPU
+  vulnerabilities:\
+  [Meltdown](https://cyberus-technology.de/posts/2018-01-03-meltdown.html),
+  [Spectre V4](https://cyberus-technology.de/posts/2018-05-22-intel-store-load-spectre-vulnerability.html),
+  [Intel LazyFP Vulnerability](https://cyberus-technology.de/posts/2018-06-06-intel-lazyfp-vulnerability.html),
+  [L1 Terminal Fault Vulnerability](https://cyberus-technology.de/posts/2018-08-14-l1-terminal-fault.html),
+  [Zombieload](https://cyberus-technology.de/posts/2019-05-14-zombieload.html),
+  [TSX Asynchronous Abort](https://cyberus-technology.de/posts/2019-11-12-taa.html)
 - Co-Author of the scientific paper
   ["Combining Mechanized Proofs and Model-Based Testing in the Formal Analysis of a Hypervisor"](https://link.springer.com/chapter/10.1007/978-3-319-48989-6_5),
   FM 2016: Formal Methods
@@ -72,6 +72,8 @@ MetalSVM for the SCC"](https://hal.archives-ouvertes.fr/file/index/docid/719037/
 ## Software Development & Architecture
 
 - Mainly C++ and Haskell Development on Linux
+  - I love meta programming/type-level programming to define error states/inputs
+    out of existence (C++ Template Meta Programming)
   - Deployment of services on x86-64 and ARM (Raspberry Pi) hosts
 - Backend Services
   - REST Interfaces
