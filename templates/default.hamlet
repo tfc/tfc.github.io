@@ -27,9 +27,8 @@
               Day-to-day experiences and thoughts about software engineering
           <nav class="sidebar-nav">
             <a class="sidebar-nav-item active" href="/">Home
-            <a class="sidebar-nav-item" href="/about.html">About
-            <a class="sidebar-nav-item" href="https://galowicz.de">CV Info
-            <a class="sidebar-nav-item" href="/impressum.html">Impressum/Datenschutz
+            <a class="sidebar-nav-item" href="/about.html">About / CV
+            <a class="sidebar-nav-item" href="/impressum.html">Impressum / Datenschutz
           <p>
             <a href="https://linkedin.com/in/jgalowicz">
               <i class="fa fa-linkedin-square">
