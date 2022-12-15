@@ -429,7 +429,8 @@ div.sourceCode {
 
 .book-cover figure {
   max-width: 300px;
-  float: left
+  float: left;
+  margin-left: 0;
 }
 
 .book-cover img {
