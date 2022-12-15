@@ -198,13 +198,13 @@ Since 2017: **Co-Founder/Shareholder of Cyberus Technology GmbH**, Braunschweig/
 
 : Master thesis:
   *Live Migration of Virtual Machines between Heterogeneous Host Systems*
-  ([PDF](https://galowicz.de/master_thesis.pdf))
+  ([PDF](/images/about/master_thesis.pdf))
 
 2008 - 2011: **B.Sc. Electrical Engineering**, RWTH Aachen University, Germany
 
 : Bachelor thesis:
   *Design and Implementation of a Virtualization Layer for the Operating System
   Kernel "MetalSVM"*
-  ([PDF](https://galowicz.de/bachelor_thesis.pdf))
+  ([PDF](/images/about/bachelor_thesis.pdf))
 
 </div>
