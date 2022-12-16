@@ -458,6 +458,12 @@ figure > figcaption {
 
 .floating-image-right figure {
   float: right;
+  display: table;
+}
+
+.floating-image-right figcaption {
+  display: table-caption;
+  caption-side: bottom;
 }
 
 .black-border-image img {

@@ -139,6 +139,8 @@ person.
 The problem with Brents in companies has a striking similarity to the *priority
 inversion problem* that brought down the
 [Mars Pathfinder](https://en.wikipedia.org/wiki/Mars_Pathfinder) project.
+(Which is also mentioned in the
+[next book review](/2022/12/26/book-review-algorithms-to-live-by))
 Throughout the book's story, *the Brent Problem* is solved by meticulously
 controlling Brent's schedule and protecting it and him from unauthorized
 external influences.
@@ -461,7 +463,7 @@ still equals giving the right answers and results in exam papers.
 Trying something new and doing it differently than others did before is not part
 of the education system, which teaches conformity above everything else.
 (In the next book review, we will see what this has to do with the
-[Overfitting Problem](https://en.wikipedia.org/wiki/Overfitting).)
+[Overfitting Problem](/2022/12/26/book-review-algorithms-to-live-by).)
 To put it bluntly: Our school systems produce employees who expect their tasks
 to be given in tickets that are presented like exam questions and which are not
 to be questioned themselves regarding the task, the deliverable, or the method.
