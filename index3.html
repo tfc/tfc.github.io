@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
-<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de//feed.xml" title="Jacek's Software Engineering Blog" />
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog" />
 <link rel="canonical" href="https://blog.galowicz.de/" />
 <link rel="stylesheet" href="./css/poole.css">
 <link rel="stylesheet" href="./css/syntax.css">
 <link rel="stylesheet" href="./css/hyde.css">
 <link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="./images/apple-touch-icon-144-precomposed.png">
 <link rel="shortcut icon" href="./images/favicon.ico">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -21,13 +21,15 @@
 <a class="sidebar-nav-item" href="./about.html">About / CV</a>
 <a class="sidebar-nav-item" href="./impressum.html">Impressum / Datenschutz</a>
 </nav>
-<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa fa-linkedin-square"></i>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
 </a>
-<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa fa-xing-square"></i>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa-brands fa-square-xing"></i>
 </a>
-<a href="https://github.com/tfc"><i class="fa fa-github-square"></i>
+<a href="https://github.com/tfc"><i class="fa-brands fa-square-github"></i>
 </a>
-<a href="https://twitter.com/jgalowicz"><i class="fa fa-twitter-square"></i>
+<a href="https://twitter.com/jgalowicz"><i class="fa-brands fa-square-twitter"></i>
+</a>
+<a rel="me" href="https://functional.cafe/@jgalowicz"><i class="fa-brands fa-mastodon"></i>
 </a>
 </p>
 </div>
@@ -51,9 +53,8 @@
 <p>In both C and C++, it is not a sane idea to hold a reference (or a pointer in C) to a temporarily created object, as the reference is quickly dangling as soon as the assignment is done.
 But actually, C++ provides an interesting feature, where the life time of a temporary object can be extended to the life time of the reference which points to it.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/03/23/const_reference_to_temporary_object" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/03/23/const_reference_to_temporary_object" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -73,9 +74,8 @@ But actually, C++ provides an interesting feature, where the life time of a temp
 The program gets terminated.
 That is fine in general, but what happens to all objects which need to be properly destructed?</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/03/18/uncaught_exceptions_in_cpp" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/03/18/uncaught_exceptions_in_cpp" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -97,9 +97,8 @@ However, polymorphy is not always needed at actual runtime.
 If it is only used to separate generic from specific functionality in order to have a common interface and avoid code duplication, the cost of having indirection introduced by <em>vtables</em> might not be desired.
 This article shows how to use the CRTP in order to get the compile time advantages of polymorphy, without using virtual methods.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/27/static_polymorphy" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/27/static_polymorphy" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -122,9 +121,8 @@ Classes should sometimes provide multiple kinds to express the same thing to let
 But that does not mean, that the class developer has to express everything multiple times.
 This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/26/how_to_use_crtp_to_reduce_duplication" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/26/how_to_use_crtp_to_reduce_duplication" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -144,9 +142,8 @@ This article explains how <em>CRTP</em> can help out and remove potential duplic
 Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again.
 When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/21/on_exit_macro" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/21/on_exit_macro" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -167,9 +164,8 @@ Unfortunately, they are extremely bloaty to implement.
 The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive.
 This article shows a nice one-liner approach to define new SFINAE type traits.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/21/if_compiles_type_traits" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/21/if_compiles_type_traits" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -192,9 +188,8 @@ Acquiring and Releasing SDL resources often ends up in ugly old school resource 
 It is not hard to fix that, and this article shows how useful <code>shared_ptr</code> from the STL is in such cases.
 The approach is easily extendable to other kinds of resources, too.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/21/automatic_resource_release_with_sdl" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/21/automatic_resource_release_with_sdl" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -215,9 +210,8 @@ It is not really useful if the source file paths which the build system uses, ar
 It would be useful to have a shortened version, which only contains the file name without the whole path.
 This article describes how to implement a <code>__SHORT_FILE__</code> macro, that does not add any run time overhead.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/20/short_file_macro" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/20/short_file_macro" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -236,9 +230,8 @@ This article describes how to implement a <code>__SHORT_FILE__</code> macro, tha
 <p>C++ type traits can be implemented using an interesting technique which uses the <em>SFINAE</em> principle.
 This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/19/how_do_sfinae_traits_work" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/19/how_do_sfinae_traits_work" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 
@@ -257,9 +250,8 @@ This article explains what SFINAE means, how it works and how it can be used to 
 <p>This article explains, how so called <em>type traits</em> in C++ work.
 Type traits have been there for quite a long time now. They are a meta programming technique which appears to use types and their sub types like functions at compile time, to control what the compiler actually compiles.</p>
 
-<p><a class="btn btn-sm btn-primary" href="./2016/02/18/what_is_a_type_trait" role="button">Read more 
-<i class="fa fa-arrow-circle-right"></i>
-</a>
+<p><a class="btn btn-sm btn-primary" href="./2016/02/18/what_is_a_type_trait" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
 </p>
 </div>
 </div>
