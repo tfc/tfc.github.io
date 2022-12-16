@@ -27,6 +27,7 @@ integrated, and tested to enable and maximize the developer's ownership of the
 ---
 
 <div class="about-logos">
+  <img alt="Nix(OS) Logo" src="/images/about/nixos.svg" />
   <img alt="C++ Logo" src="/images/about/cpp.svg" />
   <img alt="Haskell Logo" src="/images/about/haskell.svg" />
   <img alt="Purescript Logo" src="/images/about/purescript.svg" />
@@ -94,7 +95,7 @@ MetalSVM for the SCC"](https://hal.archives-ouvertes.fr/file/index/docid/719037/
 <div class="work-background">
 
 <div class="floating-image-right no-round-corners">
-  ![](/images/about/fh-muenster.svg){ width=150px }
+  ![](/images/about/fh-muenster.svg){ height=80px }
 </div>
 
 Since 2018: **Visiting Lecturer**, FH Münster, Münster, Germany

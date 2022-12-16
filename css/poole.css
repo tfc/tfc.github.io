@@ -558,3 +558,7 @@ figure > figcaption {
   color: black;
   text-decoration: underline;
 }
+
+.work-background img {
+  margin: 0 10px;
+}
