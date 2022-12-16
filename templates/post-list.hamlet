@@ -24,8 +24,8 @@
       \$teaser$
       <p>
         <a .btn .btn-sm .btn-primary href="$url$" role="button">
+          <i .fa-solid .fa-circle-arrow-right>
           Read more 
-          <i .fa .fa-arrow-circle-right>
     \$sep$
     <hr>
   \$endfor$

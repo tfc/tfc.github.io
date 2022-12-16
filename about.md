@@ -20,7 +20,7 @@ integrated, and tested to enable and maximize the developer's ownership of the
   *Do you have an interesting challenge that you like to get done?*
 
   <a href="https://calendly.com/jacek-galowicz/60-minute-meeting">
-    <button class="big-button glow-on-hover"><i class="fa fa-calendar"></i> Schedule Introduction Call</button>
+    <button class="big-button glow-on-hover"><i class="fa-regular fa-calendar-plus"></i> Schedule Introduction Call</button>
   </a>
 </div>
 
