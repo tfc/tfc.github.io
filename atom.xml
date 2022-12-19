@@ -8,8 +8,483 @@
         <name>Jacek Galowicz</name>
         <email>jacek@galowicz.de</email>
     </author>
-    <updated>2022-12-12T00:00:00Z</updated>
+    <updated>2022-12-19T00:00:00Z</updated>
     <entry>
+    <title>Book Review: The Phoenix Project</title>
+    <link href="https://blog.galowicz.de/2022/12/19/book-review-the-phoenix-project" />
+    <id>https://blog.galowicz.de/2022/12/19/book-review-the-phoenix-project</id>
+    <published>2022-12-19T00:00:00Z</published>
+    <updated>2022-12-19T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<!-- cSpell:words Behr ITPI Spafford Eliyahu Goldratt Miyagi Kanban Andon -->
+<!-- cSpell:words Behr Jidōka Autonomation Kaizen culting rebranding -->
+<!-- cSpell:words overcommitted incentivized Beyoncé CISO Pesche -->
+<!-- cSpell:words Taiichi Ohno Zuckerberg rebranded -->
+<!-- cSpell:ignore -->
+<p><a href="https://amzn.to/3hcHGpf">The Phoenix Project</a> is a novel that has been declared
+a must-read by many IT executives.
+It provides smart solutions to the problems that most IT companies struggle with
+and is at the same time educating to read.
+What principles does it teach, and where does it fall short?</p>
+<!--more-->
+<div class="book-cover">
+<figure>
+<img src="/images/books/the-phoenix-project.jpg" alt="Book Cover of “The Phoenix Project”" />
+<figcaption aria-hidden="true">Book Cover of “The Phoenix Project”</figcaption>
+</figure>
+</div>
+<h2 id="book-authors">Book &amp; Authors</h2>
+<p>The first edition of this book is from 2013, its second version is from 2014,
+and the third version, which is called <em>the 5th-anniversary edition</em>, was
+released in 2018.
+This version of the book is ~350 pages for the main story but contains
+additional ~70 pages for an excerpt of
+<a href="https://amzn.to/3iXmzHW">The DevOps Handbook</a>.</p>
+<p><a href="http://www.realgenekim.me/">Gene Kim</a> is a multi-award-winning CTO, researcher,
+and author.
+His books include <a href="https://amzn.to/3iXmzHW">The DevOps Handbook</a>,
+<a href="https://amzn.to/3W5QGf3">The Visible Ops Handbook</a>, and
+<a href="https://amzn.to/3uEkxPz">Visible Ops Security</a>.</p>
+<p><a href="https://www.linkedin.com/in/kevinbehr/">Kevin Behr</a> is the founder of the
+<a href="https://itpi.org/">Information Technology Process Institute (ITPI)</a> and the
+general manager and chief science officer of
+<a href="https://www.praxisflow.com/">Praxis Flow LLC</a>.
+He is also the co-author of <a href="https://amzn.to/3W5QGf3">The Visible Ops Handbook</a>.</p>
+<p><a href="https://www.linkedin.com/in/gspafford/">George Spafford</a> is a
+<a href="https://www.gartner.com/analyst/38065">research director for Gartner</a>.
+His publications include articles and books on IT service improvement, as well
+as co-authorship of <a href="https://amzn.to/3W5QGf3">The Visible Ops Handbook</a>, and
+<a href="https://amzn.to/3uEkxPz">Visible Ops Security</a>.</p>
+<h2 id="content-and-structure">Content and Structure</h2>
+<div class="floating-image-right black-border-image">
+<figure>
+<img src="/images/books/the-phoenix-project-bill.jpg" alt="Main Protagonist Bill Palmer" />
+<figcaption aria-hidden="true">Main Protagonist Bill Palmer</figcaption>
+</figure>
+</div>
+<p>In this novel, the three gentlemen tell a story about DevOps and organizational
+change.
+Practically everyone who works in IT will recognize the situations depicted in
+the book.
+In 1984, <a href="https://en.wikipedia.org/wiki/Eliyahu_M._Goldratt">Dr. Eliyahu M. Goldratt</a>
+published the book <a href="https://en.wikipedia.org/wiki/The_Goal_(novel)">The Goal</a>,
+which is a novel about bottlenecks in old-school manufacturing processes.
+It seems like the Phoenix Project as a book is strongly inspired by this one:
+<em>The Goal</em> was about optimizing production plants and <em>The Phoenix Project</em> is
+about optimizing IT “plants”, so to say.</p>
+<p>I will introduce only the from my point of view most important three figures
+out of twelve from the book:</p>
+<p>The story is told from the perspective of the protagonist
+<u>Bill Palmer</u> and begins like this:</p>
+<blockquote>
+<p>Bill is an IT manager at Parts Unlimited.
+It’s Tuesday morning, and on his drive into the office, Bill gets a call from
+the CEO.
+The company’s new IT initiative, code named <em>Phoenix Project</em> is critical to
+the future of Parts Unlimited, but the project is massively over budget and
+very late.
+The CEO wants Bill to report directly to him and fix the mess in ninety days
+or else Bill’s entire department will be outsourced.</p>
+</blockquote>
+<div class="floating-image-right black-border-image">
+<figure>
+<img src="/images/books/the-phoenix-project-erik.jpg" alt="Board Candidate Erik Reid" />
+<figcaption aria-hidden="true">Board Candidate Erik Reid</figcaption>
+</figure>
+</div>
+<p>In the middle of all the turmoil that Bill experiences, he is asked to take time
+to meet <u>Erik Reid</u>, who is also described by other figures in the
+book as a mysterious <em>tech hotshot</em>.
+At first, Erik seems forced upon the protagonist, with no obvious specialty
+other than forgetting everyone’s names all the time.
+Bill does not get why Erik is invited to become a board member.
+Their interaction begins with strange homework that Erik gives Bill, like
+finding out what “the four types of work” are and calling him afterward.
+Erik seemingly knows a lot about optimizing IT organizations,
+but he lets Bill find out most of it by himself instead of just explaining it.
+This way he initially comes across as some complacent and self-imposed version
+of <a href="https://en.wikipedia.org/wiki/Mr._Miyagi">Mr. Miyagi</a>.
+Over the rest of the book, he proves to be a helpful genius and a great mentor
+to Bill.
+With Erik’s help, he learns to use his new to get the chaos under control.</p>
+<p><u>Brent Geller</u> is mentioned in the second chapter when some
+huge infrastructure outage occupies a whole department.
+Bill describes Brent to the reader:</p>
+<div class="floating-image-right black-border-image">
+<figure>
+<img src="/images/books/the-phoenix-project-brent.jpg" alt="Super 10X Engineer Brent Geller" />
+<figcaption aria-hidden="true">Super 10X Engineer Brent Geller</figcaption>
+</figure>
+</div>
+<blockquote>
+<p>He’s always in the middle of the important projects that IT is working on.
+I’ve worked with him many times.
+He’s definitely a smart guy but can be intimidating because of how much he
+knows. What makes it worse is that he’s right most of the time.</p>
+</blockquote>
+<p>Throughout the story, Brent presents himself as the bottleneck of the entire
+organization.
+Due to his outstanding competence and knowledge of the company’s software and
+systems, practically nothing gets done without him.
+This did not happen intentionally - it just ended up like this.</p>
+<p>On the one hand, you want to have employees like Brent, because they are
+enormously productive.
+On the other hand, you don’t want to depend too much on individual employees
+like that, because this drives up your
+<a href="https://en.wikipedia.org/wiki/Bus_factor">bus factor</a>.
+As multiple bosses have direct “access” to Brent, he seems like a shared
+resource.
+The organizational problem with this is that he is seriously overcommitted
+because there is no overarching plan/control of his time availability.
+It even gets worse over time as he is pulled into every new emergency that
+happens over time, which involuntarily makes him a full-time firefighter.
+But he also never says <em>no</em>, because he is not the boss and may be too nice a
+person.</p>
+<p>The problem with Brents in companies has a striking similarity to the <em>priority
+inversion problem</em> that brought down the
+<a href="https://en.wikipedia.org/wiki/Mars_Pathfinder">Mars Pathfinder</a> project.
+Throughout the book’s story, <em>the Brent Problem</em> is solved by meticulously
+controlling Brent’s schedule and protecting it and him from unauthorized
+external influences.</p>
+<p>While Bill and Erik form the team that conveys the book’s main principles to
+the reader, Brent embodies all the firefighting in IT companies.
+Their interplay with all the other characters (which also are very original
+and recognizable from what you know from other IT organizations, especially the
+CISO John Pesche) is exciting to read, but let’s continue with the principles
+that the book teaches.</p>
+<h3 id="the-four-types-of-work">The Four Types of Work</h3>
+<p>The <em>four types of work</em> that Erik teaches Bill are inspired by Dr. Eliyahu M.
+Goldratt’s
+<a href="https://en.wikipedia.org/wiki/Theory_of_constraints">Theory of Constraints</a>.
+This theory’s main point is that to increase the throughput of a
+system, its constraints (bottlenecks) need to be identified, and then everything
+needs to be subordinated to the task of removing them.
+All other efforts that don’t concentrate on removing actual constraints are
+futile.</p>
+<p>The book slightly deviates from this school that stems from manufacturing to fit
+its learnings into the world of modern IT organizations, which share some but
+not all problems, or not the same way, with manufacturing organizations (storage
+costs are for example not something that a software organization must optimize
+away).
+It takes nearly the first half of the book for Bill to identify the four types
+of work that Erik asked him for.
+The four types as presented in the story are:</p>
+<dl>
+<dt>Business Projects</dt>
+<dd>
+<p>Business initiatives, most of the development work.
+The main reason for companies to even exist.</p>
+</dd>
+<dt>IT Operations Projects</dt>
+<dd>
+<p>IT Operations exist to support the Business.
+They are not an end in itself, but end up being so complex that they make
+practically every big company an IT company compared to how many employees
+are hired to operate IT infrastructure and projects.</p>
+</dd>
+</dl>
+<p>The exact amount of business and IT operations projects is often not properly
+tracked.</p>
+<dl>
+<dt>Changes</dt>
+<dd>
+<p><em>Changing</em> and updating processes and (infra)structure is another type of work.
+The tasks of maintaining the normal business of some big infrastructure and
+the task of changing something in it are most of the time contradictory
+because it is hard to find ways how to do both at the same time.
+Changes are typically strategic and proactive.</p>
+</dd>
+<dt>Unplanned Work</dt>
+<dd>
+<p>Unplanned work is urgent firefighting that keeps organizations from reaching
+their goals.
+Technical debt is the main driver behind it.
+Unplanned work hinders employees from keeping up with planned work, because of
+the exceptional urgency that it has, e.g. before release deadlines.
+Erik mentions <em>anti-work</em> as another synonym.
+Unplanned work is tactical and reactive.</p>
+</dd>
+</dl>
+<p>In chapter 19, Eric Reid explains the impact of unplanned work:</p>
+<blockquote>
+<p>“Unplanned work has another side effect.
+When you spend all your time firefighting, there’s little time or energy
+left for planning.
+When all you do is react, there’s not enough time to do the hard mental work
+of figuring out whether you can accept new work.
+So, more projects are crammed onto the plate, with fewer cycles available to
+each one, which means more bad multitasking, more escalations from poor code,
+which mean more shortcuts.
+As Bill said, ‘around and around we go.’ It’s the IT capacity death spiral.”</p>
+</blockquote>
+<p>This categorization is simple to follow and to adapt your organization to.
+If we look at a snapshot of an organization in good times, we would just need
+business projects because these earn the money, and the IT projects
+enable/support the business.
+When everything goes well, no changes are needed because there is no unplanned
+work.
+But of course, times change, markets change, etc., and after some scaling up and
+down structures cease to work correctly which creates unplanned work and the
+need for change.</p>
+<h3 id="the-three-ways">The Three Ways</h3>
+<p>The three ways reminded me a lot of the ideals and principles that I learned
+earlier from reading the
+<a href="https://amzn.to/3VSudBY">Toyota Production System (TPS) Book by Taiichi Ohno</a>.
+This is not completely surprising as Toyota developed its ideas of optimized
+manufacturing after world war 2.
+In the 80s, they were so efficient that the world started copying their ideas.
+I will add some insights from the TPS to the learnings from the book to
+show the overlap and practicality of the ideas.</p>
+<p>Erik’s adaption of how to adapt the constraint theory on IT in three ways
+(/steps) looks like the following:</p>
+<dl>
+<dt>1.) Flow</dt>
+<dd>
+<p>By <em>flow</em>, the book means the flow of <em>value</em> produced by the software, which
+originates in development and “moves” to operations.
+Customers wish for new features and bug/security fixes all the time.
+Maximizing this flow means increasing the <em>throughput</em> and decreasing the
+<em>wait times</em> (latencies) for such.
+This flow is increased by making work in progress (WIP) visible and then
+reducing batch sizes and work intervals, and enhancing the quality and defect
+prevention.
+With this global goal in mind, every value-adding stage that passes
+deliverables downstream to the next stage has to perform such optimizations.</p>
+</dd>
+</dl>
+<p>At this point, this reads like a description of
+<a href="https://en.wikipedia.org/wiki/Kanban">Kanban</a>:
+Supervisors write work packages on cards and move them between columns that
+indicate that something is planned, work in progress (WIP), or done.
+At the same time, the amount of cards in the WIP stage is kept at a minimum.</p>
+<figure>
+<img src="/images/books/the-phoenix-project-kanban-board.jpg" alt="A Kanban Board to visualize WIP at a Toyota production plant (source)" />
+<figcaption aria-hidden="true">A Kanban Board to visualize WIP at a Toyota production plant (<a href="https://www.toyota-global.com/company/history_of_toyota/75years/text/entering_the_automotive_business/chapter1/section4/item4.html">source</a>)</figcaption>
+</figure>
+<dl>
+<dt>2.) Feedback</dt>
+<dd>
+<p>The second way is all about the <em>defect prevention</em> that was mentioned in the
+first way, and the resolving of bottlenecks/constraints.
+The earlier defects are detected, the faster and cheaper they can be fixed.
+(Ever heard of <a href="https://en.wikipedia.org/wiki/Shift-left_testing">Shift-Left</a>?)
+For this reason, the organization must be built in a way that enables early
+defect detection.
+As soon as a defect is detected, instead of finding the one to blame, the
+organization must concentrate on the opportunity to learn from the defect and
+optimize the flow to prevent it from happening again.</p>
+</dd>
+</dl>
+<p>In Toyota production facilities, this is called
+<a href="https://en.wikipedia.org/wiki/Andon_(manufacturing)">Andon</a>:
+Whenever a defect is found (or an accident happens), workers would pull the
+<em>Andon Cord</em> which immediately stops the assembly line and signals one of many
+numbered light indicators on an <em>Andon board</em>.
+A supervisor would then rush for assistance to find out how to resolve the
+problem and prevent it in the future.
+(Which sometimes results in small fixes, sometimes in going up the organization
+hierarchy to find more involved solutions)</p>
+<figure>
+<img src="/images/books/the-phoenix-project-andon-board.jpg" alt="An Andon board at a Toyota production plant (source)" />
+<figcaption aria-hidden="true">An Andon board at a Toyota production plant (<a href="https://www.toyota-global.com/company/history_of_toyota/75years/text/entering_the_automotive_business/chapter1/section4/item4.html">source</a>)</figcaption>
+</figure>
+<p>Workers are typically incentivized to keep the throughput of their assembly line
+maximized.
+At first sight, this incentive contradicts the other incentive to keep the
+quality high if this means stopping the assembly line from time to time.
+This might be reminiscent of programmers who are encouraged to create as many
+“green” (finished) JIRA tickets as possible per sprint in a hurry, which keeps
+them from stopping from time to time what these are actually used for and how to
+think better in terms of quality increase and defect avoidance.</p>
+<p>When automatic production machines/robots are enhanced with automatic quality
+checks, this is called
+<a href="https://en.wikipedia.org/wiki/Autonomation">Jidōka (Autonomation)</a>.
+The equivalent of this in software engineering is unit- and integration tests
+that are executed after <em>every little change</em>.
+These can (but in many companies don’t) act as quality gates that need before
+some code change is merged into a release-relevant branch.</p>
+<p>Creating fast feedback is critical to achieving quality, reliability, and safety
+in the technology value stream.
+The challenge is to balance the seemingly contradictive mix of incentives:
+On the one hand, workers shall work quickly to produce high throughput.
+On the other hand, they shall take some time to look out for defects and
+interrupt production if they find any.
+This combination is achieved by distributing responsibility for quality over
+<em>all</em> the links in the production chain.</p>
+<p>At Google, you can find this principle embodied by
+<a href="https://www.oreilly.com/library/view/software-engineering-at/9781492082781/ch01.html">The Beyoncé Rule</a>,
+which says <em>“If you liked it, you should have put a CI test on it”</em> -
+or more formally:</p>
+<blockquote>
+<p>“If a product experiences outages or other problems as a result of
+infrastructure changes, but the issue wasn’t surfaced by tests in our Continuous
+Integration (CI) system, it is not the fault of the infrastructure change.”</p>
+</blockquote>
+<p>The comparison with production facilities lags a little bit because the
+factory optimization theory does not directly map to how software engineering
+works:
+The output of a factory worker is assembled parts, while the output of a
+software developer is changed software (which resembles blueprints).</p>
+<dl>
+<dt>3.) Continual Learning and Experimentation</dt>
+<dd>
+<p>The third way is about creating an organization with a culture of continual
+learning and experimentation.
+The book argues that high-performing operations require and actively promote
+learning, with workers performing experiments in their daily work to generate
+new improvements. (Remember the <a href="/2022/12/05/book-review-a-philosophy-of-software-design/">review of John Ousterhout’s book
+“A Philosophy of Software Design”</a>
+that says that code should be designed twice?)
+The third way can only be achieved by companies that create an atmosphere
+in which workers feel safe to experiment, speak up, and suggest changes.</p>
+</dd>
+</dl>
+<p>In the Toyota Production System, continuous improvement culture throughout the
+whole company from the CEO to the line worker is called
+<a href="https://en.wikipedia.org/wiki/Kaizen">Kaizen</a>.
+As an electrical engineer, this way of looking at an organization reminded me of
+the <a href="https://en.wikipedia.org/wiki/Systems_theory">Systems Theory</a> lectures at
+university and <a href="https://en.wikipedia.org/wiki/Cybernetics">Cybernetics</a>
+literature.</p>
+<h2 id="interpretation-and-opinion">Interpretation and Opinion</h2>
+<p>During my career, I felt intrigued by ideas/schools like
+<a href="https://en.wikipedia.org/wiki/Scrum_(software_development)">Scrum</a>,
+<a href="https://en.wikipedia.org/wiki/Agile_software_development">agile</a>,
+<a href="https://en.wikipedia.org/wiki/Kanban_(development)">Kanban</a>,
+<a href="https://en.wikipedia.org/wiki/Extreme_programming">Extreme Programming</a>, etc.
+because they promise a cure for many problems that IT companies have, but the
+real-life adaptions that I have seen in most companies were rather
+underwhelming.
+It does not seem like you can get a few employees a Scrum certification, use
+Kanban boards in JIRA and that’s it.
+For that reason, I decided to delve deeper into this topic, and find the
+original literature behind it, which ultimately led me to read the book about
+<a href="https://amzn.to/3BxYPAt">The Toyota Production System</a>.
+That was an eye-opening experience because reading the original literature
+empowers one to assess the value behind all the structures and processes better
+in relation to the big-picture outcome that they shall achieve.
+Today I know that most companies simply do it wrong, mostly by
+<a href="https://en.wikipedia.org/wiki/Cargo_cult_programming">cargo-culting</a>
+what the latest books say without having understood completely what they are
+aiming for.</p>
+<p>Much later, I read the Phoenix project and got to know the Theory of Constraints
+that it refers to.
+Due to this order, I got the impression that the theory of constraints is kind
+of a <em>rebranding</em> of the learnings from the TPS, as they are so strikingly
+similar.</p>
+<p>However, no one in IT companies ever reads TPS, but the Phoenix Project has been
+a confirmed must-read by many in the IT industry.
+Being an impactful book that motivated many professionals to change things for
+the better, it proved its value in the book market to me.
+Not to forget that it was so much fun to read because it’s a novel and not a
+boring textbook (which is another reason for its popularity)!
+The fact that it is a novel that explains it at a high level also brought many
+managers and deciders to read it, and finally adopt the right mindset on how to
+tackle IT.</p>
+<p>Looking at the <strong>four kinds of work</strong>, I experienced that many employees confuse
+<em>change control</em> with <em>unplanned work</em>.
+In the last few years, I have seen Phoenix-Project-educated employees fighting
+some <em>change</em> work because they were clogged with <em>unplanned work</em>, claiming
+that the change project is unplanned work.
+Many employees would jump on piles of unplanned work without reflecting that
+<em>this</em> is the thing they need to fight (or believing that it’s hopeless to try)
+- this is priority inversion at work.
+It seems like it is not trivial for many to change perspectives just by reading
+a novel.</p>
+<p>This confusion was sometimes due to the fact that you can’t ask someone to
+change something without reducing the burden of meeting deadlines from them at
+some other point.
+It happens a lot that managers try to keep the machine running and don’t dare to
+relieve some resources from firefighting to make them available for strategic
+change.
+But even if they do,
+<a href="https://lsaglobal.com/blog/how-top-leaders-combat-the-7-most-common-reasons-employees-fight-change/">organization structures often defend against change</a>.
+Just handing out the Phoenix Project to people without further moderation is not
+enough, with all the misunderstandings that I have seen.</p>
+<p>Looking at the <strong>three ways</strong>, it’s clear that the first two are mostly
+technical challenges.
+Most companies do not keep up well, but fixing that is “just” a technological
+challenge that a company can put their smartest employees and best managers on.
+It is a matter of priority, resources, and the right technology.
+Throw away your waterfall planning and stateful asynchronous testing pipelines.
+Replace it with proper processes and synchronous quality barriers.
+I am happy to help:
+<a href="https://calendly.com/jacek-galowicz/60-minute-meeting">Let’s schedule a meeting and look at it together</a>.</p>
+<p>The third way seems to be the hardest one because it is not technical but
+purely about the social part of organizations:
+Organizations consist of humans which sometimes hoard information, withhold it
+for political reasons, and/or distort it to look better.
+Some feel insecure (Especially among IT jobs, the impostor syndrome seems
+widespread) and just try to keep their job.
+The majority of employees are not bursting with motivation for performance and
+desire for change, but are happy to find a defined list of tasks that they can
+complete every week and in return feed their family and pay off their house
+mortgage.
+Many just want to secure their jobs and income by showing up in the morning,
+following all the rules, signing off in the late afternoon, and making sure that
+they did not do anything wrong.
+There is nothing wrong with such an attitude - but it also does not model the
+self-reflective and improvement-hungry worker that the Toyota Production System
+and Theory of Constraints are asking for.</p>
+<p>On the other side, organizations are often managed by strict processes and
+rules, and trying to change them can result in punishment.
+In many companies, the best way to make a career is to not do anything wrong.
+So in between all the average employees, the ones who stand up for change might
+be trimmed down by the org.</p>
+<p>Both the TPS and the third way envision an organization that consists of a
+majority of self-thinking and motivated workers who like to experiment -
+but without experimentation being an explicit task and instead more an implicit
+part of every workday.
+(This sounds like the
+<a href="/2022/12/05/book-review-a-philosophy-of-software-design"><em>strategic programmer</em> from John Ousterhout’s book</a>)</p>
+<p>The majority of humans are not like this.
+After looking at our school system, it’s not surprising:
+People spend ten to twenty years of their early life in school and university
+(For me it was 13 years of school, three for the Bachelor’s and two for
+the Master’s degree - close to 20 years!).
+At school, you learn that you are successful when you say what the teacher wants
+to hear, and your answers must fit in the boxes of the exam paper (or worse, you
+must check one of the four options given in a multiple-choice test).
+If you had some teachers that were not like this - good for you - but it’s not
+the experience of the majority.
+It does not get much better at university, which is more difficult but success
+still equals giving the right answers and results in exam papers.
+Trying something new and doing it differently than others did before is not part
+of the education system, which teaches conformity above everything else.
+(In the next book review, we will see what this has to do with the
+<a href="https://en.wikipedia.org/wiki/Overfitting">Overfitting Problem</a>.)
+To put it bluntly: Our school systems produce employees who expect their tasks
+to be given in tickets that are presented like exam questions and which are not
+to be questioned themselves regarding the task, the deliverable, or the method.
+This way to look at it is especially interesting when looking at famous
+college/university dropouts who were successful because they did <em>not</em> walk the
+intended paths (Bill Gates, Mark Zuckerberg, Steve Jobs, etc.).</p>
+<p>The remaining challenge for IT leaders of organizations is to find out how to
+<em>empower the minority</em> of employees that show motivation for change,
+experimentation and improvement before they are trimmed down by the rest of the
+organization, or before they quit to launch their own business.
+All the TPS/Theory of Constraints ideas need to be taken on by those.
+The organization (and the part of the org which does not care about change or
+even fights it) must give them enough room.</p>
+<h2 id="summary">Summary</h2>
+<p>Although I typically don’t read novels, I was not able to put this one down
+until I finished it!
+The characters and the development around them are very relatable.
+It was exciting to see the protagonist go through a lot of trouble and
+frustration but then finally pick up on a great success path.
+The name <em>Brent</em> has become a synonym for human constraints in the company I
+worked at in the last few years.</p>
+<p>The idea to model a business with the three ways and divide the different
+kinds of work into four categories makes sense.
+It is just a model, and no model is ever a silver bullet that fits everywhere,
+but I found this way to look at the structures and processes of an IT company
+very convincing.
+The underlying ideas are very old but they are rebranded in a way that helps IT
+specialists apply them in their world.
+The vocabulary also helps in convincing others.</p>
+<p>This book is another must-read, but only for those who haven’t read the primary
+TPS literature, or for those who simply prefer fun-to-read novels.</p>]]></summary>
+</entry>
+<entry>
     <title>Book Review: The Culture Map</title>
     <link href="https://blog.galowicz.de/2022/12/12/book-review-the-culture-map" />
     <id>https://blog.galowicz.de/2022/12/12/book-review-the-culture-map</id>
@@ -2781,159 +3256,6 @@ While the first chapter concentrates solely on the most interesting new language
 <p>The best thing that can happen to you while writing a book is having <a href="https://arne-mertz.de/">Arne Mertz</a> as the reviewer!
 No book comes without mistakes, but he did a <strong>great job</strong> finding even the most subtle, but critical ones.</p>
 <p>Not to forget the <a href="https://www.meetup.com/de-DE/C-User-Group-Hannover/">C++ user group Hannover</a>, where I got a lot of valuable feedback and inspiration.</p>]]></summary>
-</entry>
-<entry>
-    <title>A reinterpret_cast Trap</title>
-    <link href="https://blog.galowicz.de/2017/01/22/reinterpret_cast_trap" />
-    <id>https://blog.galowicz.de/2017/01/22/reinterpret_cast_trap</id>
-    <published>2017-01-22T00:00:00Z</published>
-    <updated>2017-01-22T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<!-- cSpell:disable -->
-<p>Sometimes, casting is just inevitable.
-And then there’s even not much science behind it, at least it seems so.
-Once some address is provided in a variable of the right size, a typed pointer can be casted out of it, and then the object can be accessed via its members and methods as usual.
-In some situations it is really easy to get the casting wrong, leading to interesting bugs.
-This article describes an example situation and a proper fix.</p>
-<!--more-->
-<p>Imagine we have a base class <code>C</code>, which inherits from <code>B</code>, which inherits from <code>A</code>.
-They all have one <code>int</code> member (4 Bytes each):</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A     <span class="op">{</span> <span class="dt">int</span> a<span class="op">;</span> <span class="op">};</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> B <span class="op">:</span> A <span class="op">{</span> <span class="dt">int</span> b<span class="op">;</span> <span class="op">};</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> C <span class="op">:</span> B <span class="op">{</span> <span class="dt">int</span> c<span class="op">;</span> <span class="op">};</span></span></code></pre></div>
-<p>Assuming that we have an instance of class <code>C</code> somewhere in memory at address <code>X</code>, we know that its member <code>a</code> which it inherited from struct <code>A</code> lies at exactly the same offset.
-Member <code>b</code> is located at <code>X + 4</code>, and <code>c</code> is located at <code>X + 8</code>.</p>
-<p>If we are just interested in one of those specific members, we could simply calculate the offset, and then <code>reinterpret_cast</code>, just like this:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Print c, assuming x is the address of an instance of struct C:</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="op">*</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="dt">int</span><span class="op">*&gt;(</span>x <span class="op">+</span> <span class="dv">8</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span><span class="op">;</span></span></code></pre></div>
-<p>Let’s assume we have some code, which <em>relies</em> on getting addresses of <code>struct A</code> typed addresses in integral form:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A <span class="op">{</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> a <span class="op">{</span><span class="bn">0xa</span><span class="op">};</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> B <span class="op">:</span> A <span class="op">{</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> b <span class="op">{</span><span class="bn">0xb</span><span class="op">};</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Simple inheritance: A -&gt; B1 -&gt; C</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> C <span class="op">:</span> B <span class="op">{</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> c <span class="op">{</span><span class="bn">0xc</span><span class="op">};</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> print_a_from_address<span class="op">(</span><span class="bu">std::</span>uintptr_t<span class="op"> </span>addr<span class="op">)</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> A <span class="op">*</span>a <span class="op">{</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="at">const</span> A<span class="op">*&gt;(</span>addr<span class="op">)};</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="bu">std::</span>hex<span class="op"> &lt;&lt;</span> a<span class="op">-&gt;</span>a <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span><span class="op">;</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    C c<span class="op">;</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    print_a_from_address<span class="op">(</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="bu">std::</span>uintptr_t<span class="op">&gt;(&amp;</span>c<span class="op">));</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>That’s no good style, but this program works.
-The structures have standard definitions which initialize members <code>a</code>, <code>b</code>, and <code>c</code> to values <code>0xa</code>, <code>0xb</code>, and <code>0xc</code>.</p>
-<p>The program will print <code>a</code> at run time, which is what we expect.</p>
-<p>The inheritance chain wraps every inheriting member’s variables past the structure members in memory from which it is inheriting. So the memory layout of <code>c</code> looks like:</p>
-<p>|Relative offset|Value|Structure Type Origin|
-|0x0|0xa|A|
-|0x4|0xb|B|
-|0x8|0xc|C|</p>
-<p>(Every table row represents an integer in memory)</p>
-<p>This program stops to work so nicely when changing the inheritance chain a bit:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> A     <span class="op">{</span> <span class="dt">int</span> a <span class="op">{</span><span class="bn">0xa</span><span class="op">};</span> <span class="op">};</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> B <span class="op">:</span> A <span class="op">{</span> <span class="dt">int</span> b <span class="op">{</span><span class="bn">0xb</span><span class="op">};</span> <span class="op">};</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Foo <span class="op">{</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> f <span class="op">{</span><span class="bn">0xf</span><span class="op">};</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">// Multiple inheritance: (Foo), (A, B) -&gt; C</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> C <span class="op">:</span> Foo<span class="op">,</span> B <span class="op">{</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> c <span class="op">{</span><span class="bn">0xc</span><span class="op">};</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> print_a_from_address<span class="op">(</span><span class="bu">std::</span>uintptr_t<span class="op"> </span>addr<span class="op">)</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">const</span> A <span class="op">*</span>a <span class="op">{</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="at">const</span> A<span class="op">*&gt;(</span>addr<span class="op">)};</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> <span class="bu">std::</span>hex<span class="op"> &lt;&lt;</span> a<span class="op">-&gt;</span>a <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span><span class="op">;</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    C c<span class="op">;</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    print_a_from_address<span class="op">(</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="bu">std::</span>uintptr_t<span class="op">&gt;(&amp;</span>c<span class="op">));</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This program version will print <code>f</code>, and not <code>a</code>.
-This is, because we disturbed the memory layout by letting <code>C</code> first inherit from <code>Foo</code>, then from <code>B</code> (which still inherits from <code>A</code>).</p>
-<p>|Relative offset|Value|Structure Type Origin|
-|0x0|0xf|Foo|
-|0x4|0xa|A|
-|0x8|0xb|B|
-|0xc|0xc|C|</p>
-<p><code>reinterpret_cast</code> is just not the right tool for this, if we just assume that inheriting from <code>A</code> somehow shall do the magic.
-Before showing how to do it right, i first present another failing example:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Unchanged definition of struct A and B... */</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> C <span class="op">:</span> B <span class="op">{</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> c <span class="op">{</span><span class="bn">0xd</span><span class="op">};</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">virtual</span> <span class="dt">void</span> f<span class="op">()</span> <span class="op">{};</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    C c<span class="op">;</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    print_a_from_address<span class="op">(</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="bu">std::</span>uintptr_t<span class="op">&gt;(&amp;</span>c<span class="op">));</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>In this case, the program <em>might</em> print <code>a</code>, but in many cases it will print <em>something</em>.</p>
-<p>The only difference is, that we added a virtual function in struct <code>C</code>.
-This leads to this object containing another <em>pointer</em>.
-It points to a <strong>vtable</strong>.
-(That vtable itself is globally accessible at runtime and contains pointers to all virtual functions which that class contains.
-This is roughly how C++ implements polymorphy.)
-The vtable pointer can be located <em>somewhere</em> in the object.
-In the clang and GCC case, it is located at the beginning of the object, where we assumed the <code>a</code> member.
-And that is why it does not work.</p>
-<h2 id="casting-done-right">Casting done right</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    C1 c1<span class="op">;</span> <span class="co">// normal C B A inheritance</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    C2 c2<span class="op">;</span> <span class="co">// Foo C B A inheritance</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    C3 c3<span class="op">;</span> <span class="co">// virtual function added in class C</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    print_a_from_address<span class="op">(</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="bu">std::</span>uintptr_t<span class="op">&gt;(</span><span class="kw">static_cast</span><span class="op">&lt;</span><span class="at">const</span> A<span class="op">*&gt;(&amp;</span>c1<span class="op">)));</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    print_a_from_address<span class="op">(</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="bu">std::</span>uintptr_t<span class="op">&gt;(</span><span class="kw">static_cast</span><span class="op">&lt;</span><span class="at">const</span> A<span class="op">*&gt;(&amp;</span>c2<span class="op">)));</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    print_a_from_address<span class="op">(</span><span class="kw">reinterpret_cast</span><span class="op">&lt;</span><span class="bu">std::</span>uintptr_t<span class="op">&gt;(</span><span class="kw">static_cast</span><span class="op">&lt;</span><span class="at">const</span> A<span class="op">*&gt;(&amp;</span>c3<span class="op">)));</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>I renamed the 3 variants of struct <code>C</code> to <code>C1</code>, <code>C2</code>, and <code>C3</code>.
-This program will now correctly print <code>a</code> in all these cases.</p>
-<p>What is different here (But same in all cases!), is that the address of the objects are first <code>static_cast</code>ed to <code>const A*</code>, and <strong>then</strong> <code>reinterpret_cast</code>ed to <code>std::uintptr_t</code>.</p>
-<p><code>static_cast</code> applies some magic to the pointer: As it knows from what to what we are casting (from type <code>C</code> to <code>A</code>), it can <em>modify</em> the actual pointer address.
-And it must do that, because if we want an <code>A</code>-typed pointer from the <code>C2</code> object (which first inherits from <code>Foo</code>, and then from <code>B</code>), then we must add 4 bytes to the address, in order to have an actual <code>A</code> pointer. (Because the <code>A</code> part lies 4 bytes behind the <code>Foo</code> part)</p>
-<p>In the <code>C3</code> case (which adds a virtual function), the pointer must be fixed in the sense that the <code>A</code> part of the object lies behind (or in front of? That is compiler dependend, but <code>static_cast</code> will always get it right!) the vtable.
-So in this case, clang’s <code>static_cast</code> will add 8 bytes offset to the pointer, to make it an actual <code>A</code> typed pointer. (It’s 8 bytes, because a pointer is 8 bytes large on 64bit systems which we assume here)</p>
-<p>Another nice feature is, that <code>static_cast</code> will refuse to compile, if the object is by no means related to type <code>A</code>.
-<code>reinterpret_cast</code> just ignores this and gives us no safety.</p>
-<p>However, it was not possible to completely avoid <code>reinterpret_cast</code>, because of the <em>type erasing</em> cast from <code>A*</code> to <code>std::uintptr_t</code>, which <code>static_cast</code> would refuse to do.
-Although we could have used a union which overlays an <code>A</code> pointer with a <code>std::uintptr_t</code>.</p>
-<h2 id="summary">Summary</h2>
-<p>Only use <code>reinterpret_cast</code> when you are <em>1000000%</em> sure what type you have in front of you.
-And even if you could do the math of pointer offset correction yourself - don’t.</p>
-<p>When casting, you should always first consider to <code>static_cast</code> to the type you need first.
-This will <em>fail</em> if you got the types wrong - this is useful in situations where you deal with templates or <code>auto</code> types)
-Do the <code>reinterpret_cast</code> only if it is really inevitable, and even then double check its correctness.</p>
-<p><code>reinterpret_cast</code>-<code>static_cast</code> <em>chains</em> will not make your code prettier.
-As Stroustrup states in his original C++ books, the C++ style casts are <em>intentionally ugly</em>, because they are also potentionally <strong>dangerous</strong>.</p>
-<p><em>EDIT on 2017-01-27: Changed the type from <code>uint64_t</code> to <code>std::uintptr_t</code>, as a comment on <a href="https://www.reddit.com/r/cpp/comments/5pju7q/a_reinterpret_cast_trap/">reddit.com/r/cpp</a> suggested. Thanks for the input!</em></p>]]></summary>
 </entry>
 
 </feed>

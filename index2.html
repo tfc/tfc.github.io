@@ -39,7 +39,30 @@
 <div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2016/11/05/python_style_printf_for_cpp">Python Style printf for C++ with pprintpp</a>
+<div class="posts"><div><h2><a href="./2017/01/22/reinterpret_cast_trap">A reinterpret_cast Trap</a>
+</h2>
+<span class="post-tags">
+<strong><small>January 22, 2017,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>Sometimes, casting is just inevitable.
+And then there’s even not much science behind it, at least it seems so.
+Once some address is provided in a variable of the right size, a typed pointer can be casted out of it, and then the object can be accessed via its members and methods as usual.
+In some situations it is really easy to get the casting wrong, leading to interesting bugs.
+This article describes an example situation and a proper fix.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2017/01/22/reinterpret_cast_trap" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2016/11/05/python_style_printf_for_cpp">Python Style printf for C++ with pprintpp</a>
 </h2>
 <span class="post-tags">
 <strong><small>November  5, 2016,</small>
@@ -227,28 +250,6 @@ Lists can be filtered, transformed, mapped, reduced, etc.
 Having all this nice stuff as a template meta library is quite an enabler for complex compile time meta programs.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/05/08/compile_time_type_lists" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
-Read more </a>
-</p>
-</div>
-
-<hr>
-<div><h2><a href="./2016/05/05/template_meta_programming_basics">Template Meta Programming Basics</a>
-</h2>
-<span class="post-tags">
-<strong><small>May  5, 2016,</small>
-</strong>
-
-
-<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="./tags/meta-programming.html" class="tag-link">meta-programming</a></small>
-</strong>
-</span>
-<!-- cSpell:disable -->
-<p>C++ template meta programs are at first really hard to read.
-This is because the template mechanism accidentally became turing complete, although it was invented to enable for type-agnostic programming of generic algorithms.
-However, now the world knows that the C++ template part of the language <em>is</em> turing complete, people started writing full programs in it, and it enhances the power and flexibility of libraries quite a lot.
-This article aims to explain some very basic things one needs to know about the C++ template meta programming language, in order to be able to do things with it, or even understand foreign programs.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/05/05/template_meta_programming_basics" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
 Read more </a>
 </p>
 </div>
