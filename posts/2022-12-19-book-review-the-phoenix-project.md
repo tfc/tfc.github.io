@@ -23,6 +23,8 @@ What principles does it teach, and where does it fall short?
 
 ## Book & Authors
 
+[Link to the Amazon Store Page](https://amzn.to/3hcHGpf)
+
 The first edition of this book is from 2013, its second version is from 2014,
 and the third version, which is called *the 5th-anniversary edition*, was
 released in 2018.

@@ -25,6 +25,8 @@ international teams.
 
 ## Book & Author
 
+[Link to the Amazon Store Page](https://amzn.to/3h7RAZ6)
+
 The book is originally from 2014 but got its new yellow cover in 2016, which
 is still called the first edition.
 It presents 8 handy chapters distributed over ~290 pages.

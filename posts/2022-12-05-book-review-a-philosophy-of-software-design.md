@@ -13,12 +13,13 @@ appropriate vocabulary for *your* next discussion about software quality.
 
 <!--more-->
 
-
 <div class="book-cover">
   ![Book Cover of "A Philosophy of Software Design"](/images/books/a-philosophy-of-software-design.png)
 </div>
 
 ## Book & Author
+
+[Link to the Amazon Store Page](https://amzn.to/3B8ufgM)
 
 The book is originally from 2018 and its second edition was released in 2021.
 It it ~180 pages, so it should be a very quick read.
