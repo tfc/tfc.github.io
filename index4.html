@@ -39,7 +39,29 @@
 <div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2016/02/19/how_do_sfinae_traits_work">How Does the Typical SFINAE Type Trait Work?</a>
+<div class="posts"><div><h2><a href="./2016/02/20/short_file_macro">A __FILE__ Macro Which Does Not Contain the Whole Source File Path</a>
+</h2>
+<span class="post-tags">
+<strong><small>February 20, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>The <code>__FILE__</code> macro expands to the current source file name at compile time.
+It is not really useful if the source file paths which the build system uses, are very long, as this would bloat log output with long path names.
+It would be useful to have a shortened version, which only contains the file name without the whole path.
+This article describes how to implement a <code>__SHORT_FILE__</code> macro, that does not add any run time overhead.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/02/20/short_file_macro" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2016/02/19/how_do_sfinae_traits_work">How Does the Typical SFINAE Type Trait Work?</a>
 </h2>
 <span class="post-tags">
 <strong><small>February 19, 2016,</small>
