@@ -12,6 +12,7 @@
       "Haskellers",
       "Hoogle",
       "Jacek",
+      "NixOS",
       "Oceansprint",
       "Ousterhout",
       "Overfitting",
@@ -24,10 +25,14 @@
       "hackathon",
       "hackathons",
       "nixpkgs",
+      "nixpkgs",
       "pprintpp",
-      "reimplementation"
+      "reimplementation",
+      "toolchain",
+      "toolchains"
     ],
     "ignoreWords": [
+      "pkgs",
       "struct"
     ],
     "ignorePaths": [
