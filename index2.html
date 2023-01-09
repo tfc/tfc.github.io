@@ -12,10 +12,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Jacek's Software Engineering Blog &middot; Posts (Page 2)</title>
-<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="./">Jαcεκ's Software Engineering Bλog</a>
+<title>Jacek's Blog &middot; Posts (Page 2)</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="./">Jacek's Blog</a>
 </h1>
-<p class="lead">Day-to-day experiences and thoughts about software engineering</p>
+<p class="lead">Software Engineering Consultant</p>
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="./">Home</a>
 <a class="sidebar-nav-item" href="./about.html">About / CV</a>
@@ -36,10 +36,32 @@
 </div>
 <div class="content container"><h1>Posts (Page 2)</h1>
 
-<div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a></div>
+<div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a> <a style="font-size: 100%" href="./tags/python.html">python</a> <a style="font-size: 100%" href="./tags/testing.html">testing</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2017/07/02/order2_iterator">Iterators are also part of the C++ zero cost abstractions</a>
+<div class="posts"><div><h2><a href="./2018/02/27/managing_libraries_with_nix">Managing libraries with Nix</a>
+</h2>
+<span class="post-tags">
+<strong><small>February 27, 2018,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'nix'." href="./tags/nix.html" class="tag-link">nix</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>While learning Haskell and using its really smart library dependency management tools (<a href="https://www.haskell.org/cabal/"><code>cabal</code></a> and <a href="https://docs.haskellstack.org/en/stable/README/"><code>stack</code></a>), i realized that the C++ eco system has a problem:
+There are no handy <em>established</em> tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way.
+<a href="https://nixos.org/nix/"><code>Nix</code></a> however convinced me to be more versatile and powerful than <a href="https://www.conan.io/">Conan</a> and handier than <a href="https://www.docker.com/">Docker</a>, <a href="https://www.vagrantup.com/">Vagrant</a>, etc. (although it’s fair to say that i am mixing use cases here a little bit!)
+In this article, i am going to showcase this great tool a little bit.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2018/02/27/managing_libraries_with_nix" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2017/07/02/order2_iterator">Iterators are also part of the C++ zero cost abstractions</a>
 </h2>
 <span class="post-tags">
 <strong><small>July  2, 2017,</small>
@@ -226,28 +248,6 @@ Read more </a>
 <p>This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/06/16/cpp_template_compile_time_brainfuck_interpreter" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
-Read more </a>
-</p>
-</div>
-
-<hr>
-<div><h2><a href="./2016/05/15/turing_tape_with_type_lists">Implementing a Turing Tape for Use at Compile Time</a>
-</h2>
-<span class="post-tags">
-<strong><small>May 15, 2016,</small>
-</strong>
-
-
-<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="./tags/meta-programming.html" class="tag-link">meta-programming</a></small>
-</strong>
-</span>
-<!-- cSpell:disable -->
-<p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table.
-Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages.
-It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++.
-As a preparation for the next article, i will show how to implement a turing tape based on type lists, usable at compile time.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/05/15/turing_tape_with_type_lists" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
 Read more </a>
 </p>
 </div>

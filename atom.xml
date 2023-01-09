@@ -8,8 +8,475 @@
         <name>Jacek Galowicz</name>
         <email>jacek@galowicz.de</email>
     </author>
-    <updated>2023-01-02T00:00:00Z</updated>
+    <updated>2023-01-09T00:00:00Z</updated>
     <entry>
+    <title>Automatic Testing of Display Resolution and Frame Drop Detection</title>
+    <link href="https://blog.galowicz.de/2023/01/09/automatic-testing-of-display-resolution-and-frame-drop-detection" />
+    <id>https://blog.galowicz.de/2023/01/09/automatic-testing-of-display-resolution-and-frame-drop-detection</id>
+    <published>2023-01-09T00:00:00Z</published>
+    <updated>2023-01-09T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<!-- cSpell:words ArUco GPIO Raspberry raspi actionism Vasa -->
+<!-- cSpell:words Bjarne Stroustrup -->
+<!-- cSpell:ignore autoplay -->
+<p>This week, I like to share a project with you that started as a very interesting
+challenge and developed into an interdisciplinary, productive, and fun
+experience:
+A fully automatic multi-display end-to-end customer test prototype.
+In the end, it was surprising to see what parts of the code the most effort
+went into.</p>
+<!--more-->
+<h2 id="initial-situation">Initial Situation</h2>
+<div class="floating-image-right">
+<figure>
+<img src="/images/display-testing/developer-qa.webp" width="300" alt="The impact of bad news gets worse the later it arrives" />
+<figcaption aria-hidden="true">The impact of bad news gets worse the later it arrives</figcaption>
+</figure>
+</div>
+<p>The project partner’s business sells laptops with customized operating system
+support.
+Before every release, custom operating system images have to be tested against
+the software and hardware combinations that are certified and shipped with and
+for the supported laptop models.
+These tests have so far been executed manually in a dedicated QA department.
+Manual testing introduces unwanted delays in the product cycles, so the project
+partner’s challenge was:
+How to automate the most time-consuming part of it?
+Concentrating on the manual, most time-consuming, and costly phases of the
+software release process is strategically the best way to improve the throughput
+of the organization, as we might already have learned from the
+<a href="/2022/12/19/book-review-the-phoenix-project">three ways in the book “The Phoenix Project”</a>.</p>
+<p>After each successful test phase, professionals of the QA department sign the
+test result documentation <em>personally</em> (autograph signature, not (yet)
+cryptographic signature).
+For this reason, automated testing not only had implications for the development
+department but also legal ones for the QA:
+We could improve the processes by automating phases that have been performed
+manually before and then have developers use those earlier and frequently to
+reduce the number of bugs in release phases in the final test runs.
+But this had to happen step by step, so the test method had to be designed in a
+way that the non-programmers, who still have to <em>sign</em> the test results before
+every release, trust the automated test approach to be equivalent to manual
+testing in its validation of tested functionality.
+If we failed this constraint, we would just produce another stage somewhere in
+the existing processes.
+It would slowly drift away from what happens in actual pre-release QA over time
+and all the investment would miss its target.</p>
+<p>This constraint made the overall problem much harder.
+I see this as a side effect of change being more difficult in big corporations
+compared to smaller startups:
+You typically face multiple stakeholders with sometimes contradicting
+incentives, often combined with a big portion of risk avoidance.
+In such committee-like environments, no one can take full ownership and “just
+decide” requirements - instead, solutions are discussed until everyone agrees.
+This often leads to extremely complex solutions with the risk of missing the
+point.</p>
+<blockquote>
+<p>This part of the story reminded me of the <a href="https://www.stroustrup.com/P0977-remember-the-vasa.pdf">“Remember the Vasa!” paper by
+Bjarne Stroustrup in the C++ committee</a>.
+The <a href="https://en.wikipedia.org/wiki/Vasa_(ship)">Wikipedia article about the Vasa story</a>
+is also worth reading.</p>
+</blockquote>
+<h2 id="technical-problem-description">Technical Problem Description</h2>
+<div class="floating-image-right">
+<figure>
+<img src="/images/display-testing/im-not-a-robot.webp" width="300" alt="Many systems are exclusively designed for use by humans" />
+<figcaption aria-hidden="true">Many systems are exclusively designed for use by humans</figcaption>
+</figure>
+</div>
+<p>The manual process that should be automated, starts with installing a release
+candidate image on a laptop, then booting into the installed OS.
+From there, all the basic things like network/internet access, display support,
+suspend-resume support, video playback performance, etc., etc. had to be tested.
+The whole test process resembled multiple phases of a typical day in the life
+of the product:</p>
+<ul>
+<li>The image is installed on the laptop under test (unattended USB installer)</li>
+<li>The laptop gets power cycled and boots into the OS</li>
+<li>LAN and Wi-Fi connectivity are verified</li>
+<li>external screens are plugged, in different variations:
+<ul>
+<li>different order of plugging</li>
+<li>unplugging all screens must result in an automatic system suspend, if and
+only if the laptop lid is closed</li>
+<li>the system has to properly wake up with/without external screens when the
+power button is actuated or respectively the laptop lid was opened</li>
+</ul></li>
+<li>VMs are launched, and their network connectivity verified</li>
+<li>Multiple display resolutions have to be tried and verified that each tested
+display model shows the right picture (multi-display context: orientation and
+ordering) with the right resolution</li>
+<li>HD Videos are launched inside/outside VMs and verified for playback with good
+frame rate</li>
+</ul>
+<p>After the iterative process of thinking of and proposing solutions, the
+following technical requirements for the automatic test process were defined:</p>
+<ul>
+<li>Network access via both cable and Wi-Fi has to be verified</li>
+<li>Plugging in and out displays must happen physically, i.e. the electric cable
+contact shall be cut instead of doing it in software or switching off the
+displays</li>
+<li>Similar to the displays, laptop docking and undocking must look from a
+hardware perspective as if happened physically</li>
+<li>Laptop lid closing and opening must happen physically</li>
+<li>Automated installation of the test image may be performed via network boot</li>
+<li>The product including software and hardware must not differ from the shipped
+production version for the test as this would impede the validity of the test
+results.
+The only exceptions are:
+<ul>
+<li>Remote control of operating system and applications can be done via a
+specific service (developed and used by the project partner’s development
+department) that is reachable via serial line</li>
+<li>We can solder an electrical cable to the power buttons of the laptop models
+to simulate users powering the device on/off and suspending to RAM, as
+<a href="https://en.wikipedia.org/wiki/Intel_Active_Management_Technology">Intel AMT</a>
+was disabled for security reasons</li>
+</ul></li>
+<li>The <em>real physical</em> display output has to be captured for different display
+models
+<ul>
+<li>For this reason, video capture devices as HDMI/DP grabbers were ruled out
+by the project partner</li>
+</ul></li>
+</ul>
+<p>The result must provide the users (Developer, QA specialist) a REST interface
+to upload an installer image and trigger a full test run.
+After the test has finished, the test results must be available for download.
+In the beginning, the result document must be human-readable, printable HTML
+(and in that sense, signable).
+All screenshots and videos must be attached to it as proof.
+In the future, this would happen without human interaction, and instead being
+triggered by CI pipelines as part of a quality gate that each product change
+must go through.</p>
+<h2 id="solution">Solution</h2>
+<p>The prototype design we came up with, roughly followed this schema:</p>
+<figure>
+<img src="/images/display-testing/multi-display-setup.png" width="600" alt="Schematic System and Display Test Setup" />
+<figcaption aria-hidden="true">Schematic System and Display Test Setup</figcaption>
+</figure>
+<p>The <strong>Test Controller</strong> was a normal Linux computer with enough USB plugs and
+bandwidth to withstand multiple USB webcam HD streams and a serial cable
+adapter.
+It also had to have two LAN connections: One to the system under test for DHCP,
+PXE boot, and general network gateway, as well as one to the outside that
+provides the REST interface.
+Also, it had to provide Wi-Fi to be configured as an access point.</p>
+<p>The <strong>I/O Control</strong> module was a Raspberry Pi due to its easily programmable
+general-purpose I/O ports and USB OTG functionality.
+The USB OTG functionality was not yet used in the prototype.
+In later versions, it should be used for booting official installer images via
+USB.</p>
+<p>The first physical setup was just enough to verify the feasibility of the
+whole project as quickly as possible:</p>
+<figure>
+<img src="/images/display-testing/setup.jpg" width="800" alt="Physical Prototype System and Display Test Setup: The odd part of this project are these hand-crafted display frames that hold the webcams in the right place." />
+<figcaption aria-hidden="true">Physical Prototype System and Display Test Setup: The odd part of this project are these hand-crafted display frames that hold the webcams in the right place.</figcaption>
+</figure>
+<p>The most important hardware setup details are:</p>
+<ul>
+<li>The display port switch was a hardware Y-switch with a button that was
+connected to the Raspi’s <a href="https://en.wikipedia.org/wiki/General-purpose_input/output">GPIO ports</a></li>
+<li>For HDMI, which was more complicated because
+<a href="https://en.wikipedia.org/wiki/HDMI#Content_protection_(HDCP)">HDMI is encrypted</a>,
+we did not find such devices, so we used a remote-controllable HDMI switch.
+It turned out that this device was <em>not</em> matching the requirements.
+The project partner accepted that we design a new board that fits the
+requirements as a follow-up after this prototype.</li>
+<li>The docking station’s power plug state was controlled via a
+remote-controllable power socket</li>
+<li>The webcams were simply mounted on quick-to-build aluminum frames.
+These were the most unusual part of the whole setup and regularly drew
+intrigued looks.
+The bigger the screen, the bigger the minimal distance of the webcam to the
+screen had to be to fully capture the full display.
+Being made of aluminum and very light wood, the displays would not tilt under
+the webcam’s weight.</li>
+</ul>
+<p>The last detail is how we automated the laptop lid opening and closing.
+Most laptops have a
+<a href="https://en.wikipedia.org/wiki/Hall_effect_sensor">hall sensor</a>,
+so we installed an electromagnet that could be triggered by another one of the
+raspi’s GPIO pins:</p>
+<figure>
+<img src="/images/display-testing/laptop-lid-magnet.png" width="600" alt="Most laptop lids have Hall Sensors that can be triggered with magnets" />
+<figcaption aria-hidden="true">Most laptop lids have Hall Sensors that can be triggered with magnets</figcaption>
+</figure>
+<p>After all physical setup and connections were put in place, the remaining work
+was “only” software.
+Setting up the raspberry so that it would accept I/O commands over network, and
+the test controller so that it would be a DHCP and PXE boot server, control all
+the webcams, the Raspberry Pi, the remote power socket, etc. was a lot of system
+configuration.
+Using <a href="https://nixos.org/">NixOS</a>, the configuration of both systems was simple
+and could be performed in a short time with only a few hundred lines of NixOS
+configuration modules.
+The best thing about this approach was that we could commit the configuration
+with the code, and it was trivially reproducible on other machines.</p>
+<p>The bulk of the work was now in the software development of a service that runs
+a REST interface to accept uploads of new installer images, creates and
+schedules test runs from those, and then executes them.
+The professionals in the project partner’s department who would later work with
+this were already familiar with the Python language and ecosystem.
+This made Python a natural choice.</p>
+<h3 id="display-resolution-verification">Display Resolution Verification</h3>
+<p>How to determine if a screen shows the right display solution?
+Typically, one would query the X/Wayland server or video driver for this
+information.
+Previously, it was common to check this manually during the manual test phase:
+If the resolution was wrong, the experienced human tester would be able to
+recognize this at the first glance.
+In the end, the prototype had to verify that with the selected display model,
+the resolution that is visible to the end user is <em>really</em> the one that the
+driver claims.</p>
+<p>To accomplish this task, the following problems had to be solved in that order:</p>
+<ol type="1">
+<li>Take a photo of the physical display using the mounted webcam</li>
+<li>Identify the display’s corners and normalize the photo, so it contains only
+the display’s “screenshot” portion</li>
+<li>Evaluate the screenshot’s content: Is it the right picture and resolution?</li>
+</ol>
+<p>Steps 1 and 2 were straightforward as the test controller could dictate
+what the laptop under test should display on which screen.
+This way the test script would ask the OS under test to set up the screen(s)
+with specific ordering and resolutions and then display some test images for
+further verification.</p>
+<p>We chose to use the Python version of the <a href="https://opencv.org/">OpenCV</a> library,
+which provides
+<a href="https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html">ArUco codes</a>
+and image recognition functions to detect them:</p>
+<figure>
+<img src="/images/display-testing/aruco-markers-example.jpg" alt="Example ArUco Markers from docs.opencv.org" />
+<figcaption aria-hidden="true">Example ArUco Markers from <a href="https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html">docs.opencv.org</a></figcaption>
+</figure>
+<p>Different information can be extracted from detected ArUco codes on photos:</p>
+<dl>
+<dt>The code’s ID</dt>
+<dd>
+<p>This can be freely chosen depending on the number of “blocks” the code
+consists of. To choose the number of blocks, library users would select
+so-called ArUco dictionaries.
+Dictionaries with bigger blocks are easier to detect even on bad photos or
+from a far distance but transport smaller ranges of ID numbers.</p>
+</dd>
+<dt>The pixel position of all the corners of each code</dt>
+<dd>
+<p>The size or distance can be calculated from those</p>
+</dd>
+<dt>The code’s geometric orientation as a euclidean XYZ-vector</dt>
+<dd>
+<p>In our case, this was useful for normalizing slightly crooked photos, as the
+mounted webcam is never perfectly aligned</p>
+</dd>
+</dl>
+<figure>
+<img src="/images/display-testing/aruco-markers-orientation-example.jpg" alt="Detected ArUco markers with added orientation docs.opencv.org" />
+<figcaption aria-hidden="true">Detected ArUco markers with added orientation <a href="https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html">docs.opencv.org</a></figcaption>
+</figure>
+<p>So, to quickly evaluate how well OpenCV would work for us, I printed an ArUco
+code and glued it onto my vacuum bot at home.
+Then, I wrote an OpenCV script that “normalizes” the image in a way that the
+ArUco code gets translated to the middle of the output image:</p>
+<figure>
+<iframe width="1000" height="400" src="https://www.youtube.com/embed/d6SpXS115fg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
+</iframe>
+<figcaption>
+Left side: The original video.
+Right side: The “corrected” version of the same video with the intention to
+always have the ArUco code upright and straight in the video.
+</figcaption>
+</figure>
+<p>The vacuum bot proof-of-concept was more a fun project for me than a serious
+demonstrator for display-corner detection.
+To present the project partner with how solid this approach would be, I created
+the next demo, which was more relevant for actual screen recording.
+The script turned out to be robust in such extreme examples.
+Our use case would be “boring” in contrast.</p>
+<figure>
+<iframe width="1000" height="280" src="https://www.youtube.com/embed/pCcIABQVBUU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
+</iframe>
+<figcaption>
+Left side: The original video.
+Right side: The “corrected” version of the same video with the intention to
+always have a straight view of the display’s content.
+</figcaption>
+</figure>
+<p>So that was steps 1 and 2.
+How to verify the display resolution?
+We did this:</p>
+<figure>
+<img src="/images/display-testing/pilot-image.png" alt="Test Pilot Image with Display Resolution Encoding: The green numbers show how we encoded the information that the display ought to have a resolution of 1920x1080 pixels. The “primary” bit was for differentiating between different displays." />
+<figcaption aria-hidden="true">Test Pilot Image with Display Resolution Encoding: The green numbers show how we encoded the information that the display ought to have a resolution of 1920x1080 pixels. The “primary” bit was for differentiating between different displays.</figcaption>
+</figure>
+<p>We decomposed the image resolution to transport it encoded in the IDs of
+multiple ArUco codes, which then could easily be composed back from the webcam
+photos.</p>
+<blockquote>
+<p>At this point, this information was redundant because the test system already
+knew at any point in time which display resolution it is testing.
+However, adding some redundancy allowed us to greatly decompose the system’s
+parts into more independent and reusable modules.</p>
+</blockquote>
+<p>From knowing the nominal display resolution, we can calculate how many percent
+of the picture the black ArUco code square size may occupy.
+This is even possible without knowing the display’s physical size.
+Fortunately, algorithms like this are trivially unit-testable with synthesized
+and real-life input samples.</p>
+<p>Another remaining problem was that the webcams tried to automatically refocus
+and readjust contrast whenever the display content changed (especially from dark
+to bright or the other way around), and often would not find the focus for a
+long time.
+Even on really bad photos, the ArUco codes with big blocks were easy to
+identify, so it was technically very easy to distinguish if the display is
+already displaying the right content, <em>but</em> the webcam has still not finished
+re-focusing.
+The firmware does officially allow disabling autofocus via the
+<a href="https://www.kernel.org/doc/html/v4.8/media/v4l-drivers/index.html">V4L</a>
+interface, but it did not work for us - it was unclear to us if this was due to
+the camera model, a firmware bug, or whatever.
+In the limited project time, we made it work with robust error handling and wait
+phases.
+These could simply be dropped in future efforts of fixing the autofocus.</p>
+<h3 id="automatic-frame-drop-detection">Automatic Frame Drop Detection</h3>
+<p>To check if video playback is fluid, we had to select an approach where the
+video itself can be chosen by the project partner’s customers:
+If end-users experience some video to be stuttering, the partner desired to be
+able to embed it in their testing to give developers a way to verify their fix.</p>
+<p>We wrote code that takes the provided video and slightly adapts it by adding
+multiple ArUco codes.
+By defining how fast (i.e. how many pixels per frame) the ArUco codes move, we
+were able to determine if and how many frames were dropped during playback.</p>
+<figure>
+<iframe width="1000" height="575" src="https://www.youtube.com/embed/y2YUuynf9AE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
+</iframe>
+<figcaption>
+The ArUco codes move at a predefined speed.
+This video has artificial stutters added to test the accuracy of the
+algorithm.
+</figcaption>
+</figure>
+<p>As the display’s and the webcam’s image buildup are not synchronized, there’s
+some probability for one or the other frame to contain a distorted ArUco code.
+So we added four codes of which the majority stays undistorted, which made the
+frame drop detection very solid on every frame.</p>
+<p>During manual testing, testers were able to say if a video stutters or not,
+and maybe quantify it by “stutters a lot” or “only a bit”.
+The output of the algorithm allowed us to count the <em>frequency</em> of frame drops
+as well as the <em>quantity</em> of dropped frames.
+Objective quality metrics using histograms could be considered from this point,
+which enhances the whole QA phase through rich automatic quantitative analysis.
+We did not go too crazy on the analysis here because it was yet unclear which
+exact metrics developers would later ask for (if at all) when analyzing low
+frame rates.</p>
+<h2 id="learnings">Learnings</h2>
+<p>The whole project took roughly three months.
+The parts that were initially thought to be the most complex - the image &amp; video
+processing - were done in a few weeks, including all trial &amp; error.</p>
+<p>There was no <em>specific</em> part that contributed the most complexity - it was the
+mix of all disciplines:
+System setup, network (LAN and Wi-Fi) configuration, dynamic network boot,
+control of primitive I/O, photo and video stream capture, remote control, VM
+configuration, etc., etc.
+Setting up a system with so many moving parts is simply complex.</p>
+<p>Maybe the most important consideration that went into all spots of all library
+code that was written for this project, was <strong>error handling</strong>.
+In this project, errors could come from <em>everywhere</em>:
+Some cable might get loose, some network connection might not work, some webcam
+might need extraordinarily long to focus, some VM might start up with abnormal
+delay, the Wi-Fi connection takes longer than normal despite lab conditions,
+etc. - all the cases needed to be handled with care.</p>
+<p>We rigorously worked on the clean discrimination between two general kinds of
+errors:</p>
+<ul>
+<li><u>Infrastructure failures</u>: The test setup failed, not the product under test.</li>
+<li><u>Test failures</u>: The product under test behaves incorrectly, hence a bug is
+discovered.</li>
+</ul>
+<div class="floating-image-right">
+<p><img src="/images/display-testing/prove-improve.webp" /></p>
+</div>
+<p>The whole prototype had to be rock solid in all cases every single time.
+Flaky test infrastructure eventually results in more cost than value.
+The project was part of an effort to optimize the overall throughput of the
+development and QA departments.
+Running such an automatism for years and gaining experience with it would expose
+further optimization potential.
+To facilitate that this proof-of-concept is just the start of an ongoing journey
+to faster and more reliable testing, it had to be designed in a way that it is
+obvious at all times where things fall apart, and how often.
+With this information, the operators of such automatic infrastructure would be
+able to fix outages as fast as possible, and also improve its mechanisms to
+continuously reduce failure potential.</p>
+<p>Every line of code that makes the product more testable saves you hundreds and
+thousands of lines of testing code.
+So far, <em>testability</em> was mostly considered on the level of unit tests, but
+looking at higher levels of the integration chain, testability as a concept
+vanished more and more.
+This is understandable, considering that programmers have less and less
+influence the farther away the integration of their components is away from
+them - but in the end, it’s only the programmers who can make a software product
+testable as this has to happen at the beginning, in the code.
+If not only builds and unit tests but the integration of components is within
+reach for software developers, it starts to make sense to put the design of
+higher-level integration tests into their definition of done.
+This is, of course, the idea of putting <em>Dev</em> and <em>Ops</em> together to <em>DevOps</em>.
+In many companies, this is more said than done, because management is not
+made aware or does not understand the commitment and restructuring of
+departments that this requires.
+<em>Restructuring</em> as a word is also mostly frowned upon by all participating
+parties.</p>
+<p>Talking about integration and ops of products:
+This new test automatism was in some sense a little product itself that needs
+continuous improvement, integration, and deployment, too.
+A big stack of Python code (we also reused some existing C++ and Haskell code)
+is not yet a running deployment.
+But this turned out to be rather simple due to our technology choice:
+Interestingly, using <a href="https://nixos.org/">NixOS</a> helped us a <strong>lot</strong> in defining
+what the running configuration looks like.
+Finishing this product in this time frame with something else than the
+dependency and package management of nix, as well as the compositional way to
+define system configurations of NixOS, is hardly imaginable.
+While developing complex scripts that operate on many different technical
+domains, nix also helped us with its
+<a href="https://repology.org/repositories/graphs">huge and up-to-date package collection</a>.
+Duplicating the lab setup with slightly different hardware in the project
+partner’s lab was a smooth process due to the nature of NixOS configurations.</p>
+<h2 id="summary">Summary</h2>
+<p>The project acceptance meeting and its big demo were delightful and fun for both
+sides.
+The project partner was happy that it all worked out as planned and
+accepted the follow-ups that resulted from building the prototype.
+We were happy with how well it went and the amount of complexity we got
+under control with a relatively slick system design.</p>
+<div class="floating-image-right">
+<p><img src="/images/display-testing/production.webp" /></p>
+</div>
+<p>Apart from the follow-ups, it is now in their hands to run and integrate this
+automated test infrastructure deeper into their processes, and scale it up over
+time in the ongoing quest to increase the overall throughput of their software
+pipeline.
+Whenever the next improvement or reorganization comes along, we stand by as a
+helping partner.</p>
+<p>I think it is very important to understand that
+<a href="https://en.wikipedia.org/wiki/Shift-left_testing">shift-left testing</a>,
+<a href="https://en.wikipedia.org/wiki/Scrum_(software_development)">SCRUM</a>,
+<a href="https://en.wikipedia.org/wiki/Extreme_programming">Extreme Programming</a>,
+<a href="https://en.wikipedia.org/wiki/Agile_software_development">Agile</a> and
+<a href="https://en.wikipedia.org/wiki/Lean_software_development">Lean</a>
+software development, etc. are not approaches that work well with short-term
+actionism.
+If you encounter problematic releases, quality problems, or eternal lead times
+for new features and bug fixes in your company, then this is most certainly not
+solvable with short projects that are thrown on the problem.
+The solution always lies in the change of existing structures:
+Such problems are often just a symptom of the fact that the existing structures
+no longer scale on the current level.
+Changing structures is very problematic, especially in big companies, and can
+not result in perfection after the first step.
+External helpers with new perspectives can help with the question of <em>what</em>
+scalable structures for your situation look like and <em>how</em> to get there step by
+step.</p>]]></summary>
+</entry>
+<entry>
     <title>Book Review: Basic Forms of Anxiety</title>
     <link href="https://blog.galowicz.de/2023/01/02/book-review-basic-forms-of-anxiety" />
     <id>https://blog.galowicz.de/2023/01/02/book-review-basic-forms-of-anxiety</id>
@@ -3746,433 +4213,6 @@ destroyed afterwards.</p>
 <li><a href="https://nixos.wiki/wiki/Cross_Compiling" class="uri">https://nixos.wiki/wiki/Cross_Compiling</a></li>
 <li><a href="https://matthewbauer.us/blog/beginners-guide-to-cross.html" class="uri">https://matthewbauer.us/blog/beginners-guide-to-cross.html</a></li>
 </ul>]]></summary>
-</entry>
-<entry>
-    <title>Managing libraries with Nix</title>
-    <link href="https://blog.galowicz.de/2018/02/27/managing_libraries_with_nix" />
-    <id>https://blog.galowicz.de/2018/02/27/managing_libraries_with_nix</id>
-    <published>2018-02-27T00:00:00Z</published>
-    <updated>2018-02-27T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<!-- cSpell:disable -->
-<p>While learning Haskell and using its really smart library dependency management tools (<a href="https://www.haskell.org/cabal/"><code>cabal</code></a> and <a href="https://docs.haskellstack.org/en/stable/README/"><code>stack</code></a>), i realized that the C++ eco system has a problem:
-There are no handy <em>established</em> tools that let the developer declare which libraries (and versions) are required for a project which can then be automatically installed in a portable way.
-<a href="https://nixos.org/nix/"><code>Nix</code></a> however convinced me to be more versatile and powerful than <a href="https://www.conan.io/">Conan</a> and handier than <a href="https://www.docker.com/">Docker</a>, <a href="https://www.vagrantup.com/">Vagrant</a>, etc. (although it’s fair to say that i am mixing use cases here a little bit!)
-In this article, i am going to showcase this great tool a little bit.</p>
-<!--more-->
-<p>This article is rather long (mostly because of many command line excerpts).
-Feel free to jump to the end, where we will compile and run the same project with 3 different compilers just by changing the command line a bit.</p>
-<h2 id="use-case-example">Use case example</h2>
-<p>So i have been developing a little library to see if i can implement a handy parser library in C++ that models how you build parsers in Haskell using the <a href="https://hackage.haskell.org/package/parsec"><code>parsec</code> library</a>.</p>
-<p>The project can be checked out on <a href="https://github.com/tfc/attoparsecpp">github.com/tfc/attoparsecpp</a>. It is however not important to look into it.
-This article is not at all about parsers, Haskell, or my specific library.
-My little project shall just serve as an example project that has unit tests and benchmarks.</p>
-<p>For libraries it is important that they build warning-free with:</p>
-<ul>
-<li>different compilers</li>
-<li>even different compiler versions</li>
-</ul>
-<p>In addition to that, it is a nice-to-have to also compare the benchmark numbers among those!</p>
-<p>However, the library has the following dependencies:</p>
-<ul>
-<li><a href="https://github.com/catchorg/Catch2"><code>catch</code></a> for building the unit tests</li>
-<li><a href="https://github.com/google/benchmark"><code>benchmark</code> (from Google)</a> for building the benchmarks</li>
-</ul>
-<p>That means: in order to build this project you need to install those.
-Some developers just install them the oldschool way or they pull them in as git submodules and then embedd them into the <code>Makefile</code> (or <code>cmake</code> pendants etc.).
-Some other developers would define Docker images (or Vagrant etc.).
-There is also the Conan package manager which enables the developer to just define which libraries are needed.</p>
-<h2 id="installing-nix">Installing Nix</h2>
-<p>Let us now completely concentrate on Nix. What is it? <a href="https://nixos.org/nix/">The Nix homepage</a> states:</p>
-<blockquote>
-<p>Nix is a powerful package manager for Linux and other Unix systems that makes package management reliable and reproducible.
-It provides atomic upgrades and rollbacks, side-by-side installation of multiple versions of a package, multi-user package management and easy setup of build environments.
-…</p>
-</blockquote>
-<p>Nix can be installed on Linux, Mac, and other Unixes.
-(I guess it can be installed in the Linux-Subsystem on Windows, but i am not sure as i am no Windows user).
-Just as a side note: There is even a <a href="https://nixos.org/">Linux distribution called “NixOS”</a>.</p>
-<p>The installation of Nix is really simple.
-Please first study the content of <a href="https://nixos.org/nix/install"><code>https://nixos.org/nix/install</code></a> and then run the following command in the bash (Or run the parts of the script you like. It is interesting how about 90% of the critisizm on Nix concentrate on this shell command.):</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> curl https://nixos.org/nix/install <span class="kw">|</span> <span class="fu">sh</span></span></code></pre></div>
-<p>The installation script will download and extract a large tarball into the <code>/nix</code> folder on your system.
-In addition to that, it will activate a build daemon and create some user accounts in order to isolate things while building packages.
-After the installation, there will never be any need to use <code>sudo</code> in combination with nix calls again.
-It is generally possible to install nix on systems where even creating <code>/nix</code> is not allowed (see the <a href="https://nixos.wiki/wiki/Nix_Installation_Guide">installation guide</a> for more details).</p>
-<h2 id="installing-project-dependencies">Installing project dependencies</h2>
-<p>After cloning the C++ project on a mac where only <code>git</code> and <code>clang++</code>, we will have trouble building the project without installing the libraries:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd test <span class="kw">&amp;&amp;</span> <span class="fu">make</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">c++</span> <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-c</span> main.cpp</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">main.cpp:2:10:</span> fatal error: <span class="st">&#39;catch/catch.hpp&#39;</span> file not found</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;catch/catch.hpp&gt;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>         <span class="ex">^~~~~~~~~~~~~~~~~</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> error generated.</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">make:</span> <span class="pp">***</span> [main.o] Error 1</span></code></pre></div>
-<p>For the unit tests, we only need the <code>catch</code> library.
-That’s easy, as the Nix repository has that.</p>
-<blockquote>
-<p>Another “catch” is that the <code>make</code> call ended up invoking <code>c++</code>, which is our Mac system compiler that is not really prepared to be used with Nix-installations of packages.
-This is part of some mechanics which the Nix docs cover much better.</p>
-</blockquote>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-env <span class="at">-qaP</span> <span class="at">--description</span> <span class="kw">|</span> <span class="fu">grep</span> catch</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nixpkgs.catch</span>               catch-1.9.6               A multi-paradigm automated test framework for C++ and Objective-C <span class="er">(</span><span class="ex">and,</span> maybe, C<span class="kw">)</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span></code></pre></div>
-<p>So let’s build it with catch installed:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">-p</span> clang <span class="at">-p</span> catch</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~/project_dir]$</span> cd test <span class="kw">&amp;&amp;</span> <span class="fu">make</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-c</span> main.cpp</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> test.cpp</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">test.cpp:127:46:</span> error: too many arguments provided to function-like macro invocation</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>            <span class="ex">REQUIRE</span><span class="er">(</span> <span class="ex">r-</span><span class="op">&gt;</span>first == vect_t{<span class="st">&#39;a&#39;</span>, <span class="st">&#39;b&#39;</span>, <span class="st">&#39;c&#39;</span>}<span class="kw">);</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                                             <span class="ex">^</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/gsklw95pxb9npyqpfpczagchk8kdsgzb-catch-1.9.6/include/catch/catch.hpp:11450:9:</span> note: macro <span class="st">&#39;REQUIRE&#39;</span> defined here</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#define REQUIRE( expr ) INTERNAL_CATCH_TEST( &quot;REQUIRE&quot;, Catch::ResultDisposition::Normal, expr  )</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span></code></pre></div>
-<p>Ok, the compiler can find the <code>catch.hpp</code> header, but it does not compile.
-The problem here is that i wrote the unit tests with <code>catch2</code> and the package in the Nix repo is a little bit too old.
-I learned Nix the hard way by doing the following:</p>
-<h2 id="writing-our-own-nix-expressions">Writing our own Nix expressions</h2>
-<p>The Nix ecosystem provides a rich database of packages for everything which does not only include libraries, but also applications.
-In this case however, the library is too old and we need a more current one.</p>
-<p>While the <code>catch</code> library just consists of a single header that is really easy to download, it is also a really simple example for building a Nix derivation that automatically obtains it from github and provides it for building.
-So let’s do that here. We will also install a newer google benchmark library (which is a bit more complicated as it is not header-only) this way later.</p>
-<p>A Nix derivation is kind of a cooking recipe that tells where to get what and what to do with it in order to make it useful.
-In order to get catch version 2.1.2, we create a file <code>catch.nix</code> in the project folder:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource numberLines"><code class="sourceCode"><span id="cb5-1"><a href="#cb5-1"></a># file: catch.nix</span>
-<span id="cb5-2"><a href="#cb5-2"></a>{ stdenv, fetchurl }:</span>
-<span id="cb5-3"><a href="#cb5-3"></a></span>
-<span id="cb5-4"><a href="#cb5-4"></a>stdenv.mkDerivation rec {</span>
-<span id="cb5-5"><a href="#cb5-5"></a>  name = &quot;catch-${version}&quot;;</span>
-<span id="cb5-6"><a href="#cb5-6"></a>  version = &quot;2.1.2&quot;;</span>
-<span id="cb5-7"><a href="#cb5-7"></a></span>
-<span id="cb5-8"><a href="#cb5-8"></a>  src = fetchurl {</span>
-<span id="cb5-9"><a href="#cb5-9"></a>      url = &quot;https://github.com/catchorg/Catch2/releases/download/v2.1.2/catch.hpp&quot;;</span>
-<span id="cb5-10"><a href="#cb5-10"></a>      sha256 = &quot;e8b8f3109716891aa99b1a8e29cd0d627419bdc4a8d2eeef0d8370aaf8d5e483&quot;;</span>
-<span id="cb5-11"><a href="#cb5-11"></a>  };</span>
-<span id="cb5-12"><a href="#cb5-12"></a></span>
-<span id="cb5-13"><a href="#cb5-13"></a>  # It is just the file. No unpacking needed. Seems like we need to create</span>
-<span id="cb5-14"><a href="#cb5-14"></a>  # _some_ folder, otherwise we get errors.</span>
-<span id="cb5-15"><a href="#cb5-15"></a>  unpackCmd = &quot;mkdir dummy_dir&quot;;</span>
-<span id="cb5-16"><a href="#cb5-16"></a></span>
-<span id="cb5-17"><a href="#cb5-17"></a>  installPhase = &#39;&#39;</span>
-<span id="cb5-18"><a href="#cb5-18"></a>    mkdir -p $out/include/catch</span>
-<span id="cb5-19"><a href="#cb5-19"></a>    cp ${src} $out/include/catch/catch.hpp</span>
-<span id="cb5-20"><a href="#cb5-20"></a>  &#39;&#39;;</span>
-<span id="cb5-21"><a href="#cb5-21"></a></span>
-<span id="cb5-22"><a href="#cb5-22"></a>  meta = {</span>
-<span id="cb5-23"><a href="#cb5-23"></a>    description = &quot;A modern, C++-native, header-only, test framework for unit-tests, TDD and BDD - using C++11, C++14, C++17 and later&quot;;</span>
-<span id="cb5-24"><a href="#cb5-24"></a>    homepage = http://catch-lib.net;</span>
-<span id="cb5-25"><a href="#cb5-25"></a>  };</span>
-<span id="cb5-26"><a href="#cb5-26"></a>}</span></code></pre></div>
-<p>There is a lot of <em>voodoo</em> going on here for anyone who does not know Nix.
-Nix is its own scripting language (a purely functional one), that is why it that script initially looks so complicated.
-The important parts are:</p>
-<ul>
-<li>lines 8-11, <code>fetchurl</code>:
-<ul>
-<li>Where to get the catch header file?</li>
-<li>For control reasons we also define what hash it needs to have.</li>
-</ul></li>
-<li>lines 17-20, <code>installPhase</code>:
-<ul>
-<li>We define that <code>catch.hpp</code> needs to be installed into <code>$out/include/catch/catch.hpp</code>, wherever that is.</li>
-</ul></li>
-</ul>
-<p>Let us bring <code>nix-shell</code> to use that file and install catch for us:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">-p</span> <span class="st">&#39;with (import &lt;nixpkgs&gt; {}); callPackage ./catch.nix {}&#39;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> derivations will be built:</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/byy8sgy8crdhzyvjxzzbq4zhg8kbvhpp-catch.hpp.drv</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/v75n72czr0vgqz4zacrzk2wsrr1jg1kc-catch-2.1.2.drv</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> paths will be fetched <span class="er">(</span><span class="ex">0.82</span> MiB download, 4.50 MiB unpacked<span class="kw">)</span><span class="bu">:</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/0cs9d2ml9cql18l1vsxrdmjliiz0p0rg-bash-4.4-p12-info</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/0p2m9iz8w4551qkgzsqvl2vm2ilyb6ww-stdenv-darwin</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/2pvbzmacxfhm1akl9a5shqrk47i53cpv-libssh2-1.8.0-dev</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/cxz0drsrlbmdi1krr0n57zfcswjmrv5i-mirrors-list</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/czw3qnwsify74b5bljll1lmm8k6kk09h-curl-7.55.1-dev</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/icm30zksjzx8546d02y9gi4vzdi42j2w-bash-4.4-p12-man</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/kwclw4knsrs6l4fi98wnzg713r8p0wls-openssl-1.0.2l-dev</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/n2aycrbi6myl9wqr6b7w2n578j505czd-curl-7.55.1-man</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/w4m16gcmlxsgx468p7k3993vwf6i6hsx-bash-4.4-p12-dev</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/yw461g3iqihmq6i1mrjn6khbwn6gx0rl-bash-4.4-p12-doc</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="ex">building</span> path<span class="er">(</span><span class="ex">s</span><span class="kw">)</span> <span class="ex">‘/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2’</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ex">unpacking</span> sources</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="ex">unpacking</span> source archive /nix/store/4nx2d1j5jnnb9zqlmpl45g68msqycfjy-catch.hpp</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="ex">patching</span> script interpreter paths in /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</span></code></pre></div>
-<p>There was a lot going on after firing that command: Nix even installed <code>curl</code> and all its dependencies, because it needs a tool to download the header file.
-The last line tells us that there is now something in <code>/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</code>.
-Let’s have a look into it:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~/Desktop/p]$</span> ls <span class="at">-lsa</span> /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2/include/catch/catch.hpp</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">428</span> <span class="at">-r--r--r--</span> 1 root wheel 435409 Jan  1  1970 /nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2/include/catch/catch.hpp</span></code></pre></div>
-<p>Ok, so whenever we add this strange path to the compiler command line using <code>-I/nix/store/...</code>, then our tests will compile.</p>
-<p>Let’s again start the nix shell with our catch derivation and clang and GNU make and try again:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">-p</span> clang <span class="st">&#39;with (import &lt;nixpkgs&gt; {}); callPackage ./catch.nix {}&#39;</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~/project_dir]$</span> cd test <span class="kw">&amp;&amp;</span> <span class="fu">make</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-c</span> main.cpp</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> test.cpp</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> math_expression.cpp</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-o</span> main main.o test.o math_expression.o</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~/project_dir]$</span> ./main</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="ex">===============================================================================</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> tests passed <span class="er">(</span><span class="ex">172</span> assertions in 11 test cases<span class="kw">)</span></span></code></pre></div>
-<p>Yes, that went well!</p>
-<blockquote>
-<p>(The <code>-I/nix/store/...</code> parameter was handled for us implicitly) by the Nix-installed compiler</p>
-</blockquote>
-<p>It is however pretty ugly to call <code>nix-shell</code> with all those arguments that are hard to memorize.
-For this purpose we can define a <code>default.nix</code> file that will be automatically sourced by Nix:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># file: default.nix</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="va">pkgs</span> <span class="op">?</span> <span class="bu">import</span> &lt;nixpkgs&gt; <span class="op">{},</span> <span class="op">}</span>:</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">rec</span> <span class="op">{</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">myProject</span> <span class="op">=</span> pkgs.stdenv.mkDerivation <span class="op">{</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;attoparsecpp&quot;</span><span class="op">;</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">version</span> <span class="op">=</span> <span class="st">&quot;dev-0.1&quot;</span><span class="op">;</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">buildInputs</span> <span class="op">=</span> <span class="kw">with</span> pkgs<span class="op">;</span> <span class="op">[</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      <span class="op">(</span>callPackage <span class="ss">./catch.nix</span> <span class="op">{</span> <span class="op">})</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">];</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>There’s again some voodoo for Nix-novices, but the important part is that we call our package <code>catch.nix</code> in the context of a standard build environment (<code>stdenv</code>).
-With <code>stdenv</code> we don’t need to reference the compiler explicitly any longer.</p>
-<p>Now, we can do the following:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--command</span> <span class="st">&quot;cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-c</span> main.cpp</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> test.cpp</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> math_expression.cpp</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-o</span> main main.o test.o math_expression.o</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="ex">===============================================================================</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> tests passed <span class="er">(</span><span class="ex">172</span> assertions in 11 test cases<span class="kw">)</span></span></code></pre></div>
-<p>Nix finds our <code>default.nix</code> file and gets everything in order.</p>
-<p>Ok, great.
-How about running benchmarks?</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--command</span> <span class="st">&quot;cd benchmark &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include main.cpp <span class="at">-o</span> main <span class="at">-lbenchmark</span> <span class="at">-lpthread</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">main.cpp:7:10:</span> fatal error: <span class="st">&#39;benchmark/benchmark.h&#39;</span> file not found</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;benchmark/benchmark.h&gt;</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>         <span class="ex">^~~~~~~~~~~~~~~~~~~~~~~</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="ex">1</span> error generated.</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="ex">make:</span> <span class="pp">***</span> [Makefile:8: main] Error 1</span></code></pre></div>
-<p>Seems like we need to install google benchmark, too.
-There is a <code>gbenchmark</code> package, but it’s again too old.
-Nothing we couldn’t fix with our own Nix expression, though:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource numberLines"><code class="sourceCode"><span id="cb12-1"><a href="#cb12-1"></a># file googlebench.nix</span>
-<span id="cb12-2"><a href="#cb12-2"></a>{ stdenv, fetchFromGitHub, cmake }:</span>
-<span id="cb12-3"><a href="#cb12-3"></a></span>
-<span id="cb12-4"><a href="#cb12-4"></a>stdenv.mkDerivation rec {</span>
-<span id="cb12-5"><a href="#cb12-5"></a>  name = &quot;googlebench-${version}&quot;;</span>
-<span id="cb12-6"><a href="#cb12-6"></a>  version = &quot;1.3.0&quot;;</span>
-<span id="cb12-7"><a href="#cb12-7"></a></span>
-<span id="cb12-8"><a href="#cb12-8"></a>  src = fetchFromGitHub {</span>
-<span id="cb12-9"><a href="#cb12-9"></a>      owner = &quot;google&quot;;</span>
-<span id="cb12-10"><a href="#cb12-10"></a>      repo = &quot;benchmark&quot;;</span>
-<span id="cb12-11"><a href="#cb12-11"></a>      rev = &quot;v${version}&quot;;</span>
-<span id="cb12-12"><a href="#cb12-12"></a>      sha256 = &quot;1qx2dp7y0haj6wfbbfw8hx8sxb8ww0igdfrmmaaxfl0vhckylrxh&quot;;</span>
-<span id="cb12-13"><a href="#cb12-13"></a>  };</span>
-<span id="cb12-14"><a href="#cb12-14"></a></span>
-<span id="cb12-15"><a href="#cb12-15"></a>  nativeBuildInputs = [ cmake ];</span>
-<span id="cb12-16"><a href="#cb12-16"></a></span>
-<span id="cb12-17"><a href="#cb12-17"></a>  meta = {</span>
-<span id="cb12-18"><a href="#cb12-18"></a>    description = &quot;google benchmark&quot;;</span>
-<span id="cb12-19"><a href="#cb12-19"></a>  };</span>
-<span id="cb12-20"><a href="#cb12-20"></a>}</span></code></pre></div>
-<p>Building the benchmark library involves compiling it with <code>cmake</code>, as it is more than just headers.
-Luckily, the Nix expression language came with its own library installed.
-It has handy little helpers like <code>fetchFromGitHub</code> that accepts some arguments needed to construct a download link from it and automatically unpack it!</p>
-<p>The line <code>nativeBuildInputs</code> instructs Nix to install <code>cmake</code> for building this package.
-Everything else is automatically deduced.
-After adding this Nix derivation to our <code>default.nix</code> file, it will build google benchmark for us before we can run our own makefile:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--command</span> <span class="st">&quot;cd benchmark &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> derivations will be built:</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/vbi7a7kjxz24zmq7lwaa044735hdlmb3-benchmark-v1.3.0-src.drv</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/il7biicbp3pa39nl5ffkyi9b1wwkw0b1-googlebench-1.3.0.drv</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> paths will be fetched <span class="er">(</span><span class="ex">0.12</span> MiB download, 0.44 MiB unpacked<span class="kw">)</span><span class="bu">:</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/i1b5rym52fhqkdz2kzaqn1gnk6nhf0b7-unzip-6.0</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="fu">clang</span>++ <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include main.cpp <span class="at">-o</span> main <span class="at">-lbenchmark</span> <span class="at">-lpthread</span></span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="ex">Run</span> on <span class="er">(</span><span class="ex">8</span> X 2300 MHz CPU s<span class="kw">)</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="ex">2018-02-27</span> 21:50:34</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="ex">-----------------------------------------------------------------------</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="ex">Benchmark</span>                                Time           CPU Iterations</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="ex">-----------------------------------------------------------------------</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing/10</span>                 55 ns         55 ns   12703483</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing/100</span>              1107 ns       1105 ns     654444</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing/1000</span>             6021 ns       6012 ns     125101</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing/10000</span>           47889 ns      47812 ns      13667</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing/100000</span>         481643 ns     480574 ns       1428</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing/1000000</span>       4865444 ns    4854115 ns        130</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing/10000000</span>     54049501 ns   53973846 ns         13</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing_BigO</span>             5.40 N       5.39 N</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_word_parsing_RMS</span>                 2 %          2 %</span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_vector_filling/10</span>              457 ns        455 ns    1683712</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="ex">measure_vector_filling/100</span>            2282 ns       2279 ns     305181</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span></code></pre></div>
-<p>Yes, that’s some successful benchmark output!
-This time it even installed <code>unzip</code> in case we don’t have it, yet.</p>
-<p>However, we do not have to care about anything library-related other than linking.
-The Makefile does not reflect any knowledge of Nix or the install location of our dependencies:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cat benchmark/Makefile</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">default:</span> main</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="va">CXXFLAGS</span><span class="op">=</span>-O2 <span class="ex">-std=c++14</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="va">LDFLAGS</span><span class="op">=</span>-lbenchmark <span class="ex">-lpthread</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="ex">main:</span> main.cpp ../include/parser.hpp ../include/math_expression.hpp</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>	<span class="va">$(</span><span class="ex">CXX</span><span class="va">)</span> <span class="va">$(</span><span class="ex">CXXFLAGS</span><span class="va">)</span> <span class="at">-I..</span>/include main.cpp <span class="at">-o</span> main <span class="va">$(</span><span class="ex">LDFLAGS</span><span class="va">)</span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="ex">clean:</span></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>	<span class="fu">rm</span> <span class="at">-rf</span> main <span class="pp">*</span>.o</span></code></pre></div>
-<h2 id="compiling-and-running-tests-with-different-compilers">Compiling and running tests with different compilers</h2>
-<p>So… when pulling in compilers and libraries is so simple with Nix - how about checking if our library compiles with all compilers and versions of those?</p>
-<p>We need to add a little modification to the <code>default.nix</code> file in order to <em>parametrize</em> it:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode numberSource numberLines"><code class="sourceCode"><span id="cb15-1"><a href="#cb15-1"></a># file default.nix</span>
-<span id="cb15-2"><a href="#cb15-2"></a>{</span>
-<span id="cb15-3"><a href="#cb15-3"></a>    pkgs   ? import &lt;nixpkgs&gt; {},</span>
-<span id="cb15-4"><a href="#cb15-4"></a>    stdenv ? pkgs.stdenv</span>
-<span id="cb15-5"><a href="#cb15-5"></a>}:</span>
-<span id="cb15-6"><a href="#cb15-6"></a>rec {</span>
-<span id="cb15-7"><a href="#cb15-7"></a>  myProject = stdenv.mkDerivation {</span>
-<span id="cb15-8"><a href="#cb15-8"></a>    name = &quot;attoparsecpp&quot;;</span>
-<span id="cb15-9"><a href="#cb15-9"></a>    version = &quot;dev-0.1&quot;;</span>
-<span id="cb15-10"><a href="#cb15-10"></a>    buildInputs = with pkgs; [</span>
-<span id="cb15-11"><a href="#cb15-11"></a>      (callPackage ./catch.nix { })</span>
-<span id="cb15-12"><a href="#cb15-12"></a>      (callPackage ./googlebench.nix { stdenv = stdenv; })</span>
-<span id="cb15-13"><a href="#cb15-13"></a>    ];</span>
-<span id="cb15-14"><a href="#cb15-14"></a>  };</span>
-<span id="cb15-15"><a href="#cb15-15"></a>}</span></code></pre></div>
-<p>We applied the following changes:</p>
-<ul>
-<li>line 4: We added <code>stdenv</code> as a named parameter of this Nix derivation. <code>pkgs.stdenv</code> is its default value.</li>
-<li>line 7: Now we use <code>stdenv.mkDerivation</code> instead of <code>pkgs.stdenv.mkDerivation</code>.</li>
-<li>line 12: If our <code>stdenv</code> changes, this change is also forwarded into the <code>googlebench.nix</code> derivation. (Which then needs to be built just for this compiler, too)</li>
-</ul>
-<p>With this change, we can now build and execute our tests with different compilers just by changing varying <code>nix-shell</code> arguments.
-Let’s try GCC now:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="dt">\</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>  --command <span class="st">&quot;</span><span class="dt">\$</span><span class="st">CXX --version &amp;&amp; cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span> <span class="dt">\</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>  --arg stdenv <span class="st">&quot;with (import &lt;nixpkgs&gt; {}); gccStdenv&quot;</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> derivations will be built:</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/cs2r1wbz8n33fspdlqrcm5pf174qdgcj-googlebench-1.3.0.drv</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> paths will be fetched <span class="er">(</span><span class="ex">35.32</span> MiB download, 145.96 MiB unpacked<span class="kw">)</span><span class="bu">:</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/1krs71lr68pvwjf21fq3f8wbw4c460sh-gcc-6.4.0</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/gya4nskw8khp28vy0f8m01lf4z8337cz-stdenv-darwin</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/yn7m3qnp0m3kf1acpjyxwqxzf3b40jf8-gcc-wrapper-6.4.0</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="er">(</span><span class="ex">GCC</span><span class="kw">)</span> <span class="ex">6.4.0</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="ex">Copyright</span> <span class="er">(</span><span class="ex">C</span><span class="kw">)</span> <span class="ex">2017</span> Free Software Foundation, Inc.</span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="ex">This</span> is free software<span class="kw">;</span> <span class="ex">see</span> the source for copying conditions.  There is NO</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="ex">warranty</span><span class="kw">;</span> <span class="ex">not</span> even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-c</span> main.cpp</span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> test.cpp</span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> math_expression.cpp</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-o</span> main main.o test.o math_expression.o</span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="ex">===============================================================================</span></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> tests passed <span class="er">(</span><span class="ex">172</span> assertions in 11 test cases<span class="kw">)</span></span></code></pre></div>
-<p>The magic <code>--arg stdenv "with (import &lt;nixpkgs&gt; {}); gccStdenv"</code> line pushed a GCC build environment into the <code>stdenv</code> variable.
-The <code>$CXX --version</code> command in the <code>--command</code> part of the command line shows that it’s really GCC 6.4.0 now (instead of clang).</p>
-<p>We can do the same with GCC 7:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="dt">\</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--command</span> <span class="st">&quot;</span><span class="dt">\$</span><span class="st">CXX --version &amp;&amp; cd test &amp;&amp; make -B -j4 &amp;&amp; ./main&quot;</span> <span class="dt">\</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--arg</span> stdenv <span class="st">&quot;with (import &lt;nixpkgs&gt; {}); overrideCC gccStdenv gcc7&quot;</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> derivations will be built:</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/860fz8zccpxnia4ahzmxcvygms29nn1y-stdenv-darwin.drv</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/lnhid58mlkgcaqq6dg0mnaly7y2p1ap4-googlebench-1.3.0.drv</span></span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> paths will be fetched <span class="er">(</span><span class="ex">37.09</span> MiB download, 154.89 MiB unpacked<span class="kw">)</span><span class="bu">:</span></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/27mxffxnw9q070wqfzhpn3p32h0kafws-gcc-7.2.0-lib</span></span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/nknfwhafb2cwlrrwxh5dcwbdznf1fzq1-gcc-7.2.0</span></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="ex">/nix/store/xxb7a4i2y7mn6y0mkkzgy2cgnd78hahp-gcc-wrapper-7.2.0</span></span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="er">(</span><span class="ex">GCC</span><span class="kw">)</span> <span class="ex">7.2.0</span></span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="ex">Copyright</span> <span class="er">(</span><span class="ex">C</span><span class="kw">)</span> <span class="ex">2017</span> Free Software Foundation, Inc.</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="ex">This</span> is free software<span class="kw">;</span> <span class="ex">see</span> the source for copying conditions.  There is NO</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="ex">warranty</span><span class="kw">;</span> <span class="ex">not</span> even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-c</span> main.cpp</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> test.cpp</span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-O2</span> <span class="at">-std</span><span class="op">=</span>c++14 <span class="at">-I..</span>/include <span class="at">-c</span> math_expression.cpp</span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="at">-o</span> main main.o test.o math_expression.o</span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a><span class="ex">===============================================================================</span></span>
-<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a><span class="ex">All</span> tests passed <span class="er">(</span><span class="ex">172</span> assertions in 11 test cases<span class="kw">)</span></span></code></pre></div>
-<p>Easy. It downloads <em>another</em> GCC and uses that for building.</p>
-<p>Using the same strategy, we can also run our benchmarks with all these compilers.
-We could even write a Nix derivation that actually does this and generates a nice GNUPlot chart from all benchmark runs.</p>
-<h2 id="fallout">Fallout</h2>
-<p>While playing around, we installed at least 3 different compilers and recompiled the google benchmark library for each of them.
-A nice thing about this is that this all needs to be done only once.
-The resulting packages can then be used again on the next invocation of a <code>nix-shell</code> environment.
-Even better: if another project happens to need the same compiler/libraries, then they are in place already!
-These things are shared system wide now:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> find /nix/store <span class="dt">\(</span> <span class="at">-name</span> <span class="st">&quot;*googlebench*&quot;</span> <span class="at">-or</span> <span class="at">-name</span> <span class="st">&quot;*gcc*&quot;</span> <span class="at">-or</span> <span class="at">-name</span> <span class="st">&quot;*catch*&quot;</span> or <span class="at">-name</span> <span class="st">&quot;*clang*&quot;</span> <span class="dt">\)</span> <span class="at">-type</span> d <span class="at">-maxdepth</span> 1</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/62g4h135grzi5xn5y7hyrxg1r8ac408g-catch-2.1.2</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/2bz86w853wz8q036armrqzds1wh41l2d-googlebench-1.3.0</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/294rz6hxllqp5iqag01p2ymv37g25zhz-googlebench-1.3.0</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/02hca1p50i735iimv28cj9l0lmdzwljn-googlebench-1.3.0</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/5giskx5cy9q2qhv946svwmqw77vbr2iy-clang-4.0.1</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/mx8870valpdhywaaq16sdiiajrpyj4q7-clang-wrapper-4.0.1</span></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/1krs71lr68pvwjf21fq3f8wbw4c460sh-gcc-6.4.0</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/1p5bg2c6pd2v1lgnf0823sxcilf73ydi-gcc-6.4.0-lib</span></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/yn7m3qnp0m3kf1acpjyxwqxzf3b40jf8-gcc-wrapper-6.4.0</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/nknfwhafb2cwlrrwxh5dcwbdznf1fzq1-gcc-7.2.0</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/27mxffxnw9q070wqfzhpn3p32h0kafws-gcc-7.2.0-lib</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/xxb7a4i2y7mn6y0mkkzgy2cgnd78hahp-gcc-wrapper-7.2.0</span></span></code></pre></div>
-<p>So we can see that we have one version of clang, two versions of GCC, just one version of catch and three versions of googlebench.
-There is of course only one version of catch becasue it is just a header that does not need to be recompiled for different compilers.</p>
-<p>But how does Nix know which googlebench installation belongs to which clang/GCC?</p>
-<p>The long cryptic prefix of every package folder is the <em>hash of its build configuration</em>!
-The compiler choice is part of the build configuration, of course.</p>
-<p>If another project has dependencies that overlap with ours in the sense that some dependency turns out to have the same configuraiton hash for the same package, then it will be shared.
-As soon as the configuration changes a little bit - another package is created.</p>
-<p>We can now delete everything with one command:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-collect-garbage <span class="at">-d</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">removing</span> old generations of profile /nix/var/nix/profiles/per-user/tfc/profile</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="ex">removing</span> old generations of profile /nix/var/nix/profiles/per-user/tfc/channels</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="ex">finding</span> garbage collector roots...</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="ex">deleting</span> unused links...</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="ex">note:</span> currently hard linking saves 0.00 MiB</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="ex">606</span> store paths deleted, 358.10 MiB freed</span></code></pre></div>
-<p>That’s it.
-Our system is free of everything what was installed just for this project.</p>
-<h2 id="purity">Purity</h2>
-<p>By running <code>nix-shell --pure</code>, it is possible to <em>hide</em> everything which was not explicitly declared to be available:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--pure</span> <span class="at">-p</span> gcc7</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~]$</span> clang++</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="ex">bash:</span> clang++: command not found</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~]$</span> exit</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">--pure</span> <span class="at">-p</span> clang</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~]$</span> g++</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="ex">bash:</span> g++: command not found</span></code></pre></div>
-<p>Using <code>--pure</code>, we can check if our <code>default.nix</code> <em>really</em> contains the complete list of dependencies.
-That feature is something most other dependency management tools don’t do for us.</p>
-<p>This way it cannot happen that a project builds on one computer, but not on the other, just because someone forgot to install something else that is implicitly needed.</p>
-<h2 id="summary">Summary</h2>
-<p>Nix just helped us with:</p>
-<ul>
-<li>fetching, compiling, and installing dependencies including compilers and libraries</li>
-<li>easily changing the compiler and version between builds</li>
-<li>managing all those dependencies without interference</li>
-<li>getting rid of it again</li>
-</ul>
-<p>Maybe Conan would also have been able to do that (apart from the <code>--pure</code> feature).
-Nix however does not only work for C/C++ projects:
-It can be used for Rust, Haskell, Python, Ruby, etc. etc. - because it is a <em>universal</em> dependency manager.</p>
-<p>Writing your own Nix derivations is only necessary if custom- or extremely new package versions are needed.
-It is also not hard to do.
-Existing packages can be rebuilt with different configurations, too.</p>
-<p>Being completely amazed, i also installed NixOS on my laptop.
-What’s great there is that i am now able to configure the whole system with just one <code>.nix</code> configuration file.
-When that file changes, Nix automatically restarts only the affected services.
-If it does not work, then it is possible to roll the system back to a previous configuration. (Remember all the stuff in <code>/nix/store/...</code>? It’s still there until it’s garbage-collected!)
-The same system configuration could be used to clone the system elsewhere, etc.</p>
-<p>This article is really just scratching the surface of Nix/NixOS’s possibilities.</p>]]></summary>
 </entry>
 
 </feed>
