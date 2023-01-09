@@ -443,6 +443,11 @@ figure > img {
   margin-right: auto;
 }
 
+figure > iframe {
+  display:block;
+  margin:auto;
+}
+
 figure > figcaption {
   font-size: 90%;
   text-align: center;
@@ -454,6 +459,7 @@ figure > figcaption {
 
 .floating-image-right > p { /* for images without a caption */
   float: right;
+  margin-left: 10px;
 }
 
 .floating-image-right figure {
