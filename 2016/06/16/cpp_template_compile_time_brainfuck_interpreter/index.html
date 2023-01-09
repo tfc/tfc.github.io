@@ -19,7 +19,8 @@
 </div>
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About / CV</a>
-<a class="sidebar-nav-item" href="../../../../impressum.html">Impressum / Datenschutz</a>
+<a class="sidebar-nav-item" href="../../../../impressum.html">Impressum</a>
+<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Data Protection</a>
 </nav>
 <p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
 </a>
@@ -593,12 +594,43 @@ s.src = '//nicecpp.disqus.com/embed.js';
 s.setAttribute('data-timestamp', +new Date());
 (d.head || d.body).appendChild(s);})();</script>
 </div>
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS"></script>
-<script>window.dataLayer = window.dataLayer || [];
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
+<script>var popup;
+window.addEventListener('load', function(){window.cookieconsent.initialise({//set revokeBtn if you don't want to see a tiny pullup bar overlapping your website
+//if revokeBtn is set, make sure to include a link to cookie settings in your footer
+//you can open your banner again with: popup.open();
+//revokeBtn: "<div class='cc-revoke'></div>",
+type: "opt-in",
+theme: "edgeless",
+content: {header: 'Cookies used on the website!',
+message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke this decision at any time)',
+href: 'http://localhost:8000/datenschutz.html',},
+palette: {popup: {background: "#202020",
+text: "#fff"
+},button: {background: "#268bd2",
+text: "#fff"
+}},
+onInitialise: function(status) {if(status == cookieconsent.status.allow) setCookies();},
+onStatusChange: function(status) {if (this.hasConsented()) setCookies();
+else deleteCookies(this.options.cookie.name)},
+law: { regionalLaw: false, },
+location: true,
+function (p) { popup = p; }});})
+//it is absolutely crucial to define gtag in the global scope
+window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'G-WZ3FX4G3XS', { 'anonymize_ip': true });</script>
+gtag('config', 'G-WZ3FX4G3XS', {'anonymize_ip': true});
+function setCookies() {var s = document.createElement('script');
+s.type = "text/javascript"
+s.async = "true";
+s.src = "https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS";
+var x = document.getElementsByTagName('script')[0];
+x.parentNode.insertBefore(s, x);};
+function deleteCookies(cookieconsent_name) {var keep = [cookieconsent_name, "DYNSRV"];
+document.cookie.split(';').forEach(function(c) {c = c.split('=')[0].trim();
+if (!~keep.indexOf(c))document.cookie = c + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';});};</script>
 </body>
 </head>
 </html>
