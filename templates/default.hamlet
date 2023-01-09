@@ -27,7 +27,8 @@
           <nav class="sidebar-nav">
             <a class="sidebar-nav-item active" href="/">Home
             <a class="sidebar-nav-item" href="/about.html">About / CV
-            <a class="sidebar-nav-item" href="/impressum.html">Impressum / Datenschutz
+            <a class="sidebar-nav-item" href="/impressum.html">Impressum
+            <a class="sidebar-nav-item" href="/datenschutz.html">Datenschutz / Data Protection
           <p>
             <a href="https://linkedin.com/in/jgalowicz">
               <i class="fa-brands fa-linkedin">
@@ -57,8 +58,8 @@
            theme: "edgeless",
            content: {
              header: 'Cookies used on the website!',
-             message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke this decision at any time)',
-             href: 'http://localhost:8000/impressum.html',
+             message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
+             href: '/datenschutz.html',
            },
            palette: {
                popup: {

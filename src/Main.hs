@@ -86,6 +86,13 @@ main = hakyll $ do
       >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
       >>= relativizeUrls
 
+  match "datenschutz.md" $ do
+    route $ setExtension "html"
+    compile
+      $   pandocCompiler
+      >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
+      >>= relativizeUrls
+
   createFeed tags "atom.xml" renderAtom
   createFeed tags "feed.xml" renderRss
 
