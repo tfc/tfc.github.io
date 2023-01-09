@@ -15,16 +15,15 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <title>
-      Jacek's Software Engineering Blog &middot; $title$
+      Jacek's Blog &middot; $title$
 
     <body class="layout-reverse">
       <div class="sidebar">
         <div class="container sidebar-sticky">
           <div class="sidebar-about">
             <h1>
-              <a href="/">Jαcεκ's Software Engineering Bλog
-            <p class="lead">
-              Day-to-day experiences and thoughts about software engineering
+              <a href="/">Jacek's Blog
+            <p class="lead">Software Engineering Consultant
           <nav class="sidebar-nav">
             <a class="sidebar-nav-item active" href="/">Home
             <a class="sidebar-nav-item" href="/about.html">About / CV
