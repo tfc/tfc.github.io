@@ -86,6 +86,7 @@
                   enable = true;
                   entry = "${pkgs.nodePackages.cspell}/bin/cspell --words-only";
                   types = [ "markdown" ];
+                  excludes = [ "impressum.md" "datenschutz.md" ];
                 };
                 deadnix.enable = true;
                 nixpkgs-fmt.enable = true;
