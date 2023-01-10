@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-import           Control.Monad                  ( liftM )
+import           Control.Monad                  ( forM
+                                                , liftM
+                                                )
 import           Data.List                      ( intersperse )
 import           Data.Monoid                    ( (<>) )
 import           Hakyll
@@ -13,18 +15,18 @@ import qualified Text.Blaze.Html5.Attributes   as A
 
 main :: IO ()
 main = hakyll $ do
-  match "images/**" $ do
-    route idRoute
-    compile copyFileCompiler
-
-  match "css/*" $ do
-    route idRoute
-    compile compressCssCompiler
-
+  match "images/**" $ route idRoute >> compile copyFileCompiler
+  match "css/*" $ route idRoute >> compile compressCssCompiler
   match "templates/*.hamlet" $ compile hamlTemplateCompiler
 
-  tags       <- buildTags "posts/*" (fromCapture "tags/*.html")
+  forM ["about.md", "impressum.md", "datenschutz.md"] $ \page -> match page $ do
+    route $ setExtension "html"
+    compile
+      $   pandocCompiler
+      >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
+      >>= relativizeUrls
 
+  tags       <- buildTags "posts/*" (fromCapture "tags/*.html")
   indexPages <- buildPaginateWith grouper "posts/*" makeId
 
   paginateRules indexPages $ \pageNum pattern -> do
@@ -55,13 +57,12 @@ main = hakyll $ do
       posts <- recentFirst =<< loadAll pattern
       let ctx =
             constField "title" title
-              `mappend` listField "posts" (teaserCtx tags) (return posts)
-              `mappend` defaultContext
+              <> listField "posts" (teaserCtx tags) (return posts)
+              <> defaultContext
       makeItem ""
         >>= loadAndApplyTemplate "templates/tag.hamlet"     ctx
         >>= loadAndApplyTemplate "templates/default.hamlet" ctx
         >>= relativizeUrls
-
 
   match "posts/*" $ do
     route postRoute
@@ -70,27 +71,6 @@ main = hakyll $ do
       >>= saveSnapshot "post_content"
       >>= loadAndApplyTemplate "templates/post.hamlet"    (postCtx tags)
       >>= loadAndApplyTemplate "templates/default.hamlet" (postCtx tags)
-      >>= relativizeUrls
-
-  match "about.md" $ do
-    route $ setExtension "html"
-    compile
-      $   pandocCompiler
-      >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
-      >>= relativizeUrls
-
-  match "impressum.md" $ do
-    route $ setExtension "html"
-    compile
-      $   pandocCompiler
-      >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
-      >>= relativizeUrls
-
-  match "datenschutz.md" $ do
-    route $ setExtension "html"
-    compile
-      $   pandocCompiler
-      >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
       >>= relativizeUrls
 
   createFeed tags "atom.xml" renderAtom
