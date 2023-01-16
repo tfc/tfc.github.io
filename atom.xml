@@ -8,8 +8,334 @@
         <name>Jacek Galowicz</name>
         <email>jacek@galowicz.de</email>
     </author>
-    <updated>2023-01-09T00:00:00Z</updated>
+    <updated>2023-01-16T00:00:00Z</updated>
     <entry>
+    <title>(Qt)Quick C++ Project Setup with Nix</title>
+    <link href="https://blog.galowicz.de/2023/01/16/cpp-qt-qml-nix-setup" />
+    <id>https://blog.galowicz.de/2023/01/16/cpp-qt-qml-nix-setup</id>
+    <published>2023-01-16T00:00:00Z</published>
+    <updated>2023-01-16T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<!-- cSpell:words devenv Dockerfiles cachix Flatpak -->
+<!-- cSpell:ignore qtcreator qtbase shellhook bashdir mktemp stdenv pname -->
+<!-- cSpell:ignore qtwebkit -->
+<p>I never install toolchains globally on my systems.
+Instead, every project comes with its own nix file that describes the complete
+development toolchain versions and dependencies.
+This way, fresh checkouts always build the same way on every machine.
+This week I would like to show you how I set up a C++ project with the Qt Quick
+framework, and how to package the app and make it runnable for other nix users.</p>
+<!--more-->
+<p>Nix typically allows you to run</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix-shell</span> <span class="at">-p</span> someTool someOtherTool</span></code></pre></div>
+<p>… to download everything and put you in a shell where everything is as if you
+had these tools installed.
+This time, I wanted to run
+<a href="https://www.qt.io/product/development-tools">Qt Creator</a> to fiddle around with
+some <a href="https://doc.qt.io/qt-6/qtquick-index.html">Qt Quick</a> ideas.</p>
+<h2 id="getting-qt-creator-up-and-running">Getting Qt Creator Up and Running</h2>
+<p>For that purpose, running</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix-shell</span> <span class="at">-p</span> cmake qt6.full qtcreator</span></code></pre></div>
+<p>… got me Qt Creator, the Qt6 libraries, and CMake as a build system.
+This is already enough to get Qt Creator up and running, create a new QtQuick
+UI project in the project wizard with CMake as its build system, and actually
+<em>build</em> it using the UI menu buttons in Qt Creator, which was already a nice
+and uncomplicated user experience.</p>
+<figure>
+<img src="/images/qt-quick-wizard.png" alt="Qt Creator’s project wizard" />
+<figcaption aria-hidden="true">Qt Creator’s project wizard</figcaption>
+</figure>
+<p>At first, Qt tried to use the wrong toolchain: I found out that my home folder
+still had some older configuration state from an earlier Qt Creator version
+installed.
+Quickly running <code>rm -rf ~/.config/QtProject*</code> helped out:
+Qt Creator chose the right Qt libraries the next time I ran the wizard.
+<em>Now</em> it was able to build the app.</p>
+<p>Unfortunately, <em>running</em> the application still produced the following output:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">QQmlApplicationEngine</span> failed to load component</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:2:1:</span> module <span class="st">&quot;QtQuick.Window&quot;</span> is not installed</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:</span> module <span class="st">&quot;QtQml.WorkerScript&quot;</span> is not installed</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:2:1:</span> module <span class="st">&quot;QtQuick.Window&quot;</span> is not installed</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:</span> module <span class="st">&quot;QtQml.WorkerScript&quot;</span> is not installed</span></code></pre></div>
+<p>After briefly researching this, it turned out that QtQuick apps require the
+environment variable <code>QML2_IMPORT_PATH</code> to be set.
+On computers where Qt is installed the <em>normal</em> way, this variable is already
+set globally.
+As there are plenty of Qt5 and Qt6 packages in NixOS already, we can just reuse
+the scripts to get the same effect for our developer shell.</p>
+<p>To get packages into the shell environment <em>and</em> add environment variables, the
+function <code>mkShell</code> from nixpkgs can help us.
+To manipulate more than the list of packages that are available in a nix-shell,
+we need to set up a nix expression that describes the whole shell environment,
+like this <code>flake.nix</code> file:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">inputs</span>.<span class="va">nixpkgs</span>.<span class="va">url</span> <span class="op">=</span> <span class="st">&quot;github:nixos/nixpkgs&quot;</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">outputs</span> <span class="op">=</span> <span class="op">{</span> <span class="va">self</span><span class="op">,</span> <span class="va">nixpkgs</span> <span class="op">}</span>:</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">pkgs</span> <span class="op">=</span> nixpkgs.legacyPackages.x86_64<span class="op">-</span>linux<span class="op">;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="op">{</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">devShells</span>.<span class="va">x86_64-linux</span>.<span class="va">default</span> <span class="op">=</span> pkgs.mkShell <span class="op">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      <span class="va">buildInputs</span> <span class="op">=</span> <span class="kw">with</span> pkgs<span class="op">;</span> <span class="op">[</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        cmake</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        gdb</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        qt6.full</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        qt6.qtbase</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        qtcreator</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># this is for the shellhook portion</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        qt6.wrapQtAppsHook</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        makeWrapper</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        bashInteractive</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      <span class="op">];</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>      <span class="co"># set the environment variables that Qt apps expect</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>      <span class="va">shellHook</span> <span class="op">=</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="st">        bashdir=$(mktemp -d)</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="st">        makeWrapper &quot;$(type -p bash)&quot; &quot;$bashdir/bash&quot; &quot;</span><span class="sc">&#39;&#39;$</span><span class="st">{qtWrapperArgs[@]}&quot;</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="st">        exec &quot;$bashdir/bash&quot;</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="st">      &#39;&#39;</span><span class="op">;</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<blockquote>
+<p>I am not explaining everything in this article.
+Flakes in general are described
+<a href="https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html">in the nix documentation</a>,
+and the <code>mkShell</code> function is described
+<a href="https://nixos.org/manual/nixpkgs/stable/#sec-pkgs-mkShell">in the nixpkgs documentation</a>.</p>
+</blockquote>
+<p>Running the command</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> develop</span></code></pre></div>
+<p>… in the same folder as this flake file adds CMake, the full Qt6 library
+package set, Qt Creator, the GDB debugger, and also runs the facilities from
+nixpkgs that are used to equip Qt applications with needed environment variables
+to the local shell.
+We are not packaging anything yet, but running the <code>nix develop</code> shell with this
+flake gives us a Qt Creator that can <em>build</em>, <em>run</em>, and <em>debug</em> our QtQuick
+app.
+(I found the <code>shellHook</code> part in the
+<a href="https://discourse.nixos.org/t/python-qt-woes/11808">NixOS Discourse</a>)</p>
+<blockquote>
+<p>If the <code>nix develop</code> command does not work for you, it might be the case that
+the nix “flakes” feature is not yet enabled by default on your system.
+To fix that temporarily, add <code>--experimental-features 'nix-command flakes'</code> to
+your command line, or have a look
+<a href="https://nixos.wiki/wiki/Flakes#Enable_flakes">here</a> to see how to enable
+flakes permanently.</p>
+</blockquote>
+<p>Running <code>nix develop</code> for the first time will download everything that is needed
+and can take some time depending on the internet connection.
+Running it another time is instant.
+Every collaborator on this project will have a much easier time developing this
+package than with downloading, installing, and configuring Qt manually.</p>
+<p>During the first run, the file <code>flake.lock</code> was created:
+This is similar to lock files in other development environments.
+When we give this project folder to a colleague and they run <code>nix develop</code>, they
+will get <em>exactly</em> the same version as ours.
+They will also be able to add more packages without having to rebuild the
+environment as a whole (which is often the case with Dockerfiles).</p>
+<p>The environment can now be updated using <code>nix flake update</code>, which is useful in
+git repositories where you can first check out if the update works, and <em>then</em>
+commit and push the change (updates and fixes in the same atomic commit).</p>
+<h2 id="packaging-the-app">Packaging the App</h2>
+<p>The example app that I prepared for this blog resides in the GitHub repo
+<a href="https://github.com/tfc/qt-example" class="uri">https://github.com/tfc/qt-example</a>
+and looks like this:</p>
+<figure>
+<img src="https://raw.githubusercontent.com/tfc/qt-example/main/app-screenshot.png" alt="The QtQuick example app" />
+<figcaption aria-hidden="true">The QtQuick example app</figcaption>
+</figure>
+<p>Let’s assume this repository structure for now:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> build.nix</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> flake.lock</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> flake.nix</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> qt-example <span class="co"># subfolder as created by the Qt Creator wizard</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── CMakeLists.txt</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── images</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> │   ├── nix.svg</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> │   └── qt.svg</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── main.cpp</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── main.qml <span class="co"># I only tweaked the window, see screenshot</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> └── qml.qrc</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> README.md</span></code></pre></div>
+<p>To package this app the nix way I wrote a <code>build.nix</code> file that looks like this:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="va">stdenv</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">qtbase</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">full</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">cmake</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">wrapQtAppsHook</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>stdenv.mkDerivation <span class="op">{</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="va">pname</span> <span class="op">=</span> <span class="st">&quot;qt-example&quot;</span><span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">version</span> <span class="op">=</span> <span class="st">&quot;1.0&quot;</span><span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The QtQuick project we created with Qt Creator&#39;s project wizard is here</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="va">src</span> <span class="op">=</span> <span class="ss">./qt-example</span><span class="op">;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildInputs</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    qtbase</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    full</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">];</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="va">nativeBuildInputs</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    cmake</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    wrapQtAppsHook</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="op">];</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If the CMakeLists.txt has an install step, this installPhase is not needed.</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The Qt default project however does not have one.</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="va">installPhase</span> <span class="op">=</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="st">    mkdir -p $out/bin</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="st">    cp qt-example $out/bin/</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;&#39;</span><span class="op">;</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Side note: The <code>wrapQtAppsHook</code> automatically wraps the application after the
+build phase into a script that sets all needed Qt-related environment variables.
+This way users don’t need to fiddle with env vars just to run our app.</p>
+<p>This build recipe is separate from the <code>flake.nix</code> file because it only decides
+what to do with given inputs to create a package but not where the packages come
+from and how they are selected.
+Our flake now calls this recipe like this:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">inputs</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">nixpkgs</span>.<span class="va">url</span> <span class="op">=</span> <span class="st">&quot;github:nixos/nixpkgs&quot;</span><span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">outputs</span> <span class="op">=</span> <span class="op">{</span> <span class="va">self</span><span class="op">,</span> <span class="va">nixpkgs</span> <span class="op">}</span>:</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">pkgs</span> <span class="op">=</span> nixpkgs.legacyPackages.x86_64<span class="op">-</span>linux<span class="op">;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="op">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This is our new package for end-users</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">packages</span>.<span class="va">x86_64-linux</span>.<span class="va">default</span> <span class="op">=</span> pkgs.qt6Packages.callPackage <span class="ss">./build.nix</span> <span class="op">{};</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">devShells</span>.<span class="va">x86_64-linux</span>.<span class="va">default</span> <span class="op">=</span> pkgs.mkShell <span class="op">{</span> </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="co"># The shell references this package to provide its dependencies</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>      <span class="va">inputsFrom</span> <span class="op">=</span> <span class="op">[</span> self.packages.x86_64-linux.default <span class="op">];</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      <span class="va">buildInputs</span> <span class="op">=</span> <span class="kw">with</span> pkgs<span class="op">;</span> <span class="op">[</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        gdb</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        qtcreator</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># this is for the shellhook portion</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        qt6.wrapQtAppsHook</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        makeWrapper</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        bashInteractive</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>      <span class="op">];</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>      <span class="co"># set the environment variables that unpatched Qt apps expect</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="va">shellHook</span> <span class="op">=</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="st">        bashdir=$(mktemp -d)</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="st">        makeWrapper &quot;$(type -p bash)&quot; &quot;$bashdir/bash&quot; &quot;</span><span class="sc">&#39;&#39;$</span><span class="st">{qtWrapperArgs[@]}&quot;</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="st">        exec &quot;$bashdir/bash&quot;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="st">      &#39;&#39;</span><span class="op">;</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>You might have noticed that I removed all the <code>buildInputs</code> from the development
+shell definition that are also already part of the package definition in
+<code>build.nix</code>.
+Instead, we get these inputs via the <code>inputsFrom</code> function that simply reuses
+what’s defined in the list of packages that we assign.</p>
+<p>We assign the <code>pkgs.qt6Packages.callPackage ./build.nix {}</code> call to be the
+default package’s result.
+(What’s also cool: Instead of using <code>qt6Packages</code>, we could also build a qt5
+version of this recipe without changing it)
+This way we can run</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> build</span></code></pre></div>
+<p>… and get the pre-packaged application in the <code>results</code> symlink that nix
+produced for us.
+The best about this is that we do <em>not</em> need to run a nix-shell to run the app
+(we needed to do this before because of the <code>QML2_IMPORT_PATH</code> environment
+variable that is only set on systems where Qt is installed).</p>
+<p>Even without cloning the repo at all, we can run get the app running on our
+desktop without fiddling with environment variables, installing Qt, or even
+<em>knowing</em> that the app runs with Qt or what Qt is:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> run github:tfc/qt-example</span></code></pre></div>
+<p>The only prerequisite is Nix and an internet connection for the first attempt.</p>
+<p>Limiting the target group to “nix users” and throwing them a
+<code>nix run github:...</code> over the fence works, but still could take time to download
+all the toolchain packages and build the application, which is a burden for
+users who want it to just work immediately.
+To reduce downloads and build times of toolchains and dependencies for building
+the package, it is possible to <em>cache</em> the final build results.
+Nix caches can be set up on any web server, but also nice tooling and services
+like <a href="https://www.cachix.org/">cachix.org</a> exist which are even free to some
+extent for open-source projects.
+(Flakes can hint at caches so users don’t have to configure them manually)</p>
+<h3 id="non-nix-packaging">Non-Nix Packaging</h3>
+<div class="floating-image-right">
+<p><img src="/images/where-is-my-package.webp" width="200" /></p>
+</div>
+<p>Of course, one could argue that just providing a nix flake for something, and
+telling them to configure some cache to be used, does
+not mean it is “packaged” now, and limiting the user base to nix users might be
+considered unacceptable even if
+<a href="https://twitter.com/jgalowicz/status/1591345129817784324">nixpkgs is in the top 10 of GitHub projects</a>
+and the
+<a href="https://repology.org/repositories/graphs">biggest and most up-to-date package distribution in the world</a>.</p>
+<p>If we want or need to support non-nix users, we still can build Docker images,
+(cross-)compile our apps, and link them statically, etc.
+There is also <a href="https://github.com/matthewbauer/nix-bundle">nix-bundle</a>, a tool
+that wraps the executable into another executable that unpacks itself with all
+dependencies at runtime.
+There is also <a href="https://flatpak.org/">Flatpak</a> and
+<a href="https://appimage.org">AppImage</a>.
+This is all possible (did these things in the past successfully for customers
+and friends) but out of the scope of this blog article.
+However, if you control the target platform (which most *aaS and embedded
+systems companies do), nix is arguably a great choice for your deployment
+cycles.
+No part of the project is nix-specific - we can ignore the nix files that we put
+into the repository.
+This way we could still use other tooling for packaging parallel to nix, but at
+least have simplified developer setup, workflow, building, testing,
+toolchain, and dependency updates, quite a lot.</p>
+<h2 id="summary">Summary</h2>
+<p>Being a seasoned nix user, I came up with the initial nix flake in a few
+minutes.
+The final build recipe is some ~50 lines of nix code (following pretty much
+standard patterns of the nix world), which might also be longer than your
+average <code>Dockerfile</code>.
+This first looks like a bigger and much more time-consuming step for nix
+newbies, which is going to get better over time more and more nix-related
+tooling is emerging in the last few years.
+(One example is <a href="https://devenv.sh/">devenv</a>, a new development environment
+tool that aims to simplify project setup and more. I did not try it, yet.)
+However, this got us not only a development environment but also a way to
+package our app, and some more advantages:</p>
+<p>As soon as we exit the nix-shell, we don’t have any Qt apps or environment
+variables polluting our global system scope.
+This means that we can have multiple Qt projects and (cross-)compilers
+(e.g. very new and very old ones) on the same system in different nix-shells.
+They will never interfere with each other and an update of one cannot influence
+the other.</p>
+<p>The same <code>flake.nix</code> file works for different systems, regardless if it’s an
+x86 or an ARM system (together with the small changes on the <code>flake.nix</code> file
+that I pushed into the repository on GitHub but which I don’t explain in this
+article to keep the scope crisp).
+As long as you have nix installed, it will build and run the same way
+everywhere.</p>
+<div class="floating-image-right">
+<p><img src="/images/works-for-me.gif" width="300" /></p>
+</div>
+<p>With the <code>flake.lock</code> file, <em>everything</em> is <strong>pinned</strong>:
+The project will still build in years on different machines and create the same
+app.
+Not only the same app is created, but it will be bundled with the same
+<em>dependencies</em> (the whole stack from Qt down to the C library).
+This means that it will not only build but also <em>run</em> the same way in many
+years.
+It will not happen any longer that something “works for me” on some coworker’s
+computer, but not on a different machine, because they essentially have the same
+packages (Although things might run differently for bugs that happen to be in
+the macOS version of Qt and not in the Linux version or the other way around).</p>
+<p><strong>Updates</strong> are painless:
+Run <code>nix flake update</code> to update all the nix package inputs, and commit the
+new lock file (which happens automatically if you add the command line argument
+<code>--commit-lock-file</code>).
+If it doesn’t work because the update came with breaking changes, then fix it
+and commit the changes <em>together</em> with the new lock file to have individual
+atomic working commits on your main branch.</p>]]></summary>
+</entry>
+<entry>
     <title>Automatic Testing of Display Resolution and Frame Drop Detection</title>
     <link href="https://blog.galowicz.de/2023/01/09/automatic-testing-of-display-resolution-and-frame-drop-detection" />
     <id>https://blog.galowicz.de/2023/01/09/automatic-testing-of-display-resolution-and-frame-drop-detection</id>
@@ -3639,579 +3965,6 @@ many things, but i also remember:</p>
 <li>Bernardo: Remove the perl script that merges Linux kernel configs in favor of
 better tooling</li>
 <li>Andreas: Substitute stage1 init scripts by proper systemd handling</li>
-</ul>]]></summary>
-</entry>
-<entry>
-    <title>Setting up a C++ project environment with nix</title>
-    <link href="https://blog.galowicz.de/2019/04/17/tutorial_nix_cpp_setup" />
-    <id>https://blog.galowicz.de/2019/04/17/tutorial_nix_cpp_setup</id>
-    <published>2019-04-17T00:00:00Z</published>
-    <updated>2019-04-17T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<!-- cSpell:disable -->
-<p>This article explains how to quickly set up a C++ project environment with
-complete toolchain- and dependency management with <code>nix</code>.
-<a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and
-other Unix systems (It is indeed a more powerful alternative to <a href="https://conan.io/"><code>conan</code></a> and <a href="https://www.docker.com/"><code>docker</code></a>) that makes package
-management reliable and reproducible.
-After setting up the project and playing around with it, we will <strong>parametrize</strong>
-the project description in order to automatically build it with different
-compilers and dependency library versions (GCC 7 &amp; 8, Clang 7 &amp; 8, lib <code>boost</code>
-1.6.6 - 1.6.9, lib <code>poco</code> 1.9.0 &amp; 1.9.1).</p>
-<!--more-->
-<p>Let’s start with a fresh system where no C++ compiler and no development
-libraries are installed.
-The only tool that we require to be installed is <code>nix</code> (see the <a href="https://nixos.org/nix/download.html">installation
-guide on nixos.org</a> for installation
-instructions), because we are going to use it to perform the toolchain and
-dependency setup.</p>
-<h2 id="creating-a-little-example-c-project">Creating a little example C++ Project</h2>
-<p>Let’s write a C++ program with the following dependencies:</p>
-<ul>
-<li>C++ compiler, of course. That might be GCC or Clang.</li>
-<li><code>boost</code> library (<a href="https://www.boost.org" class="uri">https://www.boost.org</a>)</li>
-<li><code>poco</code> library (<a href="https://pocoproject.org" class="uri">https://pocoproject.org</a>)</li>
-</ul>
-<p>For the sake of having a simple example app, the program does nothing more than
-printing what compiler it was built with and which versions of <code>boost</code> and
-<code>poco</code> it is linked against.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;boost/lexical_cast.hpp&gt;</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;Poco/Environment.h&gt;</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#include &lt;iostream&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#if defined(__clang__)</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#define CC &quot;clang++&quot;</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#elif defined (__GNUC__)</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#define CC &quot;g++&quot;</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#else</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">#define CC &quot;&lt;unknown compiler&gt;&quot;</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#endif</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">int</span> main<span class="er">(</span><span class="kw">)</span> <span class="kw">{</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="ex">std::cout</span> <span class="op">&lt;&lt; &quot;Hello World!\n&quot;</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;&lt; &quot;Compiler: &quot; &lt;&lt; CC &lt;&lt; &quot; &quot; &lt;&lt; __VERSION__ &lt;&lt; &#39;\n&#39;</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;&lt; &quot;Boost: &quot; &lt;&lt; (BOOST_VERSION / 100000) &lt;&lt; &#39;.&#39;</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="st">                 &lt;&lt; (BOOST_VERSION / 100 % 1000) &lt;&lt; &#39;.&#39;</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="st">                 &lt;&lt; (BOOST_VERSION % 100) &lt;&lt; &#39;\n&#39;</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;&lt; &quot;POCO: &quot; &lt;&lt; (Poco::Environment::libraryVersion() &gt;&gt; 24) &lt;&lt; &#39;.&#39;</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="st">                &lt;&lt; (Poco::Environment::libraryVersion() &gt;&gt; 16 &amp; 0xff) &lt;&lt; &#39;.&#39;</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="st">                &lt;&lt; (Poco::Environment::libraryVersion() &gt;&gt; 8 &amp; 0xff)</span></span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="st">                &lt;&lt; &#39;\n&#39;;</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span></code></pre></div>
-<p>We can either <em>install</em> a C++ compiler by running <code>nix-env</code> with the
-appropriate arguments, or just run a shell that exposes a C++ compiler in its
-<code>PATH</code> environment.
-Let us not clutter the system’s <code>PATH</code> environment with compilers from the
-beginning, because often people would use different compilers for each project
-anyway.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">-p</span> gcc</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~]$</span> c++ <span class="at">--version</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">g++</span> <span class="er">(</span><span class="ex">GCC</span><span class="kw">)</span> <span class="ex">7.4.0</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">Copyright</span> <span class="er">(</span><span class="ex">C</span><span class="kw">)</span> <span class="ex">2017</span> Free Software Foundation, Inc.</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ex">This</span> is free software<span class="kw">;</span> <span class="ex">see</span> the source for copying conditions.  There is NO</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="ex">warranty</span><span class="kw">;</span> <span class="ex">not</span> even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</span></code></pre></div>
-<p>We are now in a shell that includes GCC’s C++ compiler in its <code>PATH</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">[nix-shell:~/src/nix_cmake_example]$</span> echo <span class="va">$PATH</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...:/nix/store/ghzg4kg0sjif58smj2lfm2bdvjwim85y-gcc-wrapper-7.4.0/bin:...</span></span></code></pre></div>
-<p>I trimmed the rest of the path list.
-What’s important here: The path list is full of paths that begin with
-<code>/nix/store/...</code>.
-Each of them could be considered what one would call a <em>package</em> on typical
-Linux distributions.
-We can easily install multiple compilers with different versions, or even
-the same version with different sets of patches applied, next to each other
-in <code>/nix/store</code> and not have any of them collide during a project’s build,
-because <code>nix</code> does simply only map the packages into the current <code>PATH</code> that
-are needed.</p>
-<blockquote>
-<p><code>nix</code> does even more than just exposing packages via the <code>PATH</code> to the
-executing shell: For a running build process it does also hide all paths
-that are <em>not</em> listed in the dependencies of a package in order to avoid
-unknown dependencies lurking into the project.
-In order to achieve that, it uses <a href="https://en.wikipedia.org/wiki/Linux_namespaces"><em>namespaces</em></a>, similar to <a href="https://www.docker.com/">Docker</a>.
-See also: <a href="https://nixos.wiki/wiki/Nix#Sandboxing">nixos.wiki about <strong>sandboxing</strong></a>, and <a href="https://nixos.org/nix/manual/#conf-sandbox">nix manual: <code>sandbox</code> setting</a></p>
-</blockquote>
-<p>The full procedure of using <code>nix-shell</code> to setup the environment and building
-and running the app looks like this:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-shell <span class="at">-p</span> gcc boost poco</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> c++ <span class="at">-o</span> main main.cpp <span class="at">-lPocoFoundation</span> <span class="at">-lboost_system</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./main</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span></code></pre></div>
-<blockquote>
-<p>Running the compiled binary can of course be done without <code>nix-shell</code>.</p>
-</blockquote>
-<p>One would typically add a file called <code>default.nix</code> to the project folder:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">with</span> <span class="bu">import</span> &lt;nixpkgs&gt; <span class="op">{};</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>stdenv.mkDerivation <span class="op">{</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;my-app&quot;</span><span class="op">;</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">src</span> <span class="op">=</span> <span class="ss">./.</span><span class="op">;</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildInputs</span> <span class="op">=</span> <span class="op">[</span> boost poco <span class="op">];</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildPhase</span> <span class="op">=</span> <span class="st">&quot;c++ -o main main.cpp -lPocoFoundation -lboost_system&quot;</span><span class="op">;</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="va">installPhase</span> <span class="op">=</span> <span class="st">&#39;&#39;</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="st">    mkdir -p $out/bin</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="st">    cp main $out/bin/</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;&#39;</span><span class="op">;</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>This buys us that we can simply run <code>nix-build</code> to configure, build and package
-the project into the nix store with a single command.
-Developers would still use <code>nix-shell</code> for incremental builds between source
-modifications.
-<code>nix-shell</code> does also consult <code>default.nix</code> in order to setup the dependencies
-right, so we don’t need the <code>-p</code> parameter list any longer.</p>
-<p>Very short overview over the most important lines:</p>
-<ul>
-<li><code>stdenv</code> is an object in the nix expression language that is imported from
-<code>&lt;nixpkgs&gt;</code>. <code>nixpkgs</code> is a globally available nix expression with all the
-packages. <code>stdenv</code> contains the compiler and other things needed to compile
-projects.</li>
-<li><code>buildInputs</code> lists compile time and run time dependencies of the project.</li>
-<li><code>buildPhase</code> is a shell hook that describes how to build the program.</li>
-<li><code>installPhase</code> describes what files should be copied into the nix store.</li>
-</ul>
-<p>We’re covering how this works in detail only in minimal depth.
-More information about nix derivations:</p>
-<ul>
-<li><a href="https://nixos.org/nix/manual/#ssec-derivation"><code>nix</code> manual section about derivations</a></li>
-<li><a href="https://nixos.wiki/wiki/C" class="uri">https://nixos.wiki/wiki/C</a></li>
-</ul>
-<blockquote>
-<p>It looks like we’re using <code>nix</code> as a build system now - in fact,
-<code>mkDerivation</code> is a function that creates a so called “builder script” that
-is able to detect if we are using a Makefile based project (with or without
-autoconf), a CMake project, or a set of other build systems, and then
-executes the right steps according to the build system.
-One cool detail is that we would typically not touch <code>CMakeFile</code> or other
-files in order to use <code>nix</code> - this way users who do not want to or cannot
-use <code>nix</code> are able to use their own tools for dependency management.</p>
-<p><code>mkDerivation</code> is a very versatile and complex helper: See the <a href="https://nixos.org/nix/manual/#ssec-derivation"><code>nix</code> manual
-section about derivations</a></p>
-</blockquote>
-<p>In this example we use no build system, hence need to use the <code>buildPhase</code>
-hook to define how our little application is compiled and linked.</p>
-<p>Someone else who checks out this project and who has installed <code>nix</code> can
-now simply run:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-build</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">these</span> derivations will be built:</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/dw9d2r7rykym08fzmdgf6v0ia2sn6hq9-my-app.drv</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">building</span> <span class="st">&#39;/nix/store/dw9d2r7rykym08fzmdgf6v0ia2sn6hq9-my-app.drv&#39;</span>...</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">unpacking</span> sources</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">unpacking</span> source archive /nix/store/8zwsvxdkpjnyxnm9qs33qw3bi12h9gbm-nix_simple</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> root is nix_simple</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">patching</span> sources</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">configuring</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">no</span> configure script, doing nothing</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">building</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">installing</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">post-installation</span> fixup</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ex">shrinking</span> RPATHs of ELF executables and libraries in /nix/store/5ldpivphfbya4xw6kcss9vcdvp1mzrcf-my-app</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="ex">shrinking</span> /nix/store/5ldpivphfbya4xw6kcss9vcdvp1mzrcf-my-app/bin/main</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fu">strip</span> is /nix/store/0y7jmqnj48ikjh37n3dl9kqw9hnn68nq-binutils-2.31.1/bin/strip</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="ex">stripping</span> <span class="er">(</span><span class="ex">with</span> command strip and flags <span class="at">-S</span><span class="kw">)</span> <span class="er">in</span> <span class="ex">/nix/store/5ldpivphfbya4xw6kcss9vcdvp1mzrcf-my-app/bin</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="ex">patching</span> script interpreter paths in /nix/store/5ldpivphfbya4xw6kcss9vcdvp1mzrcf-my-app</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="ex">checking</span> for references to /tmp/nix-build-my-app.drv-0/ in /nix/store/5ldpivphfbya4xw6kcss9vcdvp1mzrcf-my-app...</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="ex">/nix/store/5ldpivphfbya4xw6kcss9vcdvp1mzrcf-my-app</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./result/bin/main</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span></code></pre></div>
-<p>The compiler, all libraries etc. are automatically downloaded and put into
-action.
-Much simpler than with <a href="https://conan.io/">conan</a>!</p>
-<p>That is basically it: If the program grows, we will certainly switch
-to some build system - <code>nix</code> supports that without having to add nix-specific
-stuff into the build files (GNUMake, CMake, meson, etc. are supported.
-Have a look into the <a href="https://github.com/NixOS/nixpkgs/tree/master/pkgs/development/tools/build-managers"><code>nixpkgs</code> git repository folder for supported build
-systems</a>).
-If the number of dependencies grows, be that libraries or compile time tools,
-we can simply add them to the nix expression.</p>
-<h2 id="building-the-code-with-different-dependency-versions">Building the code with different dependency versions</h2>
-<p>The <code>default.nix</code> expression results in one so-called <em>derivation</em> that <code>nix</code>
-can materialize into a binary package in the nix storage.
-Let us now write another nix expression that takes multiple <code>boost</code> library
-versions, multiple <code>poco</code> library versions and multiple compilers, and
-that results in a <em>set</em> of derivations that nix can materialize using those.</p>
-<p>We will use the following variety of dependency versions:</p>
-<ul>
-<li>GCC 7 &amp; 8</li>
-<li>Clang 7 &amp; 8</li>
-<li>lib <code>poco</code> 1.9.0 &amp; 1.9.1</li>
-<li>lib <code>boost</code> 1.6.6 - 1.6.9</li>
-</ul>
-<p>…which results in <span class="math inline">(2+2) * 2 * 4 = 32</span> different binaries.</p>
-<p>Quick spoiler: The result of the nix expression that we are going to write
-will allow us to build and execute these 32 binaries with a single <code>nix-build release.nix</code> command.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> for path in <span class="va">$(</span><span class="ex">nix-build</span> release.nix<span class="va">)</span><span class="kw">;</span> <span class="cf">do</span> <span class="dt">\</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>   echo <span class="st">&quot;====&quot;</span><span class="kw">;</span> <span class="dt">\</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>   echo <span class="st">&quot;Output of </span><span class="va">$path</span><span class="st">/bin/main:&quot;</span><span class="kw">;</span> <span class="dt">\</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span>   <span class="va">$path</span>/bin/main<span class="kw">;</span> <span class="dt">\</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> done</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># trimmed a lot of build output...</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/246an1m3rwwgz58qc8hfwvqh28899ckm-my-app-clang7-poco190-boost166/bin/main:</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/cfh1cy03kly9wq6x6dzlza4d9kads6cd-my-app-clang7-poco190-boost167/bin/main:</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/jjbpj24x4gp2vpn355j0qsy117yrkhrd-my-app-clang7-poco190-boost168/bin/main:</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/f9fgwzpq9gn85abx9h1zr5c6j3bs4ks2-my-app-clang7-poco190-boost169/bin/main:</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/1wwff8p5rxjqjkhqifvhy833bl3mf8l3-my-app-clang7-poco191-boost166/bin/main:</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/3jdv2l0gp3za4q5rj8s4859bpiyscg0m-my-app-clang7-poco191-boost167/bin/main:</span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/fcbypavfzrw8ajngaim7srvn9fylj7b3-my-app-clang7-poco191-boost168/bin/main:</span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/a8d1mwqiay3qx60fzp6m70q89s0mpcwx-my-app-clang7-poco191-boost169/bin/main:</span>
-<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 7.0.1 <span class="er">(</span><span class="ex">tags/RELEASE_701/final</span><span class="kw">)</span></span>
-<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/lhxdhmi9ficg9v9mkxv4zz9s4759r5z6-my-app-clang8-poco190-boost166/bin/main:</span>
-<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/x4f34gi6p6ipa8lvqx2aj36nzipk2yv1-my-app-clang8-poco190-boost167/bin/main:</span>
-<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/dqmy8gmkshi8glg2ldidpclzq2mrqbvw-my-app-clang8-poco190-boost168/bin/main:</span>
-<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/s5qw1ff2qbx2aswnlvd7l7d60fdfyr0y-my-app-clang8-poco190-boost169/bin/main:</span>
-<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/wf4ygk9lhkmfv98f9g05pndv4a0320j1-my-app-clang8-poco191-boost166/bin/main:</span>
-<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/xg34s1bzr2h57hsbj6z0g93mwni7jcgk-my-app-clang8-poco191-boost167/bin/main:</span>
-<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/bhjzyxr1wpjnkdr1wm72142l0hlndsnz-my-app-clang8-poco191-boost168/bin/main:</span>
-<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/r1nd2gb7r45vpldnbiprdnyg7y29k08f-my-app-clang8-poco191-boost169/bin/main:</span>
-<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> clang++ 4.2.1 Compatible Clang 8.0.0 <span class="er">(</span><span class="ex">tags/RELEASE_800/final</span><span class="kw">)</span></span>
-<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/3jfbck6mcrgjfpya8p8x293sfkqi0w5b-my-app-gcc7-poco190-boost166/bin/main:</span>
-<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/cvlxdps8k666dgim3xp04xkm4qzbvkby-my-app-gcc7-poco190-boost167/bin/main:</span>
-<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/ipk381rlahkv6wbwccmv7pibwghdbw7c-my-app-gcc7-poco190-boost168/bin/main:</span>
-<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/pl9y9njmyc2ws4i4mgfnhdxxsbrzasj3-my-app-gcc7-poco190-boost169/bin/main:</span>
-<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/svxr6826wm0sx9mm8sgy1v2aq2v1nx2p-my-app-gcc7-poco191-boost166/bin/main:</span>
-<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/hfwv308iaykb4ygnjpjfxwy6xf1rr0s3-my-app-gcc7-poco191-boost167/bin/main:</span>
-<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/2bxawcdkgjbvn756q93r65vym19b2jip-my-app-gcc7-poco191-boost168/bin/main:</span>
-<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/zgzw1bbx935fm209lxnn01n14sv8f9a8-my-app-gcc7-poco191-boost169/bin/main:</span>
-<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 7.4.0</span>
-<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/jgsxmqgwmqqv2sbcmnx63abb3ymfsqc5-my-app-gcc8-poco190-boost166/bin/main:</span>
-<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/3j9q4bn2id2iqza44n39mzi4cqzhqlz2-my-app-gcc8-poco190-boost167/bin/main:</span>
-<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/7czfqh3fbjpslnar101b472kzlhxlcdc-my-app-gcc8-poco190-boost168/bin/main:</span>
-<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/9vmwm0zzsgxqm6v5yxzjdjkhgxqqdnqr-my-app-gcc8-poco190-boost169/bin/main:</span>
-<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.0</span>
-<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/n34v5f23jhpcc20hyszdn270p9wyzfbz-my-app-gcc8-poco191-boost166/bin/main:</span>
-<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.66.0</span>
-<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/bq9pijnw746ilp1ar8xwb7bl3v1ypy0y-my-app-gcc8-poco191-boost167/bin/main:</span>
-<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.67.0</span>
-<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/pzqa2sraf1xhji9bk6namwg6x4ar9sgq-my-app-gcc8-poco191-boost168/bin/main:</span>
-<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.68.0</span>
-<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span>
-<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a><span class="ex">====</span></span>
-<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a><span class="ex">Output</span> of /nix/store/vb3ha6skwnj2h5k691jxcn7pxa8gs90i-my-app-gcc8-poco191-boost169/bin/main:</span>
-<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a><span class="ex">Hello</span> World!</span>
-<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a><span class="ex">Compiler:</span> g++ 8.3.0</span>
-<span id="cb7-197"><a href="#cb7-197" aria-hidden="true" tabindex="-1"></a><span class="ex">Boost:</span> 1.69.0</span>
-<span id="cb7-198"><a href="#cb7-198" aria-hidden="true" tabindex="-1"></a><span class="ex">POCO:</span> 1.9.1</span></code></pre></div>
-<p>As the first step, let us first decompose the <code>default.nix</code> file into a file
-<code>derivation.nix</code> and another file <code>release.nix</code>.</p>
-<p>The new <code>derivation.nix</code> file contains the pure package description without
-knowledge about where the dependencies come from:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="va">boost</span><span class="op">,</span> <span class="va">poco</span><span class="op">,</span> <span class="va">stdenv</span> <span class="op">}</span>:</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>stdenv.mkDerivation <span class="op">{</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;my-app&quot;</span><span class="op">;</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">src</span> <span class="op">=</span> <span class="ss">./.</span><span class="op">;</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildInputs</span> <span class="op">=</span> <span class="op">[</span> boost poco <span class="op">];</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildPhase</span> <span class="op">=</span> <span class="st">&quot;c++ -std=c++17 -o main main.cpp -lPocoFoundation -lboost_system&quot;</span><span class="op">;</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="va">installPhase</span> <span class="op">=</span> <span class="st">&#39;&#39;</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="st">    mkdir -p $out/bin</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">    cp main $out/bin/</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">  &#39;&#39;</span><span class="op">;</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>The first line states that the content of this file is a <em>function</em> that
-accepts a dictionary with the keys <code>boost</code>, <code>poco</code>, and <code>stdenv</code> as input
-arguments.
-It does then finally return a derivation.
-A derivation can be materialized into a package with the binary by <code>nix</code>.</p>
-<p>This means that we can regard <code>derivation.nix</code> like a mathematical function<br />
-<span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em>(<em>c</em><em>o</em><em>m</em><em>p</em><em>i</em><em>l</em><em>e</em><em>r</em>,<em>b</em><em>o</em><em>o</em><em>s</em><em>t</em>,<em>p</em><em>o</em><em>c</em><em>o</em>) → <em>d</em><em>e</em><em>r</em><em>i</em><em>v</em><em>a</em><em>t</em><em>i</em><em>o</em><em>n</em></span>.</p>
-<p>The next step is then to use that function <span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em></span> and feed it with the cartesian
-product of all 32 input combinations.
-The file <code>release.nix</code> does just that:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource numberLines nix"><code class="sourceCode nix"><span id="cb9-1"><a href="#cb9-1"></a><span class="op">{</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a>  <span class="va">nixpkgs</span> <span class="op">?</span> &lt;nixpkgs&gt;<span class="op">,</span></span>
-<span id="cb9-3"><a href="#cb9-3"></a>  <span class="va">pkgs</span> <span class="op">?</span> <span class="bu">import</span> nixpkgs <span class="op">{}</span></span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="op">}</span>:</span>
-<span id="cb9-5"><a href="#cb9-5"></a></span>
-<span id="cb9-6"><a href="#cb9-6"></a><span class="kw">let</span></span>
-<span id="cb9-7"><a href="#cb9-7"></a>  <span class="va">compilers</span> <span class="op">=</span> <span class="kw">with</span> pkgs<span class="op">;</span> <span class="op">{</span></span>
-<span id="cb9-8"><a href="#cb9-8"></a>    <span class="va">gcc7</span> <span class="op">=</span> stdenv<span class="op">;</span></span>
-<span id="cb9-9"><a href="#cb9-9"></a>    <span class="va">gcc8</span> <span class="op">=</span> overrideCC stdenv gcc8<span class="op">;</span></span>
-<span id="cb9-10"><a href="#cb9-10"></a>    <span class="va">clang7</span> <span class="op">=</span> overrideCC stdenv clang_7<span class="op">;</span></span>
-<span id="cb9-11"><a href="#cb9-11"></a>    <span class="va">clang8</span> <span class="op">=</span> overrideCC stdenv clang_8<span class="op">;</span></span>
-<span id="cb9-12"><a href="#cb9-12"></a>  <span class="op">};</span></span>
-<span id="cb9-13"><a href="#cb9-13"></a></span>
-<span id="cb9-14"><a href="#cb9-14"></a>  <span class="va">pocoLibs</span> <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb9-15"><a href="#cb9-15"></a>    <span class="va">poco190</span> <span class="op">=</span> pkgs.poco<span class="op">;</span></span>
-<span id="cb9-16"><a href="#cb9-16"></a>    <span class="va">poco191</span> <span class="op">=</span> pkgs.poco.overrideAttrs <span class="op">(</span><span class="va">oldAttrs</span><span class="op">:</span> <span class="op">{</span></span>
-<span id="cb9-17"><a href="#cb9-17"></a>      <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;poco-1.9.1&quot;</span><span class="op">;</span></span>
-<span id="cb9-18"><a href="#cb9-18"></a>      <span class="va">src</span> <span class="op">=</span> pkgs.fetchgit <span class="op">{</span></span>
-<span id="cb9-19"><a href="#cb9-19"></a>        <span class="va">url</span> <span class="op">=</span> <span class="st">&quot;https://github.com/pocoproject/poco.git&quot;</span><span class="op">;</span></span>
-<span id="cb9-20"><a href="#cb9-20"></a>        <span class="va">rev</span> <span class="op">=</span> <span class="st">&quot;196540ce34bf884921ff3f9ce338e38fc938acdd&quot;</span><span class="op">;</span></span>
-<span id="cb9-21"><a href="#cb9-21"></a>        <span class="va">sha256</span> <span class="op">=</span> <span class="st">&quot;0q0xihkm2z8kndx40150inq7llcyny59cv016gxsx0vbzzbdkcnd&quot;</span><span class="op">;</span></span>
-<span id="cb9-22"><a href="#cb9-22"></a>      <span class="op">};</span></span>
-<span id="cb9-23"><a href="#cb9-23"></a>    <span class="op">});</span></span>
-<span id="cb9-24"><a href="#cb9-24"></a>  <span class="op">};</span></span>
-<span id="cb9-25"><a href="#cb9-25"></a></span>
-<span id="cb9-26"><a href="#cb9-26"></a>  <span class="va">boostLibs</span> <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb9-27"><a href="#cb9-27"></a>    <span class="kw">inherit</span> <span class="op">(</span>pkgs<span class="op">)</span> boost166 boost167 boost168 boost169<span class="op">;</span></span>
-<span id="cb9-28"><a href="#cb9-28"></a>  <span class="op">};</span></span>
-<span id="cb9-29"><a href="#cb9-29"></a></span>
-<span id="cb9-30"><a href="#cb9-30"></a>  <span class="va">originalDerivation</span> <span class="op">=</span> <span class="op">[</span> <span class="op">(</span>pkgs.callPackage <span class="op">(</span><span class="bu">import</span> <span class="ss">./derivation.nix</span><span class="op">)</span> <span class="op">{})</span> <span class="op">];</span></span>
-<span id="cb9-31"><a href="#cb9-31"></a></span>
-<span id="cb9-32"><a href="#cb9-32"></a>  <span class="va">f</span> <span class="op">=</span> <span class="va">libname</span><span class="op">:</span> <span class="va">libs</span><span class="op">:</span> <span class="va">derivs</span><span class="op">:</span> <span class="kw">with</span> pkgs.lib<span class="op">;</span></span>
-<span id="cb9-33"><a href="#cb9-33"></a>    concatMap <span class="op">(</span><span class="va">deriv</span><span class="op">:</span></span>
-<span id="cb9-34"><a href="#cb9-34"></a>      mapAttrsToList <span class="op">(</span><span class="va">libVers</span><span class="op">:</span> <span class="va">lib</span><span class="op">:</span></span>
-<span id="cb9-35"><a href="#cb9-35"></a>        <span class="op">(</span>deriv.override <span class="op">{</span> <span class="st">&quot;</span><span class="sc">${</span>libname<span class="sc">}</span><span class="st">&quot;</span> <span class="op">=</span> lib<span class="op">;</span> <span class="op">})</span>.overrideAttrs</span>
-<span id="cb9-36"><a href="#cb9-36"></a>          <span class="op">(</span><span class="va">old</span><span class="op">:</span> <span class="op">{</span> <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;</span><span class="sc">${</span>old.name<span class="sc">}</span><span class="st">-</span><span class="sc">${</span>libVers<span class="sc">}</span><span class="st">&quot;</span><span class="op">;</span> <span class="op">})</span></span>
-<span id="cb9-37"><a href="#cb9-37"></a>      <span class="op">)</span> libs</span>
-<span id="cb9-38"><a href="#cb9-38"></a>    <span class="op">)</span> derivs<span class="op">;</span></span>
-<span id="cb9-39"><a href="#cb9-39"></a></span>
-<span id="cb9-40"><a href="#cb9-40"></a>  <span class="va">overrides</span> <span class="op">=</span> <span class="op">[</span></span>
-<span id="cb9-41"><a href="#cb9-41"></a>    <span class="op">(</span>f <span class="st">&quot;stdenv&quot;</span> compilers<span class="op">)</span></span>
-<span id="cb9-42"><a href="#cb9-42"></a>    <span class="op">(</span>f <span class="st">&quot;poco&quot;</span>   pocoLibs<span class="op">)</span></span>
-<span id="cb9-43"><a href="#cb9-43"></a>    <span class="op">(</span>f <span class="st">&quot;boost&quot;</span>  boostLibs<span class="op">)</span></span>
-<span id="cb9-44"><a href="#cb9-44"></a>  <span class="op">];</span></span>
-<span id="cb9-45"><a href="#cb9-45"></a><span class="kw">in</span></span>
-<span id="cb9-46"><a href="#cb9-46"></a>  pkgs.lib.foldl <span class="op">(</span><span class="va">a</span><span class="op">:</span> <span class="va">b</span><span class="op">:</span> a <span class="op">//</span> <span class="op">{</span> <span class="st">&quot;</span><span class="sc">${</span>b.name<span class="sc">}</span><span class="st">&quot;</span> <span class="op">=</span> b<span class="op">;</span> <span class="op">})</span> <span class="op">{}</span> <span class="op">(</span></span>
-<span id="cb9-47"><a href="#cb9-47"></a>    pkgs.lib.foldl <span class="op">(</span><span class="va">a</span><span class="op">:</span> <span class="va">f</span><span class="op">:</span> f a<span class="op">)</span> originalDerivation overrides</span>
-<span id="cb9-48"><a href="#cb9-48"></a>  <span class="op">)</span></span></code></pre></div>
-<p>This code looks a bit more complicated, but it does a lot of things:</p>
-<ul>
-<li>It defines the variety of compilers and libraries in the variables
-<code>compilers</code>, <code>pocoLibs</code>, and <code>boostLibs</code>.
-<ul>
-<li>note that <code>nixpkgs</code> already contains lib <code>poco</code> version 1.9.0, but not
-1.9.1 - we simply override its package description to use the latest 1.9.1
-source from poco’s github repository.</li>
-</ul></li>
-<li>Function <code>f</code> contains all the magic: It reapplies the original function
-<code>deriv</code> with one library input overloaded from a library list argument!</li>
-<li>The list <code>overrides</code> contains the list of function <code>f</code> applications that
-shall be applied over the original derivation.</li>
-<li>The last 2 lines of code apply all the transformations within a simple <code>fold</code></li>
-</ul>
-<p>This explanation is very brief.
-The whole code might look pretty much familiar to everyone who is not used to
-nix but has some experience with purely functional programming languages.
-Explaining the code in detail to developers who neither know <code>nix</code> nor any
-functional programming, would explode the scope of this article.</p>
-<h2 id="summary">Summary</h2>
-<p>We have seen how simple it is to quickly set up an ad-hoc C++ programming
-environment with a compiler and libraries, without cluttering the system.</p>
-<p>We have “packaged” our little project with a roughly ~10 LOC short <code>default.nix</code>
-Users with solely <code>nix</code> installed can clone this project from git, run
-<code>nix-build</code> and get the binary. Simple as that.</p>
-<p>With less than 50 LOC we implemented a nix expression that builds our
-application in 32 different variants with different compilers and library
-versions.</p>
-<p>There is a git repository with all project files that is available for checkout:
-<a href="https://github.com/tfc/nix_cpp_cartesian_dependencies" class="uri">https://github.com/tfc/nix_cpp_cartesian_dependencies</a></p>
-<h2 id="outlook">Outlook</h2>
-<p>What else can be done from here? The advantages and strengths of <code>nix</code> have
-<em>by far</em> not been exhausted in this example.</p>
-<h3 id="maximum-reproducibility-pinning-nixpkgs">Maximum Reproducibility: Pinning <code>nixpkgs</code></h3>
-<p>Whenever we referenced packages, we got them from the magical nix expression
-<code>&lt;nixpkgs&gt;</code>.
-This package source is a <em>channel</em> that can be updated with <code>nix-channel --update</code>, which is similar to running <code>apt-get update</code> on Debian-like Linux
-distros.
-Of course, an update of the channel also updates the packages and thus might
-break the whole build.</p>
-<p>With <code>nix</code>, we can simply <strong>pin</strong> the package list to a version that is known
-to work.</p>
-<p>In the github repository of this example, i did so with <a href="https://github.com/tfc/nix_cpp_cartesian_dependencies/blob/master/nixpkgs.nix">nixpkgs.nix</a>.</p>
-<p>Using this technique, one can be pretty confident, that the project will
-still work in all configurations in a few years, which makes our build procedure
-pretty reproducible.</p>
-<h3 id="nix-ci-hydra">Nix CI: Hydra</h3>
-<p>Since <code>nix</code> is simply a tool that can be installed on Linux, Mac, and other UNIX
-systems, it can also be run in different CIs.</p>
-<p>The NixOS project does however come with its own CI:
-<a href="https://nixos.org/hydra/">Hydra</a>.
-I am running my own instance on <a href="https://hydra.kosmosgame.com" class="uri">https://hydra.kosmosgame.com</a> and installed
-this project as a jobset on it:</p>
-<p><a href="https://hydra.kosmosgame.com/jobset/github/nix_cpp_cartesian_dependencies#tabs-jobs">This article’s project in hydra</a></p>
-<p>The code does a bit more than covered in this article:
-I added a nix expression <a href="https://github.com/tfc/nix_cpp_cartesian_dependencies/blob/master/output.nix"><code>output.nix</code></a>
-that does not only build the application in all variants, but also executes
-them and stores their results in the nix store.
-This way they can be looked at in the browser like here: <a href="https://hydra.kosmosgame.com/build/265">example output</a></p>
-<h3 id="fully-reproducible-automatic-integration-tests">Fully Reproducible, Automatic Integration Tests</h3>
-<p>Nix expressions do not only allow for simple ad-hoc packaging of binaries:
-They are mighty enough to describe whole-system descriptions.
-In fact, the NixOS installer ISOs, the Virtualbox NixOS demo VM image, the
-Amazon AMIs, Microsoft Azure Blobs, etc. are all built from nix expressions.</p>
-<p>I build a little more complicated example and put it on github:
-<a href="https://github.com/tfc/nix_cmake_example" class="uri">https://github.com/tfc/nix_cmake_example</a></p>
-<p>In a nutshell, this repository contains a C++ server application that uses
-PostgreSQL as a database backend and a Python client application that provides
-a little web server interface to the same database.
-In order to test such an application one needs a host with a confiured and
-running PostgreSQL instance.</p>
-<p>The C++ app is built in different configurations - all configurations are
-automatically tested in VMs that are automatically created, spun up, and
-destroyed afterwards.</p>
-<figure>
-<img src="https://github.com/tfc/nix_cmake_example/raw/master/doc/hydra_nix_example.png" alt="Hydra example output" />
-<figcaption aria-hidden="true">Hydra example output</figcaption>
-</figure>
-<p>The whole output can be inspected on
-<a href="https://hydra.kosmosgame.com/jobset/github/nix_cmake_example#tabs-jobs" class="uri">https://hydra.kosmosgame.com/jobset/github/nix_cmake_example#tabs-jobs</a></p>
-<h3 id="cross-compilation">Cross Compilation</h3>
-<p>Just touching this topic by dropping some links</p>
-<ul>
-<li><a href="https://nixos.wiki/wiki/Cross_Compiling" class="uri">https://nixos.wiki/wiki/Cross_Compiling</a></li>
-<li><a href="https://matthewbauer.us/blog/beginners-guide-to-cross.html" class="uri">https://matthewbauer.us/blog/beginners-guide-to-cross.html</a></li>
 </ul>]]></summary>
 </entry>
 

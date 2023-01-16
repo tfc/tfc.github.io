@@ -40,7 +40,33 @@
 <div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a> <a style="font-size: 100%" href="./tags/python.html">python</a> <a style="font-size: 100%" href="./tags/testing.html">testing</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2023/01/09/automatic-testing-of-display-resolution-and-frame-drop-detection">Automatic Testing of Display Resolution and Frame Drop Detection</a>
+<div class="posts"><div><h2><a href="./2023/01/16/cpp-qt-qml-nix-setup">(Qt)Quick C++ Project Setup with Nix</a>
+</h2>
+<span class="post-tags">
+<strong><small>January 16, 2023,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'nix'." href="./tags/nix.html" class="tag-link">nix</a> <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
+</strong>
+</span>
+<!-- cSpell:words devenv Dockerfiles cachix Flatpak -->
+<!-- cSpell:ignore qtcreator qtbase shellhook bashdir mktemp stdenv pname -->
+<!-- cSpell:ignore qtwebkit -->
+<p>I never install toolchains globally on my systems.
+Instead, every project comes with its own nix file that describes the complete
+development toolchain versions and dependencies.
+This way, fresh checkouts always build the same way on every machine.
+This week I would like to show you how I set up a C++ project with the Qt Quick
+framework, and how to package the app and make it runnable for other nix users.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2023/01/16/cpp-qt-qml-nix-setup" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2023/01/09/automatic-testing-of-display-resolution-and-frame-drop-detection">Automatic Testing of Display Resolution and Frame Drop Detection</a>
 </h2>
 <span class="post-tags">
 <strong><small>January  9, 2023,</small>
@@ -267,33 +293,6 @@ For more information please also have a look on the website:
 <a href="https://oceansprint.org">https://oceansprint.org</a></p>
 
 <p><a class="btn btn-sm btn-primary" href="./2021/12/12/nix-community-oceansprint-report" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
-Read more </a>
-</p>
-</div>
-
-<hr>
-<div><h2><a href="./2019/04/17/tutorial_nix_cpp_setup">Setting up a C++ project environment with nix</a>
-</h2>
-<span class="post-tags">
-<strong><small>April 17, 2019,</small>
-</strong>
-
-
-<strong><small>Tags: <a title="All pages tagged 'nix'." href="./tags/nix.html" class="tag-link">nix</a> <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
-</strong>
-</span>
-<!-- cSpell:disable -->
-<p>This article explains how to quickly set up a C++ project environment with
-complete toolchain- and dependency management with <code>nix</code>.
-<a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and
-other Unix systems (It is indeed a more powerful alternative to <a href="https://conan.io/"><code>conan</code></a> and <a href="https://www.docker.com/"><code>docker</code></a>) that makes package
-management reliable and reproducible.
-After setting up the project and playing around with it, we will <strong>parametrize</strong>
-the project description in order to automatically build it with different
-compilers and dependency library versions (GCC 7 &amp; 8, Clang 7 &amp; 8, lib <code>boost</code>
-1.6.6 - 1.6.9, lib <code>poco</code> 1.9.0 &amp; 1.9.1).</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2019/04/17/tutorial_nix_cpp_setup" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
 Read more </a>
 </p>
 </div>

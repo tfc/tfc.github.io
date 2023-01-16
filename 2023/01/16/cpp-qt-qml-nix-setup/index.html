@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's Blog &middot; (Qt)Quick C++ Project Setup with Nix</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's Blog</a>
+</h1>
+<p class="lead">Software Engineering Consultant</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About / CV</a>
+<a class="sidebar-nav-item" href="../../../../impressum.html">Impressum</a>
+<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Data Protection</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa-brands fa-square-xing"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa-brands fa-square-github"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa-brands fa-square-twitter"></i>
+</a>
+<a rel="me" href="https://functional.cafe/@jgalowicz"><i class="fa-brands fa-mastodon"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>(Qt)Quick C++ Project Setup with Nix</h1>
+<div class="post"><span class="post-date">January 16, 2023</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'nix'." href="../../../../tags/nix.html" class="tag-link">nix</a> <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html" class="tag-link">c++</a>
+</span>
+<!-- cSpell:words devenv Dockerfiles cachix Flatpak -->
+<!-- cSpell:ignore qtcreator qtbase shellhook bashdir mktemp stdenv pname -->
+<!-- cSpell:ignore qtwebkit -->
+<p>I never install toolchains globally on my systems.
+Instead, every project comes with its own nix file that describes the complete
+development toolchain versions and dependencies.
+This way, fresh checkouts always build the same way on every machine.
+This week I would like to show you how I set up a C++ project with the Qt Quick
+framework, and how to package the app and make it runnable for other nix users.</p>
+<!--more-->
+<p>Nix typically allows you to run</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix-shell</span> <span class="at">-p</span> someTool someOtherTool</span></code></pre></div>
+<p>… to download everything and put you in a shell where everything is as if you
+had these tools installed.
+This time, I wanted to run
+<a href="https://www.qt.io/product/development-tools">Qt Creator</a> to fiddle around with
+some <a href="https://doc.qt.io/qt-6/qtquick-index.html">Qt Quick</a> ideas.</p>
+<h2 id="getting-qt-creator-up-and-running">Getting Qt Creator Up and Running</h2>
+<p>For that purpose, running</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix-shell</span> <span class="at">-p</span> cmake qt6.full qtcreator</span></code></pre></div>
+<p>… got me Qt Creator, the Qt6 libraries, and CMake as a build system.
+This is already enough to get Qt Creator up and running, create a new QtQuick
+UI project in the project wizard with CMake as its build system, and actually
+<em>build</em> it using the UI menu buttons in Qt Creator, which was already a nice
+and uncomplicated user experience.</p>
+<figure>
+<img src="../../../../images/qt-quick-wizard.png" alt="Qt Creator’s project wizard" />
+<figcaption aria-hidden="true">Qt Creator’s project wizard</figcaption>
+</figure>
+<p>At first, Qt tried to use the wrong toolchain: I found out that my home folder
+still had some older configuration state from an earlier Qt Creator version
+installed.
+Quickly running <code>rm -rf ~/.config/QtProject*</code> helped out:
+Qt Creator chose the right Qt libraries the next time I ran the wizard.
+<em>Now</em> it was able to build the app.</p>
+<p>Unfortunately, <em>running</em> the application still produced the following output:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">QQmlApplicationEngine</span> failed to load component</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:2:1:</span> module <span class="st">&quot;QtQuick.Window&quot;</span> is not installed</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:</span> module <span class="st">&quot;QtQml.WorkerScript&quot;</span> is not installed</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:2:1:</span> module <span class="st">&quot;QtQuick.Window&quot;</span> is not installed</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">qrc:/main.qml:</span> module <span class="st">&quot;QtQml.WorkerScript&quot;</span> is not installed</span></code></pre></div>
+<p>After briefly researching this, it turned out that QtQuick apps require the
+environment variable <code>QML2_IMPORT_PATH</code> to be set.
+On computers where Qt is installed the <em>normal</em> way, this variable is already
+set globally.
+As there are plenty of Qt5 and Qt6 packages in NixOS already, we can just reuse
+the scripts to get the same effect for our developer shell.</p>
+<p>To get packages into the shell environment <em>and</em> add environment variables, the
+function <code>mkShell</code> from nixpkgs can help us.
+To manipulate more than the list of packages that are available in a nix-shell,
+we need to set up a nix expression that describes the whole shell environment,
+like this <code>flake.nix</code> file:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">inputs</span>.<span class="va">nixpkgs</span>.<span class="va">url</span> <span class="op">=</span> <span class="st">&quot;github:nixos/nixpkgs&quot;</span><span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">outputs</span> <span class="op">=</span> <span class="op">{</span> <span class="va">self</span><span class="op">,</span> <span class="va">nixpkgs</span> <span class="op">}</span>:</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">pkgs</span> <span class="op">=</span> nixpkgs.legacyPackages.x86_64<span class="op">-</span>linux<span class="op">;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="op">{</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">devShells</span>.<span class="va">x86_64-linux</span>.<span class="va">default</span> <span class="op">=</span> pkgs.mkShell <span class="op">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      <span class="va">buildInputs</span> <span class="op">=</span> <span class="kw">with</span> pkgs<span class="op">;</span> <span class="op">[</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        cmake</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        gdb</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        qt6.full</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        qt6.qtbase</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        qtcreator</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        <span class="co"># this is for the shellhook portion</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        qt6.wrapQtAppsHook</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        makeWrapper</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        bashInteractive</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      <span class="op">];</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>      <span class="co"># set the environment variables that Qt apps expect</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>      <span class="va">shellHook</span> <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="st">        bashdir=$(mktemp -d)</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="st">        makeWrapper &quot;$(type -p bash)&quot; &quot;$bashdir/bash&quot; &quot;</span><span class="sc">''$</span><span class="st">{qtWrapperArgs[@]}&quot;</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="st">        exec &quot;$bashdir/bash&quot;</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="st">      ''</span><span class="op">;</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<blockquote>
+<p>I am not explaining everything in this article.
+Flakes in general are described
+<a href="https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html">in the nix documentation</a>,
+and the <code>mkShell</code> function is described
+<a href="https://nixos.org/manual/nixpkgs/stable/#sec-pkgs-mkShell">in the nixpkgs documentation</a>.</p>
+</blockquote>
+<p>Running the command</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> develop</span></code></pre></div>
+<p>… in the same folder as this flake file adds CMake, the full Qt6 library
+package set, Qt Creator, the GDB debugger, and also runs the facilities from
+nixpkgs that are used to equip Qt applications with needed environment variables
+to the local shell.
+We are not packaging anything yet, but running the <code>nix develop</code> shell with this
+flake gives us a Qt Creator that can <em>build</em>, <em>run</em>, and <em>debug</em> our QtQuick
+app.
+(I found the <code>shellHook</code> part in the
+<a href="https://discourse.nixos.org/t/python-qt-woes/11808">NixOS Discourse</a>)</p>
+<blockquote>
+<p>If the <code>nix develop</code> command does not work for you, it might be the case that
+the nix “flakes” feature is not yet enabled by default on your system.
+To fix that temporarily, add <code>--experimental-features 'nix-command flakes'</code> to
+your command line, or have a look
+<a href="https://nixos.wiki/wiki/Flakes#Enable_flakes">here</a> to see how to enable
+flakes permanently.</p>
+</blockquote>
+<p>Running <code>nix develop</code> for the first time will download everything that is needed
+and can take some time depending on the internet connection.
+Running it another time is instant.
+Every collaborator on this project will have a much easier time developing this
+package than with downloading, installing, and configuring Qt manually.</p>
+<p>During the first run, the file <code>flake.lock</code> was created:
+This is similar to lock files in other development environments.
+When we give this project folder to a colleague and they run <code>nix develop</code>, they
+will get <em>exactly</em> the same version as ours.
+They will also be able to add more packages without having to rebuild the
+environment as a whole (which is often the case with Dockerfiles).</p>
+<p>The environment can now be updated using <code>nix flake update</code>, which is useful in
+git repositories where you can first check out if the update works, and <em>then</em>
+commit and push the change (updates and fixes in the same atomic commit).</p>
+<h2 id="packaging-the-app">Packaging the App</h2>
+<p>The example app that I prepared for this blog resides in the GitHub repo
+<a href="https://github.com/tfc/qt-example" class="uri">https://github.com/tfc/qt-example</a>
+and looks like this:</p>
+<figure>
+<img src="https://raw.githubusercontent.com/tfc/qt-example/main/app-screenshot.png" alt="The QtQuick example app" />
+<figcaption aria-hidden="true">The QtQuick example app</figcaption>
+</figure>
+<p>Let’s assume this repository structure for now:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> build.nix</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> flake.lock</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> flake.nix</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> qt-example <span class="co"># subfolder as created by the Qt Creator wizard</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── CMakeLists.txt</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── images</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> │   ├── nix.svg</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> │   └── qt.svg</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── main.cpp</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── main.qml <span class="co"># I only tweaked the window, see screenshot</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> └── qml.qrc</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> README.md</span></code></pre></div>
+<p>To package this app the nix way I wrote a <code>build.nix</code> file that looks like this:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="va">stdenv</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">qtbase</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">full</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">cmake</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">,</span> <span class="va">wrapQtAppsHook</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>:</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>stdenv.mkDerivation <span class="op">{</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="va">pname</span> <span class="op">=</span> <span class="st">&quot;qt-example&quot;</span><span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">version</span> <span class="op">=</span> <span class="st">&quot;1.0&quot;</span><span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The QtQuick project we created with Qt Creator's project wizard is here</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="va">src</span> <span class="op">=</span> <span class="ss">./qt-example</span><span class="op">;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildInputs</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    qtbase</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    full</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">];</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="va">nativeBuildInputs</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    cmake</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    wrapQtAppsHook</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="op">];</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># If the CMakeLists.txt has an install step, this installPhase is not needed.</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># The Qt default project however does not have one.</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>  <span class="va">installPhase</span> <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="st">    mkdir -p $out/bin</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="st">    cp qt-example $out/bin/</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="st">  ''</span><span class="op">;</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Side note: The <code>wrapQtAppsHook</code> automatically wraps the application after the
+build phase into a script that sets all needed Qt-related environment variables.
+This way users don’t need to fiddle with env vars just to run our app.</p>
+<p>This build recipe is separate from the <code>flake.nix</code> file because it only decides
+what to do with given inputs to create a package but not where the packages come
+from and how they are selected.
+Our flake now calls this recipe like this:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">inputs</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">nixpkgs</span>.<span class="va">url</span> <span class="op">=</span> <span class="st">&quot;github:nixos/nixpkgs&quot;</span><span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">outputs</span> <span class="op">=</span> <span class="op">{</span> <span class="va">self</span><span class="op">,</span> <span class="va">nixpkgs</span> <span class="op">}</span>:</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">pkgs</span> <span class="op">=</span> nixpkgs.legacyPackages.x86_64<span class="op">-</span>linux<span class="op">;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">in</span> <span class="op">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This is our new package for end-users</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">packages</span>.<span class="va">x86_64-linux</span>.<span class="va">default</span> <span class="op">=</span> pkgs.qt6Packages.callPackage <span class="ss">./build.nix</span> <span class="op">{};</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">devShells</span>.<span class="va">x86_64-linux</span>.<span class="va">default</span> <span class="op">=</span> pkgs.mkShell <span class="op">{</span> </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="co"># The shell references this package to provide its dependencies</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>      <span class="va">inputsFrom</span> <span class="op">=</span> <span class="op">[</span> self.packages.x86_64-linux.default <span class="op">];</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      <span class="va">buildInputs</span> <span class="op">=</span> <span class="kw">with</span> pkgs<span class="op">;</span> <span class="op">[</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        gdb</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        qtcreator</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># this is for the shellhook portion</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        qt6.wrapQtAppsHook</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        makeWrapper</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        bashInteractive</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>      <span class="op">];</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>      <span class="co"># set the environment variables that unpatched Qt apps expect</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="va">shellHook</span> <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="st">        bashdir=$(mktemp -d)</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="st">        makeWrapper &quot;$(type -p bash)&quot; &quot;$bashdir/bash&quot; &quot;</span><span class="sc">''$</span><span class="st">{qtWrapperArgs[@]}&quot;</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="st">        exec &quot;$bashdir/bash&quot;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="st">      ''</span><span class="op">;</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>You might have noticed that I removed all the <code>buildInputs</code> from the development
+shell definition that are also already part of the package definition in
+<code>build.nix</code>.
+Instead, we get these inputs via the <code>inputsFrom</code> function that simply reuses
+what’s defined in the list of packages that we assign.</p>
+<p>We assign the <code>pkgs.qt6Packages.callPackage ./build.nix {}</code> call to be the
+default package’s result.
+(What’s also cool: Instead of using <code>qt6Packages</code>, we could also build a qt5
+version of this recipe without changing it)
+This way we can run</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> build</span></code></pre></div>
+<p>… and get the pre-packaged application in the <code>results</code> symlink that nix
+produced for us.
+The best about this is that we do <em>not</em> need to run a nix-shell to run the app
+(we needed to do this before because of the <code>QML2_IMPORT_PATH</code> environment
+variable that is only set on systems where Qt is installed).</p>
+<p>Even without cloning the repo at all, we can run get the app running on our
+desktop without fiddling with environment variables, installing Qt, or even
+<em>knowing</em> that the app runs with Qt or what Qt is:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nix</span> run github:tfc/qt-example</span></code></pre></div>
+<p>The only prerequisite is Nix and an internet connection for the first attempt.</p>
+<p>Limiting the target group to “nix users” and throwing them a
+<code>nix run github:...</code> over the fence works, but still could take time to download
+all the toolchain packages and build the application, which is a burden for
+users who want it to just work immediately.
+To reduce downloads and build times of toolchains and dependencies for building
+the package, it is possible to <em>cache</em> the final build results.
+Nix caches can be set up on any web server, but also nice tooling and services
+like <a href="https://www.cachix.org/">cachix.org</a> exist which are even free to some
+extent for open-source projects.
+(Flakes can hint at caches so users don’t have to configure them manually)</p>
+<h3 id="non-nix-packaging">Non-Nix Packaging</h3>
+<div class="floating-image-right">
+<p><img src="../../../../images/where-is-my-package.webp" width="200" /></p>
+</div>
+<p>Of course, one could argue that just providing a nix flake for something, and
+telling them to configure some cache to be used, does
+not mean it is “packaged” now, and limiting the user base to nix users might be
+considered unacceptable even if
+<a href="https://twitter.com/jgalowicz/status/1591345129817784324">nixpkgs is in the top 10 of GitHub projects</a>
+and the
+<a href="https://repology.org/repositories/graphs">biggest and most up-to-date package distribution in the world</a>.</p>
+<p>If we want or need to support non-nix users, we still can build Docker images,
+(cross-)compile our apps, and link them statically, etc.
+There is also <a href="https://github.com/matthewbauer/nix-bundle">nix-bundle</a>, a tool
+that wraps the executable into another executable that unpacks itself with all
+dependencies at runtime.
+There is also <a href="https://flatpak.org/">Flatpak</a> and
+<a href="https://appimage.org">AppImage</a>.
+This is all possible (did these things in the past successfully for customers
+and friends) but out of the scope of this blog article.
+However, if you control the target platform (which most *aaS and embedded
+systems companies do), nix is arguably a great choice for your deployment
+cycles.
+No part of the project is nix-specific - we can ignore the nix files that we put
+into the repository.
+This way we could still use other tooling for packaging parallel to nix, but at
+least have simplified developer setup, workflow, building, testing,
+toolchain, and dependency updates, quite a lot.</p>
+<h2 id="summary">Summary</h2>
+<p>Being a seasoned nix user, I came up with the initial nix flake in a few
+minutes.
+The final build recipe is some ~50 lines of nix code (following pretty much
+standard patterns of the nix world), which might also be longer than your
+average <code>Dockerfile</code>.
+This first looks like a bigger and much more time-consuming step for nix
+newbies, which is going to get better over time more and more nix-related
+tooling is emerging in the last few years.
+(One example is <a href="https://devenv.sh/">devenv</a>, a new development environment
+tool that aims to simplify project setup and more. I did not try it, yet.)
+However, this got us not only a development environment but also a way to
+package our app, and some more advantages:</p>
+<p>As soon as we exit the nix-shell, we don’t have any Qt apps or environment
+variables polluting our global system scope.
+This means that we can have multiple Qt projects and (cross-)compilers
+(e.g. very new and very old ones) on the same system in different nix-shells.
+They will never interfere with each other and an update of one cannot influence
+the other.</p>
+<p>The same <code>flake.nix</code> file works for different systems, regardless if it’s an
+x86 or an ARM system (together with the small changes on the <code>flake.nix</code> file
+that I pushed into the repository on GitHub but which I don’t explain in this
+article to keep the scope crisp).
+As long as you have nix installed, it will build and run the same way
+everywhere.</p>
+<div class="floating-image-right">
+<p><img src="../../../../images/works-for-me.gif" width="300" /></p>
+</div>
+<p>With the <code>flake.lock</code> file, <em>everything</em> is <strong>pinned</strong>:
+The project will still build in years on different machines and create the same
+app.
+Not only the same app is created, but it will be bundled with the same
+<em>dependencies</em> (the whole stack from Qt down to the C library).
+This means that it will not only build but also <em>run</em> the same way in many
+years.
+It will not happen any longer that something “works for me” on some coworker’s
+computer, but not on a different machine, because they essentially have the same
+packages (Although things might run differently for bugs that happen to be in
+the macOS version of Qt and not in the Linux version or the other way around).</p>
+<p><strong>Updates</strong> are painless:
+Run <code>nix flake update</code> to update all the nix package inputs, and commit the
+new lock file (which happens automatically if you add the command line argument
+<code>--commit-lock-file</code>).
+If it doesn’t work because the update came with breaking changes, then fix it
+and commit the changes <em>together</em> with the new lock file to have individual
+atomic working commits on your main branch.</p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2023/01/16/cpp-qt-qml-nix-setup/';
+this.page.identifier = 'nicecpp/2023/01/16/cpp-qt-qml-nix-setup/';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
+<script>var popup;
+window.addEventListener('load', function(){window.cookieconsent.initialise({//set revokeBtn if you don't want to see a tiny pullup bar overlapping your website
+//if revokeBtn is set, make sure to include a link to cookie settings in your footer
+//you can open your banner again with: popup.open();
+//revokeBtn: "<div class='cc-revoke'></div>",
+type: "opt-in",
+theme: "edgeless",
+content: {header: 'Cookies used on the website!',
+message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
+href: '/datenschutz.html',},
+palette: {popup: {background: "#202020",
+text: "#fff"
+},button: {background: "#268bd2",
+text: "#fff"
+}},
+onInitialise: function(status) {if(status == cookieconsent.status.allow) setCookies();},
+onStatusChange: function(status) {if (this.hasConsented()) setCookies();
+else deleteCookies(this.options.cookie.name)},
+law: { regionalLaw: false, },
+location: true,
+function (p) { popup = p; }});})
+//it is absolutely crucial to define gtag in the global scope
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WZ3FX4G3XS', {'anonymize_ip': true});
+function setCookies() {var s = document.createElement('script');
+s.type = "text/javascript"
+s.async = "true";
+s.src = "https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS";
+var x = document.getElementsByTagName('script')[0];
+x.parentNode.insertBefore(s, x);};
+function deleteCookies(cookieconsent_name) {var keep = [cookieconsent_name, "DYNSRV"];
+document.cookie.split(';').forEach(function(c) {c = c.split('=')[0].trim();
+if (!~keep.indexOf(c))document.cookie = c + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';});};</script>
+</body>
+</head>
+</html>

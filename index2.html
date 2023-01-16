@@ -40,7 +40,34 @@
 <div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a> <a style="font-size: 100%" href="./tags/python.html">python</a> <a style="font-size: 100%" href="./tags/testing.html">testing</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2018/02/27/managing_libraries_with_nix">Managing libraries with Nix</a>
+<div class="posts"><div><h2><a href="./2019/04/17/tutorial_nix_cpp_setup">Setting up a C++ project environment with nix</a>
+</h2>
+<span class="post-tags">
+<strong><small>April 17, 2019,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'nix'." href="./tags/nix.html" class="tag-link">nix</a> <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>This article explains how to quickly set up a C++ project environment with
+complete toolchain- and dependency management with <code>nix</code>.
+<a href="https://nixos.org/nix/"><code>nix</code></a> is a powerful package manager for Linux and
+other Unix systems (It is indeed a more powerful alternative to <a href="https://conan.io/"><code>conan</code></a> and <a href="https://www.docker.com/"><code>docker</code></a>) that makes package
+management reliable and reproducible.
+After setting up the project and playing around with it, we will <strong>parametrize</strong>
+the project description in order to automatically build it with different
+compilers and dependency library versions (GCC 7 &amp; 8, Clang 7 &amp; 8, lib <code>boost</code>
+1.6.6 - 1.6.9, lib <code>poco</code> 1.9.0 &amp; 1.9.1).</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2019/04/17/tutorial_nix_cpp_setup" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2018/02/27/managing_libraries_with_nix">Managing libraries with Nix</a>
 </h2>
 <span class="post-tags">
 <strong><small>February 27, 2018,</small>
@@ -230,25 +257,6 @@ Read more </a>
 This article shows how to generate integer sequences with C++ templates, and gives an example how to use it.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/06/24/integer_sequences_at_compile_time" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
-Read more </a>
-</p>
-</div>
-
-<hr>
-<div><h2><a href="./2016/06/16/cpp_template_compile_time_brainfuck_interpreter">Executing Brainfuck at Compile Time with C++ Templates</a>
-</h2>
-<span class="post-tags">
-<strong><small>June 16, 2016,</small>
-</strong>
-
-
-<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="./tags/meta-programming.html" class="tag-link">meta-programming</a></small>
-</strong>
-</span>
-<!-- cSpell:disable -->
-<p>This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/06/16/cpp_template_compile_time_brainfuck_interpreter" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
 Read more </a>
 </p>
 </div>
