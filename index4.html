@@ -40,7 +40,28 @@
 <div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a> <a style="font-size: 100%" href="./tags/python.html">python</a> <a style="font-size: 100%" href="./tags/testing.html">testing</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2016/02/21/if_compiles_type_traits">Useful type traits with if_compiles semantics</a>
+<div class="posts"><div><h2><a href="./2016/02/21/on_exit_macro">ON_EXIT - Combining Automatic Destruction and Lambdas</a>
+</h2>
+<span class="post-tags">
+<strong><small>February 21, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>When using C-style libraries, dealing with resources which need to be constructed and destructed again, the code doing the construction/allocation and destruction/release often ends up being ugly and repetitive, because one can’t easily stick with the <em>RAII</em> principle.
+Especially when a whole set of resources is allocated, and the case that some allocation inbetween fails, all already allocated resources need to be correctly released again.
+When wrapping such code in C++, it is possible to tidy such code paths up by using automatic destructor calls.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/02/21/on_exit_macro" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2016/02/21/if_compiles_type_traits">Useful type traits with if_compiles semantics</a>
 </h2>
 <span class="post-tags">
 <strong><small>February 21, 2016,</small>

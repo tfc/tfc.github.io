@@ -8,8 +8,341 @@
         <name>Jacek Galowicz</name>
         <email>jacek@galowicz.de</email>
     </author>
-    <updated>2023-01-16T00:00:00Z</updated>
+    <updated>2023-01-23T00:00:00Z</updated>
     <entry>
+    <title>Mixed C++ Monorepo Project Structure Development and Build Workflow</title>
+    <link href="https://blog.galowicz.de/2023/01/23/mixed-cpp-monorepo-project" />
+    <id>https://blog.galowicz.de/2023/01/23/mixed-cpp-monorepo-project</id>
+    <published>2023-01-23T00:00:00Z</published>
+    <updated>2023-01-23T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<!-- cSpell:words Pfeifer monorepo composability buildable ccache -->
+<!-- cSpell:ignore iostream cout liba libb libc libd subproject endmacro -->
+<!-- cSpell:ignore myapp AARCH vdso libstdc libm aarch SYSV stdenv -->
+<!-- cSpell:ignore nixified frontends libgcc -->
+<p>Most big C++ projects lack a clear structure:
+They consist of multiple modules, but it is not as easy to create individually
+buildable, portable, testable, and reusable libraries from them, as it is with
+projects written in Rust, Go, Haskell, etc.
+In this article, I propose a C++ project structure using CMake that makes it
+easy to have incremental monorepo builds and a nice modular structure at the
+same time.</p>
+<!--more-->
+<p>Let me show you how to structure a concrete example C++ project in a way that
+works well for different perspectives while putting no burden on any
+participating party.
+First, we have a look at the different perspectives and then how to realize a
+project structure that facilitates them.
+In the end, we will build individual modules with nix - it’s possible to do it
+without nix, but it would also be much more work.</p>
+<h2 id="goal-maximum-utility-for-everyone">Goal: Maximum Utility for Everyone</h2>
+<p>There are different perspectives from which a repository can provide value or
+friction.
+Most of the time, the people who write the code have their dominating share in
+deciding how the structure of a project looks like: Developers.</p>
+<h3 id="incremental-builds-for-developers">Incremental Builds for Developers</h3>
+<p>No matter what changed where in the monorepo, there should be one command that
+just builds and tests “it all” incrementally.
+From this perspective, it seems like the best way is to have one build system
+that sets up dependencies and builds everything in a highly parallelized
+fashion.</p>
+<h3 id="fast-cicd-pipelines">Fast CI/CD Pipelines</h3>
+<div class="floating-image-right">
+<p><img src="/images/traffic-jam.webp" width="300" /></p>
+</div>
+<p>What’s best for developers performing incremental changes, is not automatically
+good for CI/CD:
+When changes go into a project by pushing onto a branch and/or opening a merge
+request, CI/CD pipelines are triggered.
+In monolithic builds, this means that for every changed code line or comment,
+the whole repo is rebuilt.
+Caching compiler frontends like <a href="https://ccache.dev/"><code>ccache</code></a> might be of help
+in such situations, but caching at this level brings its own pitfalls and is not
+applicable in all situations.</p>
+<p>Structuring a project towards modularity and providing a way to build modules
+individually is a good way to accelerate big pipelines:
+Small module-internal changes only trigger the builds of the modules and their
+dependents.
+In some sense, this way we can facilitate incremental builds on a higher level.</p>
+<h3 id="modular-architecture">Modular Architecture</h3>
+<div class="floating-image-right">
+<p><img src="/images/modularity-puzzle.gif" width="300" /></p>
+</div>
+<p>Generally, developers should try to not mix different domains in the same code.
+Mixing domains hinders reusability and makes it harder to inspect for
+correctness.
+Having code for different domains separated over different modules also
+facilitates testing:
+Each module can have its unit test suite.
+Often enough, I observed how easy it was to reduce the overall number of test
+cases and their complexity by decomposing library code.
+The best proof of the independence of a module is building it in isolation
+without the surrounding code.</p>
+<p>In multiple C++ projects that I have seen, “reusing library code” looked like
+this:</p>
+<ol type="1">
+<li>A developer would like to reuse an existing library for some new application.</li>
+<li>The library is part of a big monorepo and is not easy to extract.
+Maybe it could be extracted by duplicating it, but duplication is considered
+bad in all circumstances.</li>
+<li>Deadlines need to be met, so the compromise is to put the new application
+into the same monorepo.</li>
+<li>Over the years, the coupling and amount of specialization of the libraries
+for the resident applications increases the general complexity.</li>
+<li>At some point, a developer will repeat step 1.
+This time, the slope towards the same procedure is even steeper.</li>
+</ol>
+<p>Pointing this out in projects often leads to discussions where the problem is
+not fully realized by the majority and hence downplayed.
+In fact, convincing people of architectural improvements is often hard, because
+this is a strategic consideration with long-term impact and not a tactical one.
+The <a href="https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design/">book “A Philosophy of Software Design” by John Ousterhout</a>
+provides some very interesting insights on strategic vs. tactical programmers.</p>
+<p>A good way to convince colleagues is generating an architecture graph and
+showing them that it contains many circular subgraphs.
+No one is proud of projects with architectural graphs that look like a dish of
+spaghetti.
+However, generating architecture graphs is harder, the less modularized the
+project is - it’s a catch-22 situation.</p>
+<h2 id="monolithic-repo-monolithic-build-system">Monolithic Repo == Monolithic Build System?</h2>
+<div class="floating-image-right">
+<figure>
+<img src="/images/monolith.webp" alt="Monoliths can help humanity but also be dangerous" />
+<figcaption aria-hidden="true">Monoliths can help humanity but also be dangerous</figcaption>
+</figure>
+</div>
+<p>So we want to achieve that our C++ project structure is good for developers
+<em>and</em> pipelines, integrators, (re)users of library code, etc.
+How do we get there?
+It should be incrementally buildable for developers when they work at it, but
+also be modular with all the good things that we mentioned before.</p>
+<p>I created a minimal example app that has a somewhat complicated but clean
+dependency structure.
+The code is already available on GitHub as a whole:
+<a href="https://github.com/tfc/cmake_cpp_example" class="uri">https://github.com/tfc/cmake_cpp_example</a></p>
+<p>Starting the final app produces the following output:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ./app/MyApp</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">abcd</span></span></code></pre></div>
+<p>For every letter, it calls one of four library calls:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;a.hpp&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;b.hpp&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;d.hpp&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="bu">std::</span>cout<span class="op"> &lt;&lt;</span> liba<span class="op">::</span>function_a<span class="op">()</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;&lt;</span> libb<span class="op">::</span>function_b<span class="op">()</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;&lt;</span> liba<span class="op">::</span>function_c<span class="op">()</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;&lt;</span> libd<span class="op">::</span>function_d<span class="op">()</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>            <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span><span class="op">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<div class="floating-image-right">
+<figure>
+<img src="https://raw.githubusercontent.com/tfc/cmake_cpp_example/master/deptree.png" alt="The abcd project dependency structure. Dashed arrows are private deps." />
+<figcaption aria-hidden="true">The abcd project dependency structure. Dashed arrows are private deps.</figcaption>
+</figure>
+</div>
+<p>The little architecture diagram on the right shows that libraries <code>A</code> and <code>B</code>
+are direct dependencies, while <code>C</code>’s symbols are private to <code>A</code>, but
+re-exported by its header.
+<code>D</code> can be transitively reached because it is a public dependency of <code>A</code>.</p>
+<p>The project structure looks like this, where all libraries and the app are
+located next to each other at the same level of the repository structure:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> a</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── CMakeLists.txt</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── include</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> │   └── a.hpp</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> └── main.cpp</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> b</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> └── <span class="co"># similar to `a`</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> c</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> └── <span class="co"># similar to `a`</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> d</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> └── <span class="co"># similar to `a`</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> app</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> ├── CMakeLists.txt</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="ex">│  </span> └── main.cpp</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="ex">├──</span> CMakeLists.txt</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="ex">└──</span> README.md</span></code></pre></div>
+<p>Every subproject has its <code>CMakeLists.txt</code> that stands for itself as a
+standalone project and does not know the location of the others:
+<a href="https://cmake.org/">CMake</a> allows us to describe libraries in an
+object-oriented way where they get symbol names that can be exported to be
+imported by others.
+Let’s look at the <code>CMakeLists.txt</code> file of library <code>A</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">cmake_minimum_required</span>(<span class="ot">VERSION</span> <span class="dt">3.13</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Note that this is a *standalone project* although it&#39;s in a subfolder of a</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># monorepo</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">project</span>(A <span class="ot">CXX</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Other modules can reference me as A::A</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">add_library</span>(<span class="bn">A</span> main.cpp)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">add_library</span>(<span class="bn">A::A</span> <span class="ot">ALIAS</span> <span class="bn">A</span>) <span class="co"># this alias is explained later</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">target_include_directories</span>(</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="bn">A</span> <span class="ot">PUBLIC</span> <span class="ot">$&lt;</span><span class="kw">BUILD_INTERFACE</span><span class="ot">:</span><span class="dv">${CMAKE_CURRENT_SOURCE_DIR}</span><span class="ot">/include&gt;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>           <span class="ot">$&lt;</span><span class="kw">INSTALL_INTERFACE</span><span class="ot">:include&gt;</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># We need library C and D. But what we don&#39;t need is knowing from where.</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="kw">find_package</span>(C <span class="ot">REQUIRED</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="kw">find_package</span>(D <span class="ot">REQUIRED</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="kw">target_link_libraries</span>(</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="bn">A</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="ot">PRIVATE</span> <span class="bn">C::C</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="ot">PUBLIC</span> <span class="bn">D::D</span>)</span></code></pre></div>
+<p>With this structure, we have a library object that describes what it needs, but
+not where it comes from.
+CMake is able to discover dependencies via <code>pkg-config</code> or CMake-native files
+when they are located in the standard system folders or listed in the
+environment variable <a href="https://cmake.org/cmake/help/latest/command/find_package.html"><code>CMAKE_MODULE_PATH</code></a>.
+If we use this mechanism instead of hardcoding paths, we buy ourselves a lot of
+freedom.
+I only omitted some lines that would be needed for running <code>make install</code>, but
+you can look <a href="https://github.com/tfc/cmake_cpp_example/blob/master/a/CMakeLists.txt">them up in the GitHub repo</a>.</p>
+<p>All libraries and the app have similar simple <code>CMakeLists.txt</code> files which
+describe what they need, but not where they come from.
+We could now build them one after the other in the right order to get the final
+application executable and provide the binaries (App + libraries as shared
+object files, or just the app if it is statically linked) as packages.
+This would be more of an end-user scenario.
+For other developers, we can also publish them as <a href="https://conan.io/">Conan</a>
+packages.</p>
+<p>The workflow that we want to provide for developers is building everything in
+one invocation of <code>cmake</code> and <code>make</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> mkdir build <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> build</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cmake ..</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> make</span></code></pre></div>
+<p>To enable this with our loosely coupled collection of libraries we can create a
+<code>CMakeLists.txt</code> file in the top-level directory of the repository:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">cmake_minimum_required</span>(<span class="ot">VERSION</span> <span class="dt">3.13</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">project</span>(abc_example <span class="ot">CXX</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Define which library symbols are local sub-projects</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">set</span>(as_subproject A B C D)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Make find_package a dummy function for these sub-projects.</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">macro</span>(find_package)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">if</span>(<span class="ot">NOT</span> <span class="st">&quot;</span><span class="dv">${ARGV0}</span><span class="st">&quot;</span> <span class="ot">IN_LIST</span> as_subproject)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># This is a forward call to the *original* find_package function</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">_find_package</span>(<span class="dv">${ARGV}</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">endif</span>()</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">endmacro</span>()</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="kw">add_subdirectory</span>(a)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="kw">add_subdirectory</span>(b)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="kw">add_subdirectory</span>(c)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="kw">add_subdirectory</span>(d)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="kw">add_subdirectory</span>(app)</span></code></pre></div>
+<p>This way, we support the developer’s incremental workflow.
+But at the same time, developers of other projects can reuse these libraries
+without having to touch everything else.
+If a library grows bigger and gets reused by multiple projects, it can easily be
+moved to its own repository.</p>
+<p>The idea to rewrite CMake’s
+<a href="https://cmake.org/cmake/help/latest/command/find_package.html"><code>find_package</code></a>
+function originates from
+<a href="https://www.youtube.com/watch?v=bsXLMQ6WgIk">Daniel Pfeifer’s talk at C++Now 2017</a>.
+The talk contains much advice on how to use CMake the correct way and is
+generally a must-watch for every C and C++ developer.</p>
+<p>The one thing that each library needs to do to prepare for being consumed this
+way, is to provide an alias like this:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cmake"><code class="sourceCode cmake"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">add_library</span>(<span class="bn">A::A</span> <span class="ot">ALIAS</span> <span class="bn">A</span>)</span></code></pre></div>
+<p>Libraries that are imported using <code>find_package</code> get a <code>MyLib::MyLib</code> scope,
+but libraries that are imported using <code>add_subdirectory</code> don’t, so we have to
+add it like this.</p>
+<h2 id="result">Result</h2>
+<p>Incremental developer-oriented builds do now work with the typical <code>cmake</code> and
+<code>make</code> commands.
+At the same time, this does not hinder anyone to create Debian/RPM/whatever
+packages for the individual libraries.</p>
+<p>In order to show composability and packaging the nix way, I created nix
+derivations for each module, which look quite similar to the respective
+<code>CMakeLists.txt</code> files but from a higher level:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># project file: a/default.nix</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="va">stdenv</span><span class="op">,</span> <span class="va">cmake</span><span class="op">,</span> <span class="va">libc</span><span class="op">,</span> <span class="va">libd</span> <span class="op">}</span>:</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>stdenv.mkDerivation <span class="op">{</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">name</span> <span class="op">=</span> <span class="st">&quot;liba&quot;</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">buildInputs</span> <span class="op">=</span> <span class="op">[</span> libc libd <span class="op">];</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">nativeBuildInputs</span> <span class="op">=</span> <span class="op">[</span> cmake <span class="op">];</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="va">src</span> <span class="op">=</span> <span class="ss">./.</span><span class="op">;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The nixified library packages depend just on CMake and respectively on each
+other as depicted in the architecture diagram earlier.
+An overlay file puts it all together:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># file: overlay.nix</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="va">final</span><span class="op">:</span> <span class="va">prev</span><span class="op">:</span> <span class="op">{</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">liba</span> <span class="op">=</span> final.callPackage <span class="ss">./a</span> <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">libb</span> <span class="op">=</span> final.callPackage <span class="ss">./b</span> <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">libc</span> <span class="op">=</span> final.callPackage <span class="ss">./c</span> <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">libd</span> <span class="op">=</span> final.callPackage <span class="ss">./d</span> <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">myapp</span> <span class="op">=</span> final.callPackage <span class="ss">./app</span> <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The <code>callPackage</code> function fills out all the parameters from the derivations’
+parameters, which you see in the first line of the example derivation.
+the <code>liba</code> derivation finds <code>libc</code> and <code>libd</code> in the global scope of packages,
+because the overlay defines them, too.
+This way we can import a version of the nixpkgs package list with the overlay:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pkgs = <span class="bu">import</span> &lt;nixpkgs&gt; <span class="op">{</span> <span class="va">overlays</span> <span class="op">=</span> <span class="op">[</span> <span class="op">(</span><span class="bu">import</span> <span class="ss">./overlay.nix</span><span class="op">)</span> <span class="op">];</span> <span class="op">}</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># we can now access pkgs.myapp, pkgs.liba, etc. ...</span></span></code></pre></div>
+<p>The <a href="https://github.com/tfc/cmake_cpp_example/blob/master/release.nix"><code>release.nix</code> file</a>
+imports a pinned version of nixpkgs and exposes all these build targets.
+We can now build them individually:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-build release.nix <span class="at">-A</span> liba</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-build release.nix <span class="at">-A</span> libb</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-build release.nix <span class="at">-A</span> libc</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-build release.nix <span class="at">-A</span> libd</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix-build release.nix <span class="at">-A</span> myapp</span></code></pre></div>
+<p>…which results in individual packages (of which the libraries could be
+consumed by other projects, external to our repo).
+Of course, building the <code>myapp</code> target attribute transitively builds all the
+others that it depends on.</p>
+<p>The most interesting thing that we can do at this point might be
+cross-compilation:
+I added a few targets to also link the app statically and cross-compile it for
+AARCH64 and Windows, to demonstrate that the build system does not really need
+to be prepared for this other than just being as portable as possible (mostly
+by not holding CMake wrong):</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># default build</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ldd <span class="va">$(</span><span class="ex">nix-build</span> release.nix <span class="at">-A</span> myapp<span class="va">)</span>/bin/MyApp</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>        <span class="ex">linux-vdso.so.1</span> <span class="er">(</span><span class="ex">0x00007fffced69000</span><span class="kw">)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        <span class="ex">libstdc++.so.6</span> =<span class="op">&gt;</span> .../libstdc++.so.6 <span class="er">(</span><span class="ex">0x00007f03ea419000</span><span class="kw">)</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        <span class="ex">libm.so.6</span>      =<span class="op">&gt;</span> .../libm.so.6 <span class="er">(</span><span class="ex">0x00007f03ea339000</span><span class="kw">)</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        <span class="ex">libgcc_s.so.1</span>  =<span class="op">&gt;</span> .../libgcc_s.so.1 <span class="er">(</span><span class="ex">0x00007f03ea31f000</span><span class="kw">)</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="ex">libc.so.6</span>      =<span class="op">&gt;</span> .../libc.so.6 <span class="er">(</span><span class="ex">0x00007f03ea116000</span><span class="kw">)</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="ex">.../ld-linux-x86-64.so.2</span> =<span class="op">&gt;</span> .../ld-linux-x86-64.so.2 <span class="er">(</span><span class="ex">0x00007f03ea631000</span><span class="kw">)</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># static build</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ldd <span class="va">$(</span><span class="ex">nix-build</span> release.nix <span class="at">-A</span> myapp-static<span class="va">)</span>/bin/MyApp</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        <span class="ex">not</span> a dynamic executable</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Aarch64 build</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> file <span class="va">$(</span><span class="ex">nix-build</span> release.nix <span class="at">-A</span> myapp-aarch64<span class="va">)</span>/bin/MyApp</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span> ELF 64-bit LSB executable, ARM aarch64, version 1 <span class="er">(</span><span class="ex">SYSV</span><span class="kw">)</span><span class="ex">,</span> ⏎</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dynamically</span> linked, interpreter .../ld-linux-aarch64.so.1, ⏎</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> GNU<span class="ex">/Linux</span> 3.10.0, not stripped</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Windows build</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> file <span class="va">$(</span><span class="ex">nix-build</span> release.nix <span class="at">-A</span> myapp-win64<span class="va">)</span>/bin/MyApp.exe</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span> PE32+ executable <span class="er">(</span><span class="ex">console</span><span class="kw">)</span> <span class="ex">x86-64</span> <span class="er">(</span><span class="ex">stripped</span> to external PDB<span class="kw">)</span><span class="ex">,</span> for MS Windows</span></code></pre></div>
+<h2 id="summary">Summary</h2>
+<p>What this project does on a high level is separate dependency management and
+build management:
+The CMake files resemble pure recipes which describe who depends on what.</p>
+<p>Depending on the use case, the consumer decides how it all comes together by
+either using the top-level CMake file or the nix dependency management.</p>
+<p>Outside users can build the individual modules as packages and install them
+in their systems globally, produce Conan packages, add them to docker images,
+or VMs, or consume them via the nix overlay.</p>
+<p>If a library grows bigger and gets imported by more outside users, it is much
+easier now to move it into its own repository (and maybe open-source it).</p>]]></summary>
+</entry>
+<entry>
     <title>(Qt)Quick C++ Project Setup with Nix</title>
     <link href="https://blog.galowicz.de/2023/01/16/cpp-qt-qml-nix-setup" />
     <id>https://blog.galowicz.de/2023/01/16/cpp-qt-qml-nix-setup</id>
@@ -3730,242 +4063,6 @@ There is for example <a href="https://hackage.haskell.org/package/HList"><code>H
 <p>I’ve done a type-level programming in C++ before (have a look at the older articles in this blog) and I find it very interesting how similar it really is.
 In Haskell, it is more frustrating in the beginning because the kind system is complicated.
 As soon as the basic mechanisms are understood, it is nice to see that Haskell’s type system is much more intelligent than C++ templates and there’s much more control over everything.</p>]]></summary>
-</entry>
-<entry>
-    <title>NixOS Community Oceansprint 2021 Report</title>
-    <link href="https://blog.galowicz.de/2021/12/12/nix-community-oceansprint-report" />
-    <id>https://blog.galowicz.de/2021/12/12/nix-community-oceansprint-report</id>
-    <published>2021-12-12T00:00:00Z</published>
-    <updated>2021-12-12T00:00:00Z</updated>
-    <summary type="html"><![CDATA[<!-- cSpell:disable -->
-<p>This is my trip report from the awesome NixOS community hackathon on Lanzarote.
-For more information please also have a look on the website:
-<a href="https://oceansprint.org">https://oceansprint.org</a></p>
-<!--more-->
-<h1 id="the-sprint-announcement">The Sprint announcement</h1>
-<p><a href="https://twitter.com/domenkozar/status/1403409126173126664">Domen Kožar</a>
-organized a hackathon for the Nix(OS) community on Lanzarote:</p>
-<figure>
-<img src="/images/2021-12-oceansprint-announcement.png" alt="Oceansprint Announcement on Twitter" />
-<figcaption aria-hidden="true">Oceansprint Announcement on Twitter</figcaption>
-</figure>
-<p>This was totally amazing news for me and i really wanted to participate
-immediately.
-I realized that i need to be quick because there were only ~15 slots.
-Two days later the next announcement said:</p>
-<figure>
-<img src="/images/2021-12-oceansprint-full.png" alt="The Oceansprint was booked out 2 days later" />
-<figcaption aria-hidden="true">The Oceansprint was booked out 2 days later</figcaption>
-</figure>
-<h1 id="the-nixos-community">The NixOS Community</h1>
-<p>There is an open source <a href="https://nixos.org">package manager called (nix)</a>
-(which is a ridiculously understated description) and a
-<a href="https://nixos.org">GNU/Linux distrubtion called NixOS</a>
-that is based on top of nix.
-This is all organized in the
-<a href="https://github.com/nixos">NixOS github organization</a> and mostly revolves around
-the git repository <a href="https://github.com/nixos/nixpkgs">nixpkgs</a> because this is
-where most of the value is concentrated because this repository represents the
-largest and most current collection of all Linux package distributions out there:</p>
-<figure>
-<img src="/images/2021-12-repology.png" alt="repology.org graph showing the most vs. the most fresh package collections" />
-<figcaption aria-hidden="true">repology.org graph showing the most vs. the most fresh package collections</figcaption>
-</figure>
-<p>Apart from that, the repository also contains a lot of NixOS module descriptions
-that are used to compose a full NixOS system.</p>
-<p>A description of all the value that i pull out of this open source project for
-myself and my company is worth multiple blog articles alone, so please refer
-to their homepage if you like to read more.</p>
-<p>It’s an unbelievable project.
-If you are interested in contributing to the largest most-current free software
-package collection in the world and/or an amazing GNU/Linux distribution on top
-of that within a very nice and inclusive community, then this project is
-definitely for you.</p>
-<h1 id="corona">Corona</h1>
-<p>The sprint has been cancelled roughly 2 weeks before its start due to the latest
-Corona related warning level increase in Lanzarote/Spain.
-Most of the participants travelled to Lanzarote anyway as it was still allowed
-to meet in smaller groups.
-Luckily, a few days before the sprint the warning level was decreased based on
-the latest infection numbers, so we were again able to perform the sprint like
-initially planned.</p>
-<p>All participants have their vaccination. On monday and thursday everyone tested
-themselves under supervision of each other before joining the group.</p>
-<h1 id="participants-of-the-sprint">Participants of the sprint</h1>
-<p>The participants who showed up over the week were the following ones:</p>
-<p>Real name (nickname), Company</p>
-<ul>
-<li>Amon Stopinšek (<code>am-on</code>), Niteo, https://niteo.co</li>
-<li>Andreas Schrägle (<code>ajs124</code>), Helsinki Systems, https://helsinki-systems.de/</li>
-<li>Bernardo Meurer Costa (<code>lovesegfault</code>), Google</li>
-<li>Dario Bertini (<code>berdario</code>), Google</li>
-<li>Domen Kožar (<code>domenkozar</code>), Cachix Founder (Sponsor), https://www.cachix.org</li>
-<li>Florian Klink (<code>flokli</code>), Freelancer, https://flokli.de</li>
-<li>Jacek Galowicz (<code>tfc</code>/<code>jonge</code>), Cyberus Technology (Sponsor), https://cyberus-technology.de</li>
-<li>Janne Heß (<code>dasJ</code>), Helsinki Systems, https://helsinki-systems.de/</li>
-<li>Jonas Chevalier (<code>zimbatm</code>), Numtide Founder (Sponsor), https://numtide.com</li>
-<li>Marijan Petričević (<code>marijanp</code>), Freelancer, http://epilentio.hr</li>
-<li>Nejc Zupan (<code>zupo</code>), Niteo Founder (Sponsor), https://niteo.co</li>
-<li>Robert Hensing (<code>roberth</code>), Hercules Founder (Sponsor), https://hercules-ci.com</li>
-<li>Vo Minh Thu (<code>noteed</code>), Hypered CTO (Sponsor), https://hypered.io</li>
-</ul>
-<h1 id="location">Location</h1>
-<p>The sprint location was Nejc’s Villa at in Costa Teguise on the Spanish island
-Lanzarote.</p>
-<figure>
-<img src="/images/2021-12-oceansprint-location.jpg" alt="The Oceansprint location" />
-<figcaption aria-hidden="true">The Oceansprint location</figcaption>
-</figure>
-<h1 id="daily-schedule">Daily Schedule</h1>
-<p>The official sprint day schedule began at 9:00 and ended at 17:00.
-Every day ended with a brief standup meeting where everyone explained what
-they achieved/struggled with.</p>
-<p>The gold sponsor <a href="https://serokell.io/">Serokell</a> also gave us a brief overview
-of job opportunities in a dedicated talk slot.
-The sprint found a good balance between giving the sponsors enough attention and
-thankfulness but at the same time not distract any efforts.</p>
-<h1 id="socializing">Socializing</h1>
-<p>Every day we had breakfast and lunch provided in form of a professional buffet.
-After every productive day, the whole group went out for dinner, trying out
-several local restaurants.
-This way we really sticked together the whole week, which facilitated
-easy get-to-know and socializing a lot:
-The atmosphere was nice and relaxed!</p>
-<p>During the work phases inbetween, everyone either worked alone or in teams
-depending on their projects. While the great location allowed for sitting
-outside around the big table, near the pool, on the balcony or inside the living
-room for concentration phases, it was also very easy to sporadically group up
-and discuss things. Or to just hang around at the pool and lament together how
-hard life in the sun is.</p>
-<p>Apart from work and food, Nejc also organized several activities like
-swimming/surfing/hiking trips for whoever wanted to participate.
-Another group went to surf school together on the weekend.</p>
-<h1 id="sprint-projects">Sprint Projects</h1>
-<h2 id="nix.dev-ux-enhancements">nix.dev UX enhancements</h2>
-<p>Nejc Zupan started to port the tutorials of https://nix.dev from
-reStructuredText to Markdown.
-The goal of this change is to lower the barrier for external
-contributors, as markdown is simpler and better known than reStructuredText.</p>
-<p>Another useful effort that he started is to get all code excerpts on the
-website automatically tested by the CI. This will avoid frustration for
-newcomers who might want to start to use nix for its reproducibility, so they
-don’t run into unreproducible tutorials.</p>
-<h2 id="nix-casync">nix-casync</h2>
-<p>Florian Klink implemented <a href="https://github.com/flokli/nix-casync">nix-casync</a>,
-a HTTP binary cache using the casync mechanism internally to efficiently store
-NAR files in a deduplicated fashion, and provides an outlook on how to use it to
-speed up substitution.</p>
-<p>Blog article about this: https://flokli.de/posts/2021-12-10-nix-casync-intro/</p>
-<h2 id="nixos-composability-optimizations">NixOS Composability Optimizations</h2>
-<p>Robert Hensing, Jonas Chevalier, and Vo Minh Thu experimented with and worked on
-how to make NixOS systems smaller and more composable.
-There are different reasons for this:</p>
-<ul>
-<li>Reduction of the nix expression evaluation time of whole system builds</li>
-<li>Reduction of overall system size</li>
-<li>Composability for better selection of what actually goes into the system,
-which is not only interesting for disk/mem usage reasons but also for reducing
-the trusted computing base</li>
-<li>Another interesting reason is getting towards interpreterless systems, as
-inspired by some company needs that Jacek described from some internal
-projects that use nix and NixOS</li>
-</ul>
-<p>There were basically two approaches:</p>
-<p>Robert created a
-<a href="https://github.com/NixOS/nixpkgs/pull/148456">pull request with a POC</a> that
-shows how to whitelist NixOS modules into a system. This is different from the
-usual approach because the NixOS function that evaluates a config imports <em>all</em>
-the NixOS modules and then lets the user activate/deactivate things at will, but
-has a lot of things already activated by default. “Blacklisting” features by
-disabling them one by one in order to arrive at a minimal system is very
-uncomfortable becasue you end up searching for which nix file enables what.
-Some things also cannot be (easily) disabled this way.
-Robert’s approach is creating a function that does not work with a default
-list of imports. He also added unit tests to facilitate regression-free
-maintenance and extension of this effort.</p>
-<p>Jonas and Thu experimented with <a href="https://github.com/cleverca22/not-os">not-os</a>,
-which is a set of custom NixOS modules that remove systemd and create system
-initialization scripts from scratch in order to reach a minimal system.
-They resulted in an impressive written overview of what would need to be done
-to minimize the system further and even reach systems without interpreters.
-(Blog article coming on <a href="https://zimbatm.com/">Jonas’s blog</a>)</p>
-<p>Both approaches seem like they could be combined upstream with some amount of
-work.</p>
-<h2 id="makebinarywrapper">MakeBinaryWrapper</h2>
-<p>Pointed at an existing
-<a href="https://github.com/NixOS/nixpkgs/pull/124556">pull request from user <code>bergkvist</code></a>
-by Robert, Jacek Galowicz stopped participating in the discussion about
-minimizing NixOS systems and started helping improving and testing an
-application wrapper that is called <code>makeBinaryWrapper</code>.
-There is an existing tool called
-<a href="https://nixos.org/manual/nixpkgs/stable/#fun-makeWrapper"><code>makeWrapper</code></a>
-that can substitute any binary or
-script by another script that first manipulates the shell environment in
-user-specified form and then calls the original app/script, possibly with
-prepended command line arguments.
-The binary wrapper builds a tiny C program and compiles it instead of composing
-a shellscript. This is interesting for the following reasons:</p>
-<ul>
-<li>MacOS’s <code>execv</code> system call cannot call scripts, so <code>makeWrapper</code> does not
-work there (see more detailed description in the PR)</li>
-<li>Binaries can outperform bash</li>
-<li>Interpreterless systems must not have <code>makeWrapper</code> wrappers.</li>
-</ul>
-<p>The wrapper does generally work but must be extended if it is chosen to
-completely get rid of the default wrapper on NixOS systems, because some
-derivations stretch the wrapper’s capabilities so much that it’s hard to model
-the same behavior in simple C programs. This can be changed to the better with
-follow-up contributions.</p>
-<h2 id="nixos-integration-test-driver-refactoring">NixOS Integration Test Driver Refactoring</h2>
-<p>After Jacek’s porting of the NixOS integration test driver from Perl to Python
-in 2019 after the NixCon in Brno, this driver implementation
-<a href="https://nixos.org/manual/nixos/stable/release-notes.html#sec-release-20.03">became the standard NixOS integration test driver in Nixos 20.03</a>,
-and the general interest in using and extending the driver for tests in the
-community increased.
-The driver code itself is growing in ways that should not happen in unmoderated
-fashion, and not without giving it a proper architecture.</p>
-<p>As a first step, the driver should be split up in individual files for each
-of its functionality domains and put in a real Python package, in order to get
-more improvements afterward.</p>
-<p>Jacek introduced these ideas as a project idea for the sprint and
-Marijan Petričević, Amon Stopinšek, and Vo Minh Thu jumped right into doing
-this.</p>
-<p>The first PR on this has already been merged:
-https://github.com/NixOS/nixpkgs/pull/149329</p>
-<h2 id="nixos-integration-tests-on-macos">NixOS Integration Tests on MacOS</h2>
-<p>Nejc Zupan, Domen Kožar, and Marijan Petričević started working on the NixOS
-integration test driver nix expression in order to enable for running the usual
-integration tests with virtual networks of NixOS VMs, but on MacOS.</p>
-<h2 id="nix-community-ownership-bootstrapping">Nix Community Ownership Bootstrapping</h2>
-<p>Bernardo Meurer Costa pointed out that the Nix(OS) community is currently
-organized in a rather anarchistic fashion. This works very well on one hand
-in the sense that many contributors maintain and enhance nixpkgs and NixOS
-together and at the same time keep it stable and working.</p>
-<p>On the other hand, recent problems with bogging down RFCs and in general bigger
-decision processes stalling in endless discussions without any resulting
-decision, indicate that the governance has potential to improve.</p>
-<p>Bernardo studied different voting algorithms and chose which ones to quickly
-employ for having a bootstrap voting process.
-The process would start with a list of well-known contributors and the sprint
-participants to decide who shall be part of an anytial group of leaders who
-then are able to bootstrap general decision structures and processes.
-It was a pity that Eelco was not here to share his opinions on this, but he
-will also be included from the beginning.</p>
-<h2 id="cachix-deploy">Cachix Deploy</h2>
-<p>Domen Kožar worked on and demonstrated the new cachix deploy feature, which can
-be explained as “the hail service on steroids”.
-The cachix website will soon show this new feature.</p>
-<h2 id="nixpkgs-refactorings">nixpkgs Refactorings</h2>
-<p>I don’t have a perfect overview of what was done at the sprint as there were so
-many things, but i also remember:</p>
-<ul>
-<li>Janne: Refactor the switch-to-configuration scripts</li>
-<li>Dario: Refactor Linux kernel module builds in nixpkgs</li>
-<li>Andreas: Fix the MariaDB derivation and MySQL tests</li>
-<li>Bernardo: Remove the perl script that merges Linux kernel configs in favor of
-better tooling</li>
-<li>Andreas: Substitute stage1 init scripts by proper systemd handling</li>
-</ul>]]></summary>
 </entry>
 
 </feed>

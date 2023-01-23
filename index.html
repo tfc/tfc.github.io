@@ -40,7 +40,35 @@
 <div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a> <a style="font-size: 100%" href="./tags/python.html">python</a> <a style="font-size: 100%" href="./tags/testing.html">testing</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2023/01/16/cpp-qt-qml-nix-setup">(Qt)Quick C++ Project Setup with Nix</a>
+<div class="posts"><div><h2><a href="./2023/01/23/mixed-cpp-monorepo-project">Mixed C++ Monorepo Project Structure Development and Build Workflow</a>
+</h2>
+<span class="post-tags">
+<strong><small>January 23, 2023,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'nix'." href="./tags/nix.html" class="tag-link">nix</a></small>
+</strong>
+</span>
+<!-- cSpell:words Pfeifer monorepo composability buildable ccache -->
+<!-- cSpell:ignore iostream cout liba libb libc libd subproject endmacro -->
+<!-- cSpell:ignore myapp AARCH vdso libstdc libm aarch SYSV stdenv -->
+<!-- cSpell:ignore nixified frontends libgcc -->
+<p>Most big C++ projects lack a clear structure:
+They consist of multiple modules, but it is not as easy to create individually
+buildable, portable, testable, and reusable libraries from them, as it is with
+projects written in Rust, Go, Haskell, etc.
+In this article, I propose a C++ project structure using CMake that makes it
+easy to have incremental monorepo builds and a nice modular structure at the
+same time.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2023/01/23/mixed-cpp-monorepo-project" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2023/01/16/cpp-qt-qml-nix-setup">(Qt)Quick C++ Project Setup with Nix</a>
 </h2>
 <span class="post-tags">
 <strong><small>January 16, 2023,</small>
@@ -272,27 +300,6 @@ This example, without further context, might look a bit esoteric by itself,
 but I learned a lot writing it and wanted to share the experience.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2022/03/20/unique-heterogeneous-typelists" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
-Read more </a>
-</p>
-</div>
-
-<hr>
-<div><h2><a href="./2021/12/12/nix-community-oceansprint-report">NixOS Community Oceansprint 2021 Report</a>
-</h2>
-<span class="post-tags">
-<strong><small>December 12, 2021,</small>
-</strong>
-
-
-<strong><small>Tags: <a title="All pages tagged 'nix'." href="./tags/nix.html" class="tag-link">nix</a></small>
-</strong>
-</span>
-<!-- cSpell:disable -->
-<p>This is my trip report from the awesome NixOS community hackathon on Lanzarote.
-For more information please also have a look on the website:
-<a href="https://oceansprint.org">https://oceansprint.org</a></p>
-
-<p><a class="btn btn-sm btn-primary" href="./2021/12/12/nix-community-oceansprint-report" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
 Read more </a>
 </p>
 </div>
