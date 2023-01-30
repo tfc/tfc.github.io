@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../css/poole.css">
+<link rel="stylesheet" href="../css/syntax.css">
+<link rel="stylesheet" href="../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../images/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's Blog &middot; Posts tagged "metaprogramming"</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../">Jacek's Blog</a>
+</h1>
+<p class="lead">Software Engineering Consultant</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../">Home</a>
+<a class="sidebar-nav-item" href="../about.html">About / CV</a>
+<a class="sidebar-nav-item" href="../impressum.html">Impressum</a>
+<a class="sidebar-nav-item" href="../datenschutz.html">Datenschutz / Data Protection</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa-brands fa-square-xing"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa-brands fa-square-github"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa-brands fa-square-twitter"></i>
+</a>
+<a rel="me" href="https://functional.cafe/@jgalowicz"><i class="fa-brands fa-mastodon"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Posts tagged "metaprogramming"</h1>
+
+<div class="posts"><div><h2><a href="../2023/01/30/purescript-interpolation-of-records">Interpolation of Records of Values in Purescript</a>
+</h2>
+<span class="post-tags">
+<strong><small>January 30, 2023,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'purescript'." href="../tags/purescript.html" class="tag-link">purescript</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:words lerp lerping lerped XKCD metaprogramming PureScript -->
+<!-- cSpell:words lerpable lerps -->
+<!-- cSpell:ignore inear olation -->
+<p>This article is about a little interesting detour that I made in one of my
+personal projects:
+How to use strong type systems to generically apply a binary mathematical
+function on all items of a possibly nested record.
+The code provides interesting insights into other languages with similar type
+systems.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2023/01/30/purescript-interpolation-of-records" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2022/03/20/unique-heterogeneous-typelists">Filtering Unique Items from Heterogeneous Lists at Compile Time</a>
+</h2>
+<span class="post-tags">
+<strong><small>March 20, 2022,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'haskell'." href="../tags/haskell.html" class="tag-link">haskell</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:words Hengchu Zhang Maguire Lemmer HList -->
+<!-- cSpell:ignore ababca dontCare -->
+<p>This article is about how to filter unique items from heterogeneous lists on
+the type level in Haskell.
+This example, without further context, might look a bit esoteric by itself,
+but I learned a lot writing it and wanted to share the experience.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2022/03/20/unique-heterogeneous-typelists" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/11/05/python_style_printf_for_cpp">Python Style printf for C++ with pprintpp</a>
+</h2>
+<span class="post-tags">
+<strong><small>November  5, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>The C++ STL comes with <em>stream</em> style character output, which is an alternative to the classic <code>printf</code> like format function collection of the C library.
+For different reasons, some C++ programmers still stick to <code>printf</code> like formatting.
+This article demonstrates the <code>pprintpp</code> <a href="https://github.com/tfc/pprintpp">(open source, and available on Github)</a> library, which tries to make <code>printf</code> use comfortable and safe while avoiding any runtime overhead.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/11/05/python_style_printf_for_cpp" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/06/25/cpp_template_type_list_performance">Type List Compile Time Performance</a>
+</h2>
+<span class="post-tags">
+<strong><small>June 25, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times.
+I came up with rules of thumb like “<em>Prefer pattern matching over if_else_t</em>”, and “<em>Prefer nested type lists over variadic type lists</em>”.
+But i did not know how much faster which pattern is, i just knew about tendencies.
+Finally, i sat down to write some compile time benchmarks, and this blog posts presents the results.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/06/25/cpp_template_type_list_performance" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/06/24/integer_sequences_at_compile_time">Generating Integer Sequences at Compile Time</a>
+</h2>
+<span class="post-tags">
+<strong><small>June 24, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>In some situations, it can be useful ot generate sequences of numbers at compile time.
+This article shows how to generate integer sequences with C++ templates, and gives an example how to use it.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/06/24/integer_sequences_at_compile_time" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/06/16/cpp_template_compile_time_brainfuck_interpreter">Executing Brainfuck at Compile Time with C++ Templates</a>
+</h2>
+<span class="post-tags">
+<strong><small>June 16, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/06/16/cpp_template_compile_time_brainfuck_interpreter" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/05/15/turing_tape_with_type_lists">Implementing a Turing Tape for Use at Compile Time</a>
+</h2>
+<span class="post-tags">
+<strong><small>May 15, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>Turing Machines consist of a tape with memory cells, a tape reader like cassette drives and a program table.
+Implementing the tape drive part with an array and a pointer is a trivial thing to do with imperative programming languages.
+It becomes more interesting when learning purely functional programming, especially in the context of template meta programming in C++.
+As a preparation for the next article, i will show how to implement a turing tape based on type lists, usable at compile time.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/05/15/turing_tape_with_type_lists" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/05/14/converting_between_c_strings_and_type_lists">Transformations between User Input/Output and Type Lists</a>
+</h2>
+<span class="post-tags">
+<strong><small>May 14, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>Type lists are an important way to represent ordered and unordered sets of types at compile time.
+These types can be real structure- or class types bundling runtime algorithms etc., but they can also convey actual data at compile time.
+In order to apply certain compile time processing to data, this data needs to be transformed from and to other representations, which can be provided by the programmer and consumed by run time programs.
+This article shows how to transform back and forth between strings and character type lists.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/05/14/converting_between_c_strings_and_type_lists" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/05/08/compile_time_type_lists">Type Lists</a>
+</h2>
+<span class="post-tags">
+<strong><small>May  8, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>Homogenuous data in purely functional programs is typically managed in <em>lists</em>.
+Items can be appended or prepended to lists, different lists can be concatenated.
+Lists can be filtered, transformed, mapped, reduced, etc.
+Having all this nice stuff as a template meta library is quite an enabler for complex compile time meta programs.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/05/08/compile_time_type_lists" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/05/05/template_meta_programming_basics">Template Metaprogramming Basics</a>
+</h2>
+<span class="post-tags">
+<strong><small>May  5, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>C++ template meta programs are at first really hard to read.
+This is because the template mechanism accidentally became turing complete, although it was invented to enable for type-agnostic programming of generic algorithms.
+However, now the world knows that the C++ template part of the language <em>is</em> turing complete, people started writing full programs in it, and it enhances the power and flexibility of libraries quite a lot.
+This article aims to explain some very basic things one needs to know about the C++ template meta programming language, in order to be able to do things with it, or even understand foreign programs.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/05/05/template_meta_programming_basics" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/02/21/if_compiles_type_traits">Useful type traits with if_compiles semantics</a>
+</h2>
+<span class="post-tags">
+<strong><small>February 21, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>SFINAE type traits are very mighty, because they can check a lot of properties of types in a non-intrusive way.
+Unfortunately, they are extremely bloaty to implement.
+The single interesting expression within an SFINAE type trait is surrounded by lots of boiler plate code, which is ugly to read and repetitive.
+This article shows a nice one-liner approach to define new SFINAE type traits.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/02/21/if_compiles_type_traits" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/02/19/how_do_sfinae_traits_work">How Does the Typical SFINAE Type Trait Work?</a>
+</h2>
+<span class="post-tags">
+<strong><small>February 19, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>C++ type traits can be implemented using an interesting technique which uses the <em>SFINAE</em> principle.
+This article explains what SFINAE means, how it works and how it can be used to implement useful type traits.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/02/19/how_do_sfinae_traits_work" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="../2016/02/18/what_is_a_type_trait">What is a Type Trait?</a>
+</h2>
+<span class="post-tags">
+<strong><small>February 18, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../tags/metaprogramming.html" class="tag-link">metaprogramming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>This article explains, how so called <em>type traits</em> in C++ work.
+Type traits have been there for quite a long time now. They are a meta programming technique which appears to use types and their sub types like functions at compile time, to control what the compiler actually compiles.</p>
+
+<p><a class="btn btn-sm btn-primary" href="../2016/02/18/what_is_a_type_trait" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+</div>
+<div class="pagination"><span class="pagination-item newer">Newer</span>
+
+<span class="pagination-item older">Older</span>
+</div>
+</div>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
+<script>var popup;
+window.addEventListener('load', function(){window.cookieconsent.initialise({//set revokeBtn if you don't want to see a tiny pullup bar overlapping your website
+//if revokeBtn is set, make sure to include a link to cookie settings in your footer
+//you can open your banner again with: popup.open();
+//revokeBtn: "<div class='cc-revoke'></div>",
+type: "opt-in",
+theme: "edgeless",
+content: {header: 'Cookies used on the website!',
+message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
+href: '/datenschutz.html',},
+palette: {popup: {background: "#202020",
+text: "#fff"
+},button: {background: "#268bd2",
+text: "#fff"
+}},
+onInitialise: function(status) {if(status == cookieconsent.status.allow) setCookies();},
+onStatusChange: function(status) {if (this.hasConsented()) setCookies();
+else deleteCookies(this.options.cookie.name)},
+law: { regionalLaw: false, },
+location: true,
+function (p) { popup = p; }});})
+//it is absolutely crucial to define gtag in the global scope
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WZ3FX4G3XS', {'anonymize_ip': true});
+function setCookies() {var s = document.createElement('script');
+s.type = "text/javascript"
+s.async = "true";
+s.src = "https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS";
+var x = document.getElementsByTagName('script')[0];
+x.parentNode.insertBefore(s, x);};
+function deleteCookies(cookieconsent_name) {var keep = [cookieconsent_name, "DYNSRV"];
+document.cookie.split(';').forEach(function(c) {c = c.split('=')[0].trim();
+if (!~keep.indexOf(c))document.cookie = c + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';});};</script>
+</body>
+</head>
+</html>

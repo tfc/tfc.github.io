@@ -38,14 +38,14 @@
 <div class="content container"><h1>Executing Brainfuck at Compile Time with C++ Templates</h1>
 <div class="post"><span class="post-date">June 16, 2016</span>
 <span class="post-tags">
-Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html" class="tag-link">meta-programming</a>
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'metaprogramming'." href="../../../../tags/metaprogramming.html" class="tag-link">metaprogramming</a>
 </span>
 <!-- cSpell:disable -->
 <p>This article completes a series which aims at explaining how to implement a Brainfuck Interpreter as a template meta-program which runs at compile time.</p>
 <!--more-->
 <blockquote>
 <p>The code in this article depends largely on the code in <a href="../../../../2016/05/08/compile_time_type_lists">the article about type lists</a>, <a href="../../../../2016/05/14/converting_between_c_strings_and_type_lists">the article about character type list transformations</a>, and <a href="../../../../2016/05/15/turing_tape_with_type_lists">the article about implementing a Turing tape</a>.
-There is also <a href="../../../../2016/05/05/template_meta_programming_basics">the article about template meta-programming 101 things</a>.</p>
+There is also <a href="../../../../2016/05/05/template_meta_programming_basics">the article about template metaprogramming 101 things</a>.</p>
 </blockquote>
 <h2 id="first-things-first-what-is-brainfuck">First Things First: What is Brainfuck?</h2>
 <p>Brainfuck is a fun programming language and was created in 1993 by Urban Müller. <a href="https://en.wikipedia.org/wiki/Brainfuck">Wikipedia Link</a></p>
@@ -583,7 +583,7 @@ In the end, it looks like this:</p>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="ex">make:</span> <span class="pp">***</span> [default] Error 1</span></code></pre></div>
 <h2 id="summary">Summary</h2>
 <p>Implementing a Brainfuck Interpreter which works at compile time, is more a toy than actually a useful program.
-But it combines several template meta-programming techniques, and therefore i regard it as a great <em>learning vehicle</em>.
+But it combines several template metaprogramming techniques, and therefore i regard it as a great <em>learning vehicle</em>.
 And this is a nice insight into the Turing completeness of the C++ template language.</p></div>
 <div id="disqus_thread"></div>
 <script>var disqus_developer = 1;
