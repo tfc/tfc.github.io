@@ -1,6 +1,6 @@
 ---
 title: Interpolation of Records of Values in Purescript
-tags: purescript, meta-programming
+tags: purescript, metaprogramming
 ---
 
 <!-- cSpell:words lerp lerping lerped XKCD metaprogramming PureScript -->

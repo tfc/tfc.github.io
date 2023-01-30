@@ -1,6 +1,6 @@
 ---
 title: Executing Brainfuck at Compile Time with C++ Templates
-tags: c++, meta-programming
+tags: c++, metaprogramming
 ---
 
 <!-- cSpell:disable -->
@@ -10,7 +10,7 @@ This article completes a series which aims at explaining how to implement a Brai
 <!--more-->
 
 > The code in this article depends largely on the code in [the article about type lists](/2016/05/08/compile_time_type_lists), [the article about character type list transformations](/2016/05/14/converting_between_c_strings_and_type_lists), and [the article about implementing a Turing tape](/2016/05/15/turing_tape_with_type_lists).
-> There is also [the article about template meta-programming 101 things](/2016/05/05/template_meta_programming_basics).
+> There is also [the article about template metaprogramming 101 things](/2016/05/05/template_meta_programming_basics).
 
 ## First Things First: What is Brainfuck?
 
@@ -562,5 +562,5 @@ make: *** [default] Error 1
 ## Summary
 
 Implementing a Brainfuck Interpreter which works at compile time, is more a toy than actually a useful program.
-But it combines several template meta-programming techniques, and therefore i regard it as a great *learning vehicle*.
+But it combines several template metaprogramming techniques, and therefore i regard it as a great *learning vehicle*.
 And this is a nice insight into the Turing completeness of the C++ template language.

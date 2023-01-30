@@ -1,6 +1,6 @@
 ---
 title: Transformations between User Input/Output and Type Lists
-tags: c++, meta-programming
+tags: c++, metaprogramming
 ---
 
 <!-- cSpell:disable -->

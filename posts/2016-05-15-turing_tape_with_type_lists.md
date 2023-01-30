@@ -1,6 +1,6 @@
 ---
 title: Implementing a Turing Tape for Use at Compile Time
-tags: c++, meta-programming
+tags: c++, metaprogramming
 ---
 
 <!-- cSpell:disable -->

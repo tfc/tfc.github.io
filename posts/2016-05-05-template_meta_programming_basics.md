@@ -1,6 +1,6 @@
 ---
-title: Template Meta Programming Basics
-tags: c++, meta-programming
+title: Template Metaprogramming Basics
+tags: c++, metaprogramming
 ---
 
 <!-- cSpell:disable -->

@@ -26,7 +26,7 @@ Since C++11, it is possible to let the compiler execute *normal* functions (inst
 Such functions are called `constexpr` functions.
 However, those functions had to be implemented recursively, as it is not possible to define variables and loops in `constexpr` functions in C++11.
 (This is fixed and allowed in C++14)
-At this occasion (and because of template meta-programming and learning Haskell) I got some more practice in thinking recursion aware.
+At this occasion (and because of template metaprogramming and learning Haskell) I got some more practice in thinking recursion aware.
 
 ## Tail Recursion
 

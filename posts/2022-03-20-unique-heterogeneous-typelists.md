@@ -1,6 +1,6 @@
 ---
 title: Filtering Unique Items from Heterogeneous Lists at Compile Time
-tags: haskell, meta-programming
+tags: haskell, metaprogramming
 ---
 
 <!-- cSpell:words Hengchu Zhang Maguire Lemmer HList -->

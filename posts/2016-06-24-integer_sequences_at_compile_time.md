@@ -1,6 +1,6 @@
 ---
 title: Generating Integer Sequences at Compile Time
-tags: c++, meta-programming
+tags: c++, metaprogramming
 ---
 
 <!-- cSpell:disable -->

@@ -1,6 +1,6 @@
 ---
 title: Type Lists
-tags: c++, meta-programming
+tags: c++, metaprogramming
 ---
 
 <!-- cSpell:disable -->

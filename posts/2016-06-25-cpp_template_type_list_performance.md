@@ -1,6 +1,6 @@
 ---
 title: Type List Compile Time Performance
-tags: c++, meta-programming
+tags: c++, metaprogramming
 ---
 
 <!-- cSpell:disable -->
