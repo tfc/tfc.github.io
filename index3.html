@@ -37,10 +37,32 @@
 </div>
 <div class="content container"><h1>Posts (Page 3)</h1>
 
-<div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a> <a style="font-size: 100%" href="./tags/python.html">python</a> <a style="font-size: 100%" href="./tags/testing.html">testing</a></div>
+<div class="tagcloud">Tags: <a style="font-size: 100%" href="./tags/book.html">book</a> <a style="font-size: 100%" href="./tags/c%2B%2B.html">c++</a> <a style="font-size: 100%" href="./tags/haskell.html">haskell</a> <a style="font-size: 100%" href="./tags/meta-programming.html">meta-programming</a> <a style="font-size: 100%" href="./tags/nix.html">nix</a> <a style="font-size: 100%" href="./tags/purescript.html">purescript</a> <a style="font-size: 100%" href="./tags/python.html">python</a> <a style="font-size: 100%" href="./tags/testing.html">testing</a></div>
 <hr />
 
-<div class="posts"><div><h2><a href="./2016/06/24/integer_sequences_at_compile_time">Generating Integer Sequences at Compile Time</a>
+<div class="posts"><div><h2><a href="./2016/06/25/cpp_template_type_list_performance">Type List Compile Time Performance</a>
+</h2>
+<span class="post-tags">
+<strong><small>June 25, 2016,</small>
+</strong>
+
+
+<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a> <a title="All pages tagged 'meta-programming'." href="./tags/meta-programming.html" class="tag-link">meta-programming</a></small>
+</strong>
+</span>
+<!-- cSpell:disable -->
+<p>Soon, after writing my first meta programs with C++ templates, i realized, that certain programming patterns lead to sky rocketing compile times.
+I came up with rules of thumb like “<em>Prefer pattern matching over if_else_t</em>”, and “<em>Prefer nested type lists over variadic type lists</em>”.
+But i did not know how much faster which pattern is, i just knew about tendencies.
+Finally, i sat down to write some compile time benchmarks, and this blog posts presents the results.</p>
+
+<p><a class="btn btn-sm btn-primary" href="./2016/06/25/cpp_template_type_list_performance" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
+Read more </a>
+</p>
+</div>
+
+<hr>
+<div><h2><a href="./2016/06/24/integer_sequences_at_compile_time">Generating Integer Sequences at Compile Time</a>
 </h2>
 <span class="post-tags">
 <strong><small>June 24, 2016,</small>
@@ -226,30 +248,6 @@ If it is only used to separate generic from specific functionality in order to h
 This article shows how to use the CRTP in order to get the compile time advantages of polymorphy, without using virtual methods.</p>
 
 <p><a class="btn btn-sm btn-primary" href="./2016/02/27/static_polymorphy" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
-Read more </a>
-</p>
-</div>
-
-<hr>
-<div><h2><a href="./2016/02/26/how_to_use_crtp_to_reduce_duplication">How to Use the CRTP to Reduce Duplication</a>
-</h2>
-<span class="post-tags">
-<strong><small>February 26, 2016,</small>
-</strong>
-
-
-<strong><small>Tags: <a title="All pages tagged 'c++'." href="./tags/c%2B%2B.html" class="tag-link">c++</a></small>
-</strong>
-</span>
-<!-- cSpell:disable -->
-<p>Some objects have different interfaces for doing the same thing in a different way.
-One could either check if two objects are <em>equal</em>, or if both are <em>not different</em>.
-Or one could ask if some container is <em>empty</em>, or if it has <em>zero size</em>.
-Classes should sometimes provide multiple kinds to express the same thing to let the user decide which way to express something is more readable in a specific context.
-But that does not mean, that the class developer has to express everything multiple times.
-This article explains how <em>CRTP</em> can help out and remove potential duplicate code lines.</p>
-
-<p><a class="btn btn-sm btn-primary" href="./2016/02/26/how_to_use_crtp_to_reduce_duplication" role="button"><i class="fa-solid fa-circle-arrow-right"></i>
 Read more </a>
 </p>
 </div>

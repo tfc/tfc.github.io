@@ -7,8 +7,371 @@
         <description><![CDATA[This blog is about programming]]></description>
         <atom:link href="https://blog.galowicz.de/feed.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Mon, 23 Jan 2023 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Mon, 30 Jan 2023 00:00:00 UT</lastBuildDate>
         <item>
+    <title>Interpolation of Records of Values in Purescript</title>
+    <link>https://blog.galowicz.de/2023/01/30/purescript-interpolation-of-records</link>
+    <description><![CDATA[<!-- cSpell:words lerp lerping lerped XKCD metaprogramming PureScript -->
+<!-- cSpell:words lerpable lerps -->
+<!-- cSpell:ignore inear olation -->
+<p>This article is about a little interesting detour that I made in one of my
+personal projects:
+How to use strong type systems to generically apply a binary mathematical
+function on all items of a possibly nested record.
+The code provides interesting insights into other languages with similar type
+systems.</p>
+<!--more-->
+<p>In this personal project, I work with numeric data that is displayed in diagrams
+like these in the user’s browser:</p>
+<figure>
+<img src="/images/lapbench-diagram-amg-arena.png" alt="Example Diagrams of Numeric Data Input" />
+<figcaption aria-hidden="true">Example Diagrams of Numeric Data Input</figcaption>
+</figure>
+<p>The amount of input data can be huge at times and needs post-processing for the
+following reasons:</p>
+<ul>
+<li>Displaying too much data gives longer render times and stuttering movement
+when scrolling or hovering over the data points, especially on smartphones or
+older computers</li>
+<li>More detailed data does not always lead to visibly more detailed diagrams
+anyway</li>
+<li>To compare two diagrams at the same data grid positions, the dataset
+of one diagram needs to be interpolated into the other</li>
+</ul>
+<p>For these reasons I wrote a few functions that post-process the data in the
+following steps:</p>
+<ol type="1">
+<li>Create the mathematical derivative of the data</li>
+<li>Thin out the data of the first diagram by skipping samples that have the
+lowest derivative values. This way the most detailed areas in the data stay
+detailed enough, but the data gets much lighter.</li>
+<li>Interpolate the data of the second graph onto the resulting data grid
+positions of the first diagram.</li>
+</ol>
+<p>The data is represented as arrays of
+<a href="https://github.com/purescript/documentation/blob/master/language/Records.md">records</a> in
+<a href="https://www.purescript.org">PureScript</a>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">TelemetrySample</span> <span class="ot">=</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> position           ::</span> <span class="dt">Number</span>       <span class="co">-- Relative position on the track </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                                       <span class="co">-- between 0.0 and 1.0</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> speed              ::</span> <span class="dt">Number</span>       <span class="co">-- km/h</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> gasPedal           ::</span> <span class="dt">Number</span>       <span class="co">-- Value between 0.0 and 1.0</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> brakePedal         ::</span> <span class="dt">Number</span>       <span class="co">-- Value between 0.0 and 1.0</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> steeringWheelAngle ::</span> <span class="dt">Number</span>       <span class="co">-- Degrees</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> tirePressures      ::</span> <span class="dt">Array</span> <span class="dt">Number</span> <span class="co">-- List of four PSI pressures</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> tireTemperatures   ::</span> <span class="dt">Array</span> <span class="dt">Number</span> <span class="co">-- List of four °C temperatures</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  , <span class="op">...</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+<p>Having so much data on many different things like speed, pedal positions,
+steering wheel, etc. means that steps 1-3 would need to be performed on all
+these attributes for each diagram.
+Interestingly, applying some knowledge of the actual domain the data comes from
+helps out:
+The interesting data is in the corners when the car gets slower and faster
+quickly.
+The long straights where the driver just drives full-throttle and does only
+slight corrections with the steering wheel can be thinned out.
+This means that the derivative of step 1 can be the derivative of the <code>position</code>
+data, which shows low values when the car is <em>slow</em>, so we would <em>keep</em> those
+values on the diagram.
+An alternative is the derivative of the speed, which shows low values when the
+car’s speed isn’t changing a lot (like on the straights), so we would <em>drop</em>
+these values.</p>
+<p>Step 2 can be performed repeatedly:
+One would first sweep data carefully with a low threshold, and if the number of
+samples is not low enough, then just repeat with a higher threshold, until the
+size of the data is good enough for fast rendering.</p>
+<p>Step 3, interpolating data, can be done by simple
+<a href="https://en.wikipedia.org/wiki/Linear_interpolation">linear interpolation</a> between
+two neighbor data points, or by including even more data points using
+<a href="https://en.wikipedia.org/wiki/Polynomial_interpolation">polynomial interpolation</a>
+or <a href="https://en.wikipedia.org/wiki/Fourier_analysis">Fourier synthesis</a>.
+I chose to try the cheapest method - linear interpolation - first.
+It turned out to be good enough.</p>
+<h2 id="linear-interpolation">Linear Interpolation</h2>
+<div class="floating-image-right">
+<figure>
+<img src="/images/linear-interpolation-wikipedia.svg" width="300" alt="Linear Interpolation between two points (Wikipedia)" />
+<figcaption aria-hidden="true">Linear Interpolation between two points (<a href="https://en.wikipedia.org/wiki/Linear_interpolation">Wikipedia</a>)</figcaption>
+</figure>
+</div>
+<p>Linear interpolation is adding two values after adapting their weight in the
+final result:
+If we need the middle between two data points, we would divide both of them
+by 2 and add them together.
+If we want the data at a 3/4 position between two points, we would take 1/4 of
+the first point and 3/4 of the second point, and so on.</p>
+<p>In PureScript, Haskell, ML, or any language that has
+<a href="https://en.wikipedia.org/wiki/Type_class">type classes</a>, we can declare a
+class <code>Lerp</code> (for <strong>L</strong>inear Int<strong>erp</strong>olation) and implement it for the
+<code>Number</code> type like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">Lerp</span> a <span class="kw">where</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  lerp ::</span> <span class="dt">Number</span> <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpNumber ::</span> <span class="dt">Lerp</span> <span class="dt">Number</span> <span class="kw">where</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> a <span class="op">+</span> (b <span class="op">-</span> a) <span class="op">*</span> n</span></code></pre></div>
+<p>The <code>lerp</code> function accepts a parameter <code>n</code> which describes the relative
+position to interpolate to between the two points that are the other two
+parameters:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="kw">import</span> <span class="dt">Lerp</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.1</span> <span class="fl">0.0</span> <span class="fl">10.0</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fl">1.0</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> <span class="fl">0.0</span> <span class="fl">10.0</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fl">5.0</span></span></code></pre></div>
+<p>My input data is also represented by <code>Int</code> and <code>Boolean</code> points.
+Integers can be cast to floating point <code>Number</code>s, <code>lerp</code>ed on their domain, and
+then be brought back to <code>Int</code> by rounding.
+The same can be done for <code>Boolean</code> values, which is a bit of a tongue-in-cheek
+method, but on the given data domain this is fine for my purposes:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpInt ::</span> <span class="dt">Lerp</span> <span class="dt">Int</span> <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> <span class="fu">round</span> <span class="op">$</span> lerp n (toNumber a) (toNumber b)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpBoolean ::</span> <span class="dt">Lerp</span> <span class="dt">Boolean</span> <span class="kw">where</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> from <span class="op">$</span> lerp n (to a) (to b)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    to <span class="ot">=</span> <span class="kw">if</span> _ <span class="kw">then</span> <span class="fl">1.0</span> <span class="kw">else</span> <span class="fl">0.0</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    from x <span class="ot">=</span> <span class="fu">round</span> x <span class="op">&gt;</span> <span class="dv">0</span></span></code></pre></div>
+<p>For integers, this works as expected.
+For booleans, we accept that due to <a href="https://en.wikipedia.org/wiki/Quantization_(signal_processing)">quantization</a>, <code>0.1 * true</code> equals <code>false</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> <span class="dv">0</span> <span class="dv">10</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.55</span> <span class="dv">0</span> <span class="dv">10</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.1</span> true false</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>true</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.9</span> true false</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>false</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> true false</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>true</span></code></pre></div>
+<p>Lerping arrays of values that are in the type class already is not much work:
+One type class instance can be implemented in terms of the other, which is where
+nice type systems create a lot of joy:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpArray ::</span> <span class="dt">Lerp</span> a <span class="ot">=&gt;</span> <span class="dt">Lerp</span> (<span class="dt">Array</span> a) <span class="kw">where</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> <span class="fu">zipWith</span> (lerp n) a b</span></code></pre></div>
+<p>Now everything is ready to <code>lerp</code> whole records of data, but wait:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">lerpRecord ::</span> <span class="dt">Number</span> <span class="ot">-&gt;</span> <span class="dt">TelemetrySample</span> <span class="ot">-&gt;</span> <span class="dt">TelemetrySample</span> <span class="ot">-&gt;</span> <span class="dt">TelemetrySample</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>lerpRecord n l r <span class="ot">=</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  { speed <span class="ot">=</span> lerp n l<span class="op">.</span>speed r<span class="op">.</span>speed</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  , gasPedal <span class="ot">=</span> lerp n l<span class="op">.</span>gasPedal r<span class="op">.</span>gasPedal</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  , brakePedal <span class="ot">=</span> lerp n l<span class="op">.</span>brakePedal r<span class="op">.</span>brakePedal</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  , steeringWheelAngle <span class="ot">=</span> lerp n l<span class="op">.</span>steeringWheelAngle r<span class="op">.</span>steeringWheelAngle</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  , <span class="op">...</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+<p>With a rising number of attributes in the record type, this gets very
+repetitive, error-prone, and ugly very fast!
+As soon as the record is nested, we would need another function for each of
+them.
+I wanted to be able to call the function <code>lerp</code> on records of data, assuming
+that all record member types have instances of the <code>Lerp</code> type class.
+At this point this would bring me:</p>
+<ul>
+<li>Eliminated repetition</li>
+<li>Eliminated potential for typos</li>
+<li>Learn how to implement such a mapping for generic records</li>
+</ul>
+<p>On the one hand, according to the famous
+<a href="https://xkcd.com/1205/">XKCD comic “Is it Worth the Time?”</a>,
+I really should not do it, because the repetition is still not getting out of
+hand.
+On the other hand, I like metaprogramming and learning the programming
+languages that I use regularly <em>thoroughly</em>, so I decided to invest an afternoon
+into learning how to do it.</p>
+<figure>
+<img src="/images/xkcd-is-it-worth-the-time.png" alt="Famous XKCD comic about time investments in the automation of tasks" />
+<figcaption aria-hidden="true">Famous <a href="https://xkcd.com/1205/">XKCD comic</a> about time investments in the automation of tasks</figcaption>
+</figure>
+<h2 id="mapping-functions-over-records-of-data">Mapping Functions over Records of Data</h2>
+<p>What we are aiming at is running the <code>lerp</code> function over records of values:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> r1 <span class="ot">=</span> { a<span class="op">:</span> <span class="dv">1</span>, b<span class="op">:</span> <span class="fl">1.0</span>, c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">10.0</span> } }          </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> r2 <span class="ot">=</span> { a<span class="op">:</span> <span class="dv">10</span>, b<span class="op">:</span> <span class="fl">2.0</span>, c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">20.0</span> } }</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> r1 r2</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>{ a<span class="op">:</span> <span class="dv">6</span>, b<span class="op">:</span> <span class="fl">1.5</span>, c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">15.0</span> } }</span></code></pre></div>
+<p>The journey of getting there had striking similarities to the other little
+adventures I blogged about, namely <a href="/2022/03/20/unique-heterogeneous-typelists/">mapping over heterogeneous type lists in
+Haskell</a>, or <a href="https://blog.galowicz.de/2016/06/16/cpp_template_compile_time_brainfuck_interpreter/">implementing a
+compile-time Brainfuck interpreter in C++ template language</a>.
+In many ways, generic data handling is similar in many programming languages.</p>
+<p>In PureScript, <a href="https://github.com/purescript/documentation/blob/master/language/Records.md">records</a>
+are a data type that can be transformed into a <a href="https://pursuit.purescript.org/builtins/docs/Prim.RowList"><code>RowList</code></a> at compile time.
+A <code>RowList</code> is a <a href="https://en.wikipedia.org/wiki/Cons">cons-style</a> list
+of items that point recursively to the next item until the last item points to
+a special <code>Nil</code> terminator item.
+In the <code>RowList</code> case, every item practically conveys the key and the value of
+each record member.</p>
+<p>This means that we need to implement a type class that decomposes a record into
+a heterogeneous list of items that then recursively get mapped over our <code>lerp</code>
+function:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">LerpRecord</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">rl ::</span> <span class="dt">RL.RowList</span> <span class="dt">Type</span>)              <span class="co">-- 1.) Class Parameters</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">r ::</span> <span class="dt">Row</span> <span class="dt">Type</span>)                      <span class="co">-- </span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">from ::</span> <span class="dt">Row</span> <span class="dt">Type</span>)                   <span class="co">--</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">to ::</span> <span class="dt">Row</span> <span class="dt">Type</span>)                     <span class="co">--</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> rl <span class="ot">-&gt;</span> r from to                      <span class="co">-- 2.) Functional dependency</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  lerpRecordImpl                         <span class="co">-- 3.) Interface </span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="ot">    ::</span> <span class="dt">Number</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Proxy</span> rl</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Builder</span> { <span class="op">|</span> from } { <span class="op">|</span> to }</span></code></pre></div>
+<p>This looks very complicated, so let’s go through it step by step:
+Beginning with line 3.) we see the signature of the function that we create.
+This function accepts a proxy of a <code>RowList</code> and the two same-typed records that
+we are going to lerp.
+It returns a function that constructs a record with lerped fields and will be
+later consumed by the <a href="https://pursuit.purescript.org/packages/purescript-record/3.0.0/docs/Record.Builder#v:build"><code>build</code></a> function of the <code>purescript-record</code> library.
+We get to the builder pattern after the next code excerpt.</p>
+<p>The first four lines that are commented with 2.) are the type class parameters,
+and thanks to the
+<a href="https://github.com/purescript/documentation/blob/master/language/Types.md#kind-system">kind system</a>
+in PureScript, they are constrained to what we intend this class for.
+The <a href="https://github.com/purescript/documentation/blob/master/language/Type-Classes.md#functional-dependencies">functional dependency</a>
+in 2.) says that all types can be deduced from the
+<code>rl</code> type, so the compiler can catch us filling in the wrong types.</p>
+<p>Using this class, we can now create a function <code>lerpRecord</code> that has the same
+interface as our basic <code>lerp</code> function, but for records:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>lerpRecord</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  ::</span> <span class="kw">forall</span> t r</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>   <span class="op">.</span> <span class="dt">RL.RowToList</span> r t</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=&gt;</span> <span class="dt">LerpRecord</span> t r () r</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=&gt;</span> <span class="dt">Number</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>lerpRecord n a b <span class="ot">=</span> Builder.build builder {}</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  rowList <span class="ot">=</span> <span class="dt">Proxy</span><span class="ot"> ::</span> _ t</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  builder <span class="ot">=</span> lerpRecordImpl n rowList a b</span></code></pre></div>
+<p>Here we can see that the <code>lerpRecordImpl</code> function makes us a <code>builder</code> function
+from both input records <code>a</code> and <code>b</code>, which we then use to return the lerped
+record to the end user.
+The <code>Proxy</code> constructor helps us putting the type-level information of <code>t</code> into
+the variable <code>rowList</code>, so we can feed it into the function <code>lerpRecordImpl</code>.
+In the <code>LerpRecord t r () r</code> line, we say that we need a builder function that
+gets us from an empty record “<code>()</code>” to the final record type <code>r</code>.
+While <code>lerpRecordImpl</code> could create many other build functions, we select <em>this
+one</em>.</p>
+<p>Now, we can use the type class <code>LerpRecord</code> and the function <code>lerpRecord</code> to
+make all lerpable records an instance of the earlier type class <code>Lerp</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpRecordInstance ::</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  ( <span class="dt">RL.RowToList</span> a t</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">LerpRecord</span> t a () a</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="ot">=&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Lerp</span> (<span class="dt">Record</span> a) <span class="kw">where</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  lerp <span class="ot">=</span> lerpRecord</span></code></pre></div>
+<p>The type constraints are the minimal guidance that the compiler needs to select
+the right type class instance for us when we call <code>lerp</code> on a record.</p>
+<p>We “only” need to implement <code>lerpRecordImpl</code> now.
+The abort case on the end of the <code>RowList</code> is simple:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpRecordNil ::</span> <span class="dt">LerpRecord</span> <span class="dt">RL.Nil</span> trashA () () <span class="kw">where</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  lerpRecordImpl _ _ _ _ <span class="ot">=</span> identity</span></code></pre></div>
+<p>When the recursion is called on the list tail, we return the <code>identity</code>
+function.
+Every build step is meant to transform from a smaller RowList to a bigger one,
+by appending another item.
+The <code>Nil</code> step just does nothing.
+The other recursion steps are performed in one other implementation of the
+<code>lerpRecordImpl</code> function, which is the most complicated but last piece of
+today’s puzzle:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpRecordCons ::</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  ( <span class="dt">LerpRecord</span> t r from to&#39;           <span class="co">-- Constraints, 1</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">IsSymbol</span> k                        <span class="co">-- 2</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Row.Cons</span> k a trashA r             <span class="co">-- 3</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Row.Cons</span> k a to&#39; to               <span class="co">-- 4</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Row.Lacks</span> k to&#39;                   <span class="co">-- 5</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Lerp</span> a</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="ot">=&gt;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">LerpRecord</span> (<span class="dt">RL.Cons</span> k a t) r from to <span class="kw">where</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  lerpRecordImpl n _ a b <span class="ot">=</span> current <span class="op">&lt;&lt;&lt;</span> next</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    current <span class="ot">=</span> Builder.insert key lerpedValue</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    next <span class="ot">=</span> lerpRecordImpl n <span class="fu">tail</span> a b</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    lerpedValue <span class="ot">=</span> lerp n (R.get key a) (R.get key b)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    key  <span class="ot">=</span> <span class="dt">Proxy</span><span class="ot"> ::</span> _ k</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tail</span> <span class="ot">=</span> <span class="dt">Proxy</span><span class="ot"> ::</span> _ t</span></code></pre></div>
+<div class="floating-image-right">
+<figure>
+<img src="/images/recursion-koch-flake.webp" width="300" alt="Recursion is Beautiful" />
+<figcaption aria-hidden="true">Recursion is Beautiful</figcaption>
+</figure>
+</div>
+<p>Whenever <code>lerpRecordImpl</code> is called with some parameters, the compiler
+“searches” for the right implementation.
+The section commented with “Constraints” gives the compiler the following
+constraints when asking “is this the right implementation for this call?”:</p>
+<ol type="1">
+<li>Given parameters match for the next recursion step, where <code>to'</code> is the <code>to</code>
+version of the next deeper recursive call.</li>
+<li>The key element of a <code>RowList</code> item is a “symbol”. The <code>R.get</code> function that
+we use later needs that.</li>
+<li>A <code>Cons</code> part of a <code>RowList</code> can be constructed from our key type <code>k</code>, the
+value type <code>a</code> of one item and the record <code>r</code>.
+<code>trashA</code> means that we don’t care what the tail is, as this constraint
+is only for verifying that our <code>Cons</code> head contains what we need.</li>
+<li>Prepending the key-value pair to the <code>to'</code> type leads to the current <code>to</code>
+type in the builder chain that describes the recursion level we are currently
+looking at.</li>
+<li>The <code>to'</code> type in the builder chain does not contain the key <code>k</code> already.</li>
+<li>The <code>a</code> type in the current <code>Cons</code> head has an instance of type class <code>Lerp</code>.</li>
+</ol>
+<p>The compiler will only select this function if all the constraints match.
+It essentially creates two functions and returns their concatenation:</p>
+<ul>
+<li><code>current</code> is a builder function that inserts the lerped values for the current
+record key at the current recursion level.</li>
+<li><code>next</code> is the function that contains the same concatenation of the next
+recursion level.</li>
+</ul>
+<p>What remains magic is the handling with the <code>Proxy</code> types:
+We need them to get at the key value and the tail of the row list which gets
+shorter with every recursive call.
+The <code>Proxy</code> type constructor accepts type-level information and gives us nice
+variables from that.
+This way we can feed the <code>key</code> variable to the <code>R.get</code> function from the
+<code>RowList</code> library to obtain the current record item for lerping, and use <code>tail</code>
+as a parameter to <code>lerpRecordImpl</code> for the next recursion call.</p>
+<p>The unit test for the final lerp of a nested record structure proves that it
+works:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>it <span class="st">&quot;correctly lerps nested records&quot;</span> <span class="kw">do</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> a <span class="ot">=</span> { a<span class="op">:</span> <span class="fl">0.0</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          , b<span class="op">:</span> <span class="dv">0</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>          , c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">0.0</span> , e<span class="op">:</span> false }</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>      b <span class="ot">=</span> { a<span class="op">:</span> <span class="fl">10.0</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>          , b<span class="op">:</span> <span class="dv">10</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>          , c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">10.0</span> , e<span class="op">:</span> true }</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>      c <span class="ot">=</span> { a<span class="op">:</span> <span class="fl">7.0</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>          , b<span class="op">:</span> <span class="dv">7</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>          , c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">7.0</span> , e<span class="op">:</span> true }</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  lerp <span class="fl">0.7</span> a b <span class="ot">`shouldEqual`</span> c</span></code></pre></div>
+<h2 id="summary">Summary</h2>
+<p>We ended up with more code than the “manual” record lerp function, but this
+little quest was great for learning how to do it.
+Two type classes later we got a function that works even on nested records.</p>
+<p>Interestingly, such type-level programs look similar in all the languages that
+provide sufficiently mighty type systems, so this is nothing that one learns
+for one language and then never needs again.</p>
+<p>While I was learning how to do this, other PureScript users from the
+<a href="https://purescript.org/chat">PureScript Discord Server</a> pointed me to the
+<a href="https://github.com/natefaubion/purescript-heterogeneous/"><code>purescript-heterogeneous</code></a>
+library:
+This library provides functionality for mapping over heterogeneous lists.
+Essentially, a <code>RowList</code> is a heterogeneous list, so by using this library it
+should be possible to provide the same functionality with less code (by
+transforming a record to a <code>RowList</code>, then use such libraries on that, and
+convert it back to a record).
+But this would be material for another blog article.</p>
+<p>The full working code together with build instructions is on GitHub:
+<a href="https://github.com/tfc/purescript-ziprecord" class="uri">https://github.com/tfc/purescript-ziprecord</a></p>]]></description>
+    <pubDate>Mon, 30 Jan 2023 00:00:00 UT</pubDate>
+    <guid>https://blog.galowicz.de/2023/01/30/purescript-interpolation-of-records</guid>
+    <dc:creator>Jacek Galowicz</dc:creator>
+</item>
+<item>
     <title>Mixed C++ Monorepo Project Structure Development and Build Workflow</title>
     <link>https://blog.galowicz.de/2023/01/23/mixed-cpp-monorepo-project</link>
     <description><![CDATA[<!-- cSpell:words Pfeifer monorepo composability buildable ccache -->
@@ -3662,405 +4025,6 @@ Sponsoring such events is a great way to give back.</li>
 </ul>]]></description>
     <pubDate>Sat, 26 Nov 2022 00:00:00 UT</pubDate>
     <guid>https://blog.galowicz.de/2022/11/26/nix-community-oceansprint3-report</guid>
-    <dc:creator>Jacek Galowicz</dc:creator>
-</item>
-<item>
-    <title>Filtering Unique Items from Heterogeneous Lists at Compile Time</title>
-    <link>https://blog.galowicz.de/2022/03/20/unique-heterogeneous-typelists</link>
-    <description><![CDATA[<!-- cSpell:words Hengchu Zhang Maguire Lemmer HList -->
-<!-- cSpell:ignore ababca dontCare -->
-<p>This article is about how to filter unique items from heterogeneous lists on
-the type level in Haskell.
-This example, without further context, might look a bit esoteric by itself,
-but I learned a lot writing it and wanted to share the experience.</p>
-<!--more-->
-<p>In the last years I’ve been programming more in Haskell than in C++.
-I find Haskell is super fascinating because of its mighty type system.
-C++ already makes it possible to lift a lot of computation from compile time to run time (using <code>constexpr</code> and template meta programming) with the positive effect of resulting in less code in your binaries.
-Less code in your binaries is great, because this means a <a href="https://en.wikipedia.org/wiki/Shift-left_testing">“shift left”</a> of bug potential on the time axis from run time to compile time.
-Now Haskell makes this much more interesting because its type system is much more intelligent than the one of C++ or comparable languages.
-There are many libraries that show off what’s possible.
-My current favorite example because I have been using it a lot is the <a href="https://docs.servant.dev"><code>servant</code></a> library.</p>
-<p>I found learning C++ template meta programming very hard in the beginning because it’s completely different than <em>normal</em> programming. But once you get there, it’s really enlightening and helps in cleaner thinking about and designing of what your programs are actually supposed to do.
-Trying to do the same things and even more in Haskell, I found the following books and blog articles extremely helpful:</p>
-<ul>
-<li>Book: <a href="https://leanpub.com/thinking-with-types"><strong>“Thinking with Types”</strong> by Sandy Maguire</a></li>
-<li>Book: <a href="https://www.packtpub.com/product/haskell-design-patterns/9781783988723"><strong>“Haskell Design Patterns”</strong> by Ryan Lemmer</a></li>
-<li>Blog: <a href="https://hengchu.github.io/posts/2018-05-09-type-lists-and-type-classes.lhs.html"><strong>“Taming Heterogeneous Lists in Haskell”</strong> by Hengchu Zhang</a></li>
-</ul>
-<p>However, after getting some inspiration what fascinating things some libraries do at the type level, I wanted to give it a try myself and came up with some private hobby challenge that I wanted to try myself.
-While trying to hack on the type level, I found the available books and blogs super helpful.
-But as so often the case, books/articles often tend to explain the simple things simple, then switch to much more complicated examples, but there is quite some gap between the simple and the (maybe too) advanced examples.
-I got lost there unfortunately and came up with a solution to a sub-problem of my hobby challenge that I wanted to share to fill up that gap.</p>
-<p>This blog article shows how to:</p>
-<ul>
-<li>Define a heterogeneous list and print it (looks exactly as known from books/articles)</li>
-<li>How to reverse such lists</li>
-<li>How to filter out unique type items from them
-<ul>
-<li>both at type-level and run time because we need both</li>
-</ul></li>
-</ul>
-<p>Let’s start with some includes and GHC extensions that we need.
-The full code of this article is <a href="https://gist.github.com/tfc/a525ef630abe215d1ec1d3c50609a340">here</a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE AllowAmbiguousTypes    #-}</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE DataKinds              #-}</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE FlexibleContexts       #-}</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE FlexibleInstances      #-}</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE FunctionalDependencies #-}</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE GADTs                  #-}</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE PolyKinds              #-}</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE RankNTypes             #-}</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE ScopedTypeVariables    #-}</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE TypeApplications       #-}</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE TypeFamilies           #-}</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE TypeOperators          #-}</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ot">{-# LANGUAGE UndecidableInstances   #-}</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span>           <span class="dt">Data.Kind</span>    (<span class="dt">Type</span>)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span>           <span class="dt">GHC.TypeLits</span> (<span class="dt">ErrorMessage</span> (<span class="dt">Text</span>), <span class="dt">TypeError</span>)</span></code></pre></div>
-<h2 id="heterogeneous-lists">Heterogeneous Lists</h2>
-<p>First, we need a way to create a way to describe lists of items that have different types (without polymorphy).</p>
-<!-- cSpell:disable -->
-<p>So let’s create the type <code>HList</code> (as in “<strong>H</strong>eterogeneous <strong>List</strong>”) whose GADT
-<!-- cSpell:enable -->
-constructors help us constructing a list at compile time:</p>
-<!-- cSpell:ignore infixr -->
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">HList</span><span class="ot"> ::</span> [<span class="dt">Type</span>] <span class="ot">-&gt;</span> <span class="dt">Type</span> <span class="kw">where</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">HNil</span><span class="ot"> ::</span> <span class="dt">HList</span> &#39;[]</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  (:#) ::</span> x <span class="ot">-&gt;</span> <span class="dt">HList</span> xs <span class="ot">-&gt;</span> <span class="dt">HList</span> (x &#39;<span class="op">:</span> xs)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">infixr</span> <span class="dv">5</span> <span class="op">:#</span></span></code></pre></div>
-<p>Creating such a hlist now looks like this:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">A</span> <span class="ot">=</span> <span class="dt">A</span> <span class="dt">Int</span> <span class="kw">deriving</span> <span class="dt">Show</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">B</span> <span class="ot">=</span> <span class="dt">B</span> <span class="dt">Int</span> <span class="kw">deriving</span> <span class="dt">Show</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">C</span> <span class="ot">=</span> <span class="dt">C</span> <span class="dt">Int</span> <span class="kw">deriving</span> <span class="dt">Show</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>abc <span class="ot">=</span> <span class="dt">A</span> <span class="dv">1</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">2</span> <span class="op">:#</span> <span class="dt">C</span> <span class="dv">3</span> <span class="op">:#</span> <span class="dt">HNil</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">:</span><span class="kw">type</span> abc</span></code></pre></div>
-<!-- cSpell:disable -->
-<style>/* Styles used for the Hoogle display in the pager */
-.hoogle-doc {
-display: block;
-padding-bottom: 1.3em;
-padding-left: 0.4em;
-}
-.hoogle-code {
-display: block;
-font-family: monospace;
-white-space: pre;
-}
-.hoogle-text {
-display: block;
-}
-.hoogle-name {
-color: green;
-font-weight: bold;
-}
-.hoogle-head {
-font-weight: bold;
-}
-.hoogle-sub {
-display: block;
-margin-left: 0.4em;
-}
-.hoogle-package {
-font-weight: bold;
-font-style: italic;
-}
-.hoogle-module {
-font-weight: bold;
-}
-.hoogle-class {
-font-weight: bold;
-}
-.get-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-display: block;
-white-space: pre-wrap;
-}
-.show-type {
-color: green;
-font-weight: bold;
-font-family: monospace;
-margin-left: 1em;
-}
-.mono {
-font-family: monospace;
-display: block;
-}
-.err-msg {
-color: red;
-font-style: italic;
-font-family: monospace;
-white-space: pre;
-display: block;
-}
-#unshowable {
-color: red;
-font-weight: bold;
-}
-.err-msg.in.collapse {
-padding-top: 0.7em;
-}
-.highlight-code {
-white-space: pre;
-font-family: monospace;
-}
-.suggestion-warning {
-font-weight: bold;
-color: rgb(200, 130, 0);
-}
-.suggestion-error {
-font-weight: bold;
-color: red;
-}
-.suggestion-name {
-font-weight: bold;
-}
-</style>
-<p><span class="get-type">abc :: HList ’[A, B, C]</span>
-<!-- cSpell:enable --></p>
-<p>Although other tutorials and books cover this topic already, let us also create at least the <code>Show</code> instance for our <code>HList</code> in order to be able to print not only their types but also their values:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">Show</span> (<span class="dt">HList</span> &#39;[]) <span class="kw">where</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show</span> <span class="dt">HNil</span> <span class="ot">=</span> <span class="st">&quot;HNil&quot;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> (<span class="dt">Show</span> x, <span class="dt">Show</span> (<span class="dt">HList</span> xs))</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=&gt;</span> <span class="dt">Show</span> (<span class="dt">HList</span> (x &#39;<span class="op">:</span> xs)) <span class="kw">where</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">show</span> (x <span class="op">:#</span> xs) <span class="ot">=</span> <span class="fu">show</span> x <span class="op">++</span> <span class="st">&quot; :# &quot;</span> <span class="op">++</span> <span class="fu">show</span> xs</span></code></pre></div>
-<p>The implementation is much simpler than the following stuff, because the return type of <code>show</code> is just <code>String</code> and that is easy to assemble from our list construction.</p>
-<p>Let’s try it out:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>abc</span></code></pre></div>
-<pre><code>A 1 :# B 2 :# C 3 :# HNil</code></pre>
-<p>Fine. Off to the more complicated things now.</p>
-<h2 id="reversing-hlists">Reversing HLists</h2>
-<p>All the examples on the internet first show how to write functions on HLists:
-First, implement a type class and then all the relevant instances for them.
-These are usually not too hard to understand and write, because the output type
-does not really depend on the inputs - just like our <code>Show</code> instance from
-before.</p>
-<p>Having understood that, the next thing that I found hard to achieve was <em>reversing</em> a heterogeneous list.
-The reason is, that the return type of a reverse function would completely depend on the input:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">aReverserFunction ::</span> <span class="dt">Hlist</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] <span class="ot">-&gt;</span> <span class="dt">HList</span> &#39;[ <span class="dt">C</span>, <span class="dt">B</span>, <span class="dt">A</span> ]</span></code></pre></div>
-<p>But how to express that programmatically? Implementing the type class would be easy, but I would need to programmatically calculate the output type from the input type.
-Without knowing the resulting return type in advance, the type class would be of no use.
-Afterward, we can implement the type class that uses this calculated type.</p>
-<p>A function on the <em>type level</em> that creates a new type from some input type can be implemented in terms of a <em>type family</em>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Reverse&#39;</span> (<span class="ot">inputList ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                     (<span class="ot">accumulator ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ot">                     ::</span> [<span class="dt">Type</span>]</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                     <span class="kw">where</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Reverse&#39;</span> &#39;[] accumulator <span class="ot">=</span> accumulator</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Reverse&#39;</span> (i &#39;<span class="op">:</span> is) accumulator <span class="ot">=</span> <span class="dt">Reverse&#39;</span> is (i &#39;<span class="op">:</span> accumulator)</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">Reverse</span> a <span class="ot">=</span> <span class="dt">Reverse&#39;</span> a &#39;[]</span></code></pre></div>
-<p>This function takes an input type list and accumulates the reverse of the list, item by item, on the accumulator argument.
-As soon as the input list contains no items any longer, the accumulator is returned.</p>
-<p>As it would be otherwise uncomfortable to provide the input list <em>and</em> the accumulator, let’s call this type-level function <code>Reverse'</code> and define a type alias <code>Reverse</code> which just accepts the input list and hides the rest of the interface for us.</p>
-<p>This works as expected:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Reverse</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ]</span></code></pre></div>
-<p><span class="get-type">Reverse ‘[ A, B, C ] :: [*]
-=’[C, B, A]</span></p>
-<p>The type class <code>ReversedHList</code> will provide us a <code>rev'</code> function with just the same interface but at normal function level.
-In order to hide this input-and-accumulator interface, we will later define function <code>rev</code> which hides this implementation detail from the user.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">ReversedHList</span> (<span class="ot">inputList ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                    (<span class="ot">accumulator ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                    (<span class="ot">reversedList ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">where</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ot">  rev&#39; ::</span> <span class="dt">HList</span> inputList</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> accumulator</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> reversedList</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">ReversedHList</span> &#39;[] a a <span class="kw">where</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  rev&#39; _ a <span class="ot">=</span> a</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">ReversedHList</span> is (i &#39;<span class="op">:</span> as) rs</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">ReversedHList</span> (i &#39;<span class="op">:</span> is) as rs <span class="kw">where</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    rev&#39; (i <span class="op">:#</span> is) as <span class="ot">=</span> rev&#39; is (i <span class="op">:#</span> as)</span></code></pre></div>
-<p>What’s most interesting here is that <code>reversedList</code> is a type that remains completely unchanged over the instances that are called one after the other.
-This is the final return type that needs to be calculated before, and we have not done that, yet.</p>
-<p>Our <code>rev</code> function does both hide the accumulator from the user and calculate the result type using our previously implemented <code>Reverse</code> type-level function:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ot">rev ::</span> <span class="kw">forall</span> inputList<span class="op">.</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>       <span class="dt">ReversedHList</span> inputList &#39;[] (<span class="dt">Reverse</span> inputList)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">HList</span> inputList</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">HList</span> (<span class="dt">Reverse</span> inputList)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>rev i <span class="ot">=</span> rev&#39; <span class="op">@</span>inputList <span class="op">@</span>&#39;[] <span class="op">@</span>(<span class="dt">Reverse</span> inputList) i <span class="dt">HNil</span></span></code></pre></div>
-<p>The strange <code>@inputList</code> notation is called <a href="https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/type_applications.html"><em>type application</em></a> and makes it easier to see which instance of function <code>rev'</code> we are calling.
-Often enough such hints are not needed (in this specific case the code will compile without), but they also make it easier to read the code due to its explicitness.</p>
-<p>That the output type is <code>HList (Reverse inputList)</code> is the simpler part of this function.
-But that I have to write down the <code>ReversedHList inputList '[] (Reverse inputList)</code> class constraint is something that I didn’t get for a long time.
-If you leave that away, the compiler will give you the following feedback:</p>
-<pre><code>&lt;interactive&gt;:3:9: error:
-    • No instance for (Rev inputList &#39;[] (Reverse&#39; inputList &#39;[])) arising from a use of ‘rev&#39;’
-    • In the expression: rev&#39; @inputList @&#39;[] @(Reverse inputList) i HNil
-      In an equation for ‘rev’: rev i = rev&#39; @inputList @&#39;[] @(Reverse inputList) i HNil</code></pre>
-<p>I understand this as “Just because you’re using <code>rev'</code> does not mean that I can automatically require the user’s input types to be instances of this class. Please write down this requirement explicitly.”
-Thinking about it a bit longer, it does help reading the rest of the code because it explains which type instance it will select first.</p>
-<p>After all, the function works just as expected:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span><span class="kw">type</span> rev abc</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>rev abc</span></code></pre></div>
-<p><span class="get-type">rev abc :: HList ’[C, B, A]</span></p>
-<pre><code>C 3 :# B 2 :# A 1 :# HNil</code></pre>
-<p>Thanks to the <code>Show</code> instance we can nicely inspect our reversed list both at the type- and value-level.</p>
-<p>Now, let’s look at the next challenge.</p>
-<h2 id="type-level-helper-functions">Type-Level Helper Functions</h2>
-<p>In the end we are going to remove duplicate types from heterogeneous lists, but before we arrive there we need to implement some helper functions.</p>
-<p>The first helper type-level function tells us if a list already contains some type:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Contains</span> (<span class="ot">inputList ::</span> [<span class="dt">Type</span>]) (<span class="ot">inputType ::</span> <span class="dt">Type</span>)<span class="ot"> ::</span> <span class="dt">Bool</span> <span class="kw">where</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- head of the list equals the input type</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contains</span> (x &#39;<span class="op">:</span> _) x <span class="ot">=</span> <span class="dt">&#39;True</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- recursion terminator: list didn&#39;t contain it</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contains</span> &#39;[] _ <span class="ot">=</span> <span class="dt">&#39;False</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- current head does not equal the input type, so recurse to the next one</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Contains</span> (_ &#39;<span class="op">:</span> xs) x <span class="ot">=</span> <span class="dt">Contains</span> xs x</span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Contains</span> &#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span>] <span class="dt">A</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Contains</span> &#39;[<span class="dt">B</span>, <span class="dt">C</span>] <span class="dt">A</span></span></code></pre></div>
-<p><span class="get-type">Contains ’[A, B, C] A :: Bool
-= ’True</span></p>
-<p><span class="get-type">Contains ’[B, C] A :: Bool
-= ’False</span></p>
-<p>This works great.</p>
-<p>The next helper that we are going to need later is a type-level if function.
-It accepts a bool value on the type-level, and two types of which one is returned back, depending on the boolean condition input:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">If</span> (<span class="ot">condition ::</span> <span class="dt">Bool</span>) (<span class="ot">thenCase ::</span> k) (<span class="ot">elseCase ::</span> k)<span class="ot"> ::</span> k <span class="kw">where</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">If</span> <span class="dt">&#39;True</span>  a _ <span class="ot">=</span> a</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">If</span> <span class="dt">&#39;False</span> _ b <span class="ot">=</span> b</span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">If</span> <span class="dt">&#39;True</span>  <span class="dt">A</span> <span class="dt">B</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">If</span> <span class="dt">&#39;False</span> <span class="dt">A</span> <span class="dt">B</span></span></code></pre></div>
-<p><span class='get-type'>If ’True A B :: *
-= A</span></p>
-<p><span class='get-type'>If ’False A B :: *
-= B</span></p>
-<h2 id="filtering-only-unique-items-from-a-list">Filtering Only Unique Items from a List</h2>
-<p>The type-level function that immediately puts to use our new <code>Contains</code> and <code>If</code> function shall recursively traverse through an input list and return an output list that only contains the unique types of the input list:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">Uniques</span> (<span class="ot">xs ::</span> [<span class="dt">Type</span>])<span class="ot"> ::</span> [<span class="dt">Type</span>] <span class="kw">where</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Uniques</span> (x &#39;<span class="op">:</span> xs) <span class="ot">=</span> <span class="dt">If</span> (<span class="dt">Contains</span> xs x) (<span class="dt">Uniques</span> xs) (x &#39;<span class="op">:</span> <span class="dt">Uniques</span> xs)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Uniques</span> &#39;[] <span class="ot">=</span> &#39;[]</span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">Uniques</span> &#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">A</span>, <span class="dt">C</span>]</span></code></pre></div>
-<p><span class="get-type">Uniques ‘[A, B, A, C] :: [*]
-=’[B, A, C]</span></p>
-<p>A helper that is going to be handy in the following is the type-level function <code>ContainsHead</code>:
-It accepts two type lists as arguments and tests if the first list contains the head element of the second list.</p>
-<p>We are later feeding this function into a type class parameter that then helps us selecting the right type class.
-In the special case that the second list is <em>empty</em>, we return a comprehensible error message.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="kw">family</span> <span class="dt">ContainsHead</span> (<span class="ot">listToCheckAgainst ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                         (<span class="ot">listToCheck ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="ot">                         ::</span> <span class="dt">Bool</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                         <span class="kw">where</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ContainsHead</span> as (b &#39;<span class="op">:</span> bs) <span class="ot">=</span> <span class="dt">Contains</span> as b</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ContainsHead</span> _ &#39;[] <span class="ot">=</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">TypeError</span> (<span class="dt">&#39;Text</span> <span class="st">&quot;ContainsHead can&#39;t take off the head of an empty list&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb22"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] &#39;[ <span class="dt">B</span>, <span class="dt">C</span> ]</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> &#39;[ <span class="dt">A</span> ] &#39;[ <span class="dt">B</span>, <span class="dt">C</span> ]</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="op">:</span>kind<span class="op">!</span> <span class="dt">ContainsHead</span> &#39;[ <span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">C</span> ] &#39;[ ]</span></code></pre></div>
-<p><span class="get-type">ContainsHead ‘[ A, B, C ]’[ B, C ] :: Bool
-= ’True</span></p>
-<p><span class="get-type">ContainsHead ‘[ A ]’[ B, C ] :: Bool
-= ’False</span></p>
-<p><span class="get-type">ContainsHead ‘[ A, B, C ]’[ ] :: Bool
-= (TypeError …)</span></p>
-<p>Now we get to the part that turned out to look really complicated:
-The class <code>UniqueHList</code> provides us a function <code>ul'</code> that has a similar accumulator based interface like the reverse function.
-A given input list is consumed step by step, and if the current item is already in the accumulator list, we drop it.
-Otherwise, we put it into the accumulator.
-After fully consuming the input list, we can return the accumulator.
-The type <code>uniqueList</code> can be forecasted using our <code>Uniques</code> type-level function. It doesn’t change throughout all the instances ass they call each other and pass it from the first call to the last.</p>
-<p>The most interesting addition to this interface is the <code>nextElementIsContainedAlready</code> boolean argument.
-As the name suggests, one instance fills it out for the next instance so they can decide what to do with the current input list head item, as we will see in the following.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">UniqueHList</span> (<span class="ot">inList ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                  (<span class="ot">accumulator ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                  (<span class="ot">uniqueList ::</span> [<span class="dt">Type</span>])</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                  (<span class="ot">nextElementIsContainedAlready ::</span> <span class="dt">Bool</span>)</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                  <span class="kw">where</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="ot">  ulr&#39; ::</span> <span class="dt">HList</span> inList</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> accumulator</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>       <span class="ot">-&gt;</span> <span class="dt">HList</span> uniqueList</span></code></pre></div>
-<p>The recursion terminal instance is the one where the input list is empty.
-In this case we simply return the accumulator.
-It is not interesting what the value of the bool argument is in this special case.</p>
-<!-- cSpell:disable -->
-<p>I named the class function <code>ulr'</code> as in “<strong>u</strong>nique <strong>l</strong>ist <strong>reversed</strong>”,
-<!-- cSpell:enable -->
-because due to the accumulator interface of this function, the accumulator will
-contain all the items in reversed order when we consumed the input list.
-We will turn it around later.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">UniqueHList</span> &#39;[] uniqueList uniqueList dontCare <span class="kw">where</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  ulr&#39; _ x <span class="ot">=</span> x</span></code></pre></div>
-<p>In all of the following instances, I used some very much abbreviated type
-variable names:
-<!-- cSpell:disable -->
-<code>is</code> stands for <strong>i</strong>nput item<strong>s</strong>”, <code>as</code> for “<strong>a</strong>ccumulator item<strong>s</strong>”, and
-<code>us</code> for “<strong>u</strong>nique item<strong>s</strong>”.
-<!-- cSpell:enable --></p>
-<p>The <code>'False</code> value in the <code>nextElementIsContainedAlready</code> argument says that this instance is for the cases where the next input list item is not yet contained by the accumulator.
-So by removing it from the input list and prepending it to the accumulator, we do the right thing.</p>
-<p>The many type application <code>@</code> things here are a bit noisy, but this time the compiler needs them as a hint.
-They basically replicate the class constraint that described what the next instance is.</p>
-<p><code>(ContainsHead (i ': as) is)</code> is the next bool value that is put into the next class instance:
-The new state of our accumulator will be <code>i ': as</code> in that next instance, so we need to check if the head of the rest of the input list is already contained in that new accumulator.
-That is practically the essence of the complicated-looking <code>UniqueHList</code> instance unfolding logic.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">UniqueHList</span> is (i &#39;<span class="op">:</span> as) us (<span class="dt">ContainsHead</span> (i &#39;<span class="op">:</span> as) is)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">UniqueHList</span> (i &#39;<span class="op">:</span> is) as us <span class="dt">&#39;False</span> <span class="kw">where</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    ulr&#39; (i <span class="op">:#</span> is) as <span class="ot">=</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>        ulr&#39; <span class="op">@</span>is <span class="op">@</span>(i &#39;<span class="op">:</span> as) <span class="op">@</span>us <span class="op">@</span>(<span class="dt">ContainsHead</span> (i &#39;<span class="op">:</span> as) is) is (i <span class="op">:#</span> as)</span></code></pre></div>
-<p>In the cases where the next item from the input list is already contained by the accumulator, we need to drop it and then call the next instance.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">UniqueHList</span> is as us (<span class="dt">ContainsHead</span> as is)</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">UniqueHList</span> (i &#39;<span class="op">:</span> is) as us <span class="dt">&#39;True</span> <span class="kw">where</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    ulr&#39; (_ <span class="op">:#</span> is) as <span class="ot">=</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>        ulr&#39; <span class="op">@</span>is <span class="op">@</span>as <span class="op">@</span>us <span class="op">@</span>(<span class="dt">ContainsHead</span> as is) is as</span></code></pre></div>
-<p>We can already call it for a quick test:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>ulr&#39; <span class="op">@</span>&#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">A</span>, <span class="dt">C</span>] <span class="op">@</span>&#39;[] <span class="op">@</span>(<span class="dt">Uniques</span> (<span class="dt">Reverse</span> &#39;[<span class="dt">A</span>, <span class="dt">B</span>, <span class="dt">A</span>, <span class="dt">C</span>])) <span class="op">@</span><span class="dt">&#39;False</span> (<span class="dt">A</span> <span class="dv">1</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">2</span> <span class="op">:#</span> <span class="dt">A</span> <span class="dv">3</span> <span class="op">:#</span> <span class="dt">C</span> <span class="dv">4</span> <span class="op">:#</span> <span class="dt">HNil</span>) <span class="dt">HNil</span></span></code></pre></div>
-<pre><code>C 4 :# B 2 :# A 1 :# HNil</code></pre>
-<p>It works, but what struck me was the fact that the output is the unique list of the reverse input list.
-I am pretty sure that if I was smarter, I could construct the whole thing to work more intuitively.
-After playing around with the implementation trying to make it nicer without nice results, I concluded that this may be a quest for another day.
-I was already happy that it works at all, so let’s continue describing the working state.</p>
-<p>Building on the working example input, the function <code>ulr</code> hides all the type hints from the user and calls our class function with the right arguments:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="ot">ulr ::</span> <span class="kw">forall</span> inputList<span class="op">.</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>       <span class="dt">UniqueHList</span> inputList &#39;[] (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)) <span class="dt">&#39;False</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>   <span class="ot">=&gt;</span> <span class="dt">HList</span> inputList</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>   <span class="ot">-&gt;</span> <span class="dt">HList</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList))</span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>ulr x <span class="ot">=</span> ulr&#39; <span class="op">@</span>inputList <span class="op">@</span>&#39;[] <span class="op">@</span>(<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)) <span class="op">@</span><span class="dt">&#39;False</span> x <span class="dt">HNil</span></span></code></pre></div>
-<p>As the user would not expect a reversed output list, let’s concatenate our <code>rev</code> function with the new <code>ulr</code> function to provide the expected results.</p>
-<p>The implementation is really simple but writing down the types turned out a bit ugly.
-It is surely somehow possible to tell the compiler that <code>Reverse (Uniques (Reverse x))</code> is really the same as <code>Uniques x</code>, but at this time I don’t know how to do it.</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="ot">ul ::</span> <span class="kw">forall</span> inputList<span class="op">.</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    ( <span class="dt">ReversedHList</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList))</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>                    &#39;[]</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>                    (<span class="dt">Reverse</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)))</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    , <span class="dt">UniqueHList</span> inputList &#39;[] (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)) <span class="dt">&#39;False</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>    <span class="ot">=&gt;</span> <span class="dt">HList</span> inputList</span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">HList</span> (<span class="dt">Reverse</span> (<span class="dt">Uniques</span> (<span class="dt">Reverse</span> inputList)))</span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>ul <span class="ot">=</span> rev <span class="op">.</span> ulr</span></code></pre></div>
-<h2 id="the-moment-of-truth">The Moment of Truth</h2>
-<p>That should be it. The moment of truth - does it work?</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>abc</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>ul abc</span></code></pre></div>
-<pre><code>A 1 :# B 2 :# C 3 :# HNil
-A 1 :# B 2 :# C 3 :# HNil</code></pre>
-<p>It doesn’t destroy a list that is already unique. Actually, it doesn’t do anything on a unique list and that’s good.</p>
-<p>Let’s roll out a more complicated case:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>ababca <span class="ot">=</span> <span class="dt">A</span> <span class="dv">1</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">2</span> <span class="op">:#</span> <span class="dt">A</span> <span class="dv">3</span> <span class="op">:#</span> <span class="dt">B</span> <span class="dv">4</span> <span class="op">:#</span> <span class="dt">C</span> <span class="dv">5</span> <span class="op">:#</span> <span class="dt">A</span> <span class="dv">6</span> <span class="op">:#</span> <span class="dt">HNil</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>ababca</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>ul ababca</span></code></pre></div>
-<pre><code>A 1 :# B 2 :# A 3 :# B 4 :# C 5 :# A 6 :# HNil
-A 1 :# B 2 :# C 5 :# HNil</code></pre>
-<p>Happiness.</p>
-<h2 id="summary">Summary</h2>
-<p>This is now a big bunch of special purpose code that reinvents multiple wheels, but it really helped my personal understanding, and I hope it also helps yours.
-The next step would be to use libraries which do all of this better, so we don’t need so much code.
-There is for example <a href="https://hackage.haskell.org/package/HList"><code>HList</code></a> which is really elegant and is so much more comprehensible once we understand more type-level programming.</p>
-<p>I’ve done a type-level programming in C++ before (have a look at the older articles in this blog) and I find it very interesting how similar it really is.
-In Haskell, it is more frustrating in the beginning because the kind system is complicated.
-As soon as the basic mechanisms are understood, it is nice to see that Haskell’s type system is much more intelligent than C++ templates and there’s much more control over everything.</p>]]></description>
-    <pubDate>Sun, 20 Mar 2022 00:00:00 UT</pubDate>
-    <guid>https://blog.galowicz.de/2022/03/20/unique-heterogeneous-typelists</guid>
     <dc:creator>Jacek Galowicz</dc:creator>
 </item>
 

@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog" />
+<link rel="canonical" href="https://blog.galowicz.de/" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+<script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="shortcut icon" href="../../../../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's Blog &middot; Interpolation of Records of Values in Purescript</title>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's Blog</a>
+</h1>
+<p class="lead">Software Engineering Consultant</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About / CV</a>
+<a class="sidebar-nav-item" href="../../../../impressum.html">Impressum</a>
+<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Data Protection</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa-brands fa-square-xing"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa-brands fa-square-github"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa-brands fa-square-twitter"></i>
+</a>
+<a rel="me" href="https://functional.cafe/@jgalowicz"><i class="fa-brands fa-mastodon"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Interpolation of Records of Values in Purescript</h1>
+<div class="post"><span class="post-date">January 30, 2023</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'purescript'." href="../../../../tags/purescript.html" class="tag-link">purescript</a> <a title="All pages tagged 'meta-programming'." href="../../../../tags/meta-programming.html" class="tag-link">meta-programming</a>
+</span>
+<!-- cSpell:words lerp lerping lerped XKCD metaprogramming PureScript -->
+<!-- cSpell:words lerpable lerps -->
+<!-- cSpell:ignore inear olation -->
+<p>This article is about a little interesting detour that I made in one of my
+personal projects:
+How to use strong type systems to generically apply a binary mathematical
+function on all items of a possibly nested record.
+The code provides interesting insights into other languages with similar type
+systems.</p>
+<!--more-->
+<p>In this personal project, I work with numeric data that is displayed in diagrams
+like these in the user’s browser:</p>
+<figure>
+<img src="../../../../images/lapbench-diagram-amg-arena.png" alt="Example Diagrams of Numeric Data Input" />
+<figcaption aria-hidden="true">Example Diagrams of Numeric Data Input</figcaption>
+</figure>
+<p>The amount of input data can be huge at times and needs post-processing for the
+following reasons:</p>
+<ul>
+<li>Displaying too much data gives longer render times and stuttering movement
+when scrolling or hovering over the data points, especially on smartphones or
+older computers</li>
+<li>More detailed data does not always lead to visibly more detailed diagrams
+anyway</li>
+<li>To compare two diagrams at the same data grid positions, the dataset
+of one diagram needs to be interpolated into the other</li>
+</ul>
+<p>For these reasons I wrote a few functions that post-process the data in the
+following steps:</p>
+<ol type="1">
+<li>Create the mathematical derivative of the data</li>
+<li>Thin out the data of the first diagram by skipping samples that have the
+lowest derivative values. This way the most detailed areas in the data stay
+detailed enough, but the data gets much lighter.</li>
+<li>Interpolate the data of the second graph onto the resulting data grid
+positions of the first diagram.</li>
+</ol>
+<p>The data is represented as arrays of
+<a href="https://github.com/purescript/documentation/blob/master/language/Records.md">records</a> in
+<a href="https://www.purescript.org">PureScript</a>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">type</span> <span class="dt">TelemetrySample</span> <span class="ot">=</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  {<span class="ot"> position           ::</span> <span class="dt">Number</span>       <span class="co">-- Relative position on the track </span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                                       <span class="co">-- between 0.0 and 1.0</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> speed              ::</span> <span class="dt">Number</span>       <span class="co">-- km/h</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> gasPedal           ::</span> <span class="dt">Number</span>       <span class="co">-- Value between 0.0 and 1.0</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> brakePedal         ::</span> <span class="dt">Number</span>       <span class="co">-- Value between 0.0 and 1.0</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> steeringWheelAngle ::</span> <span class="dt">Number</span>       <span class="co">-- Degrees</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> tirePressures      ::</span> <span class="dt">Array</span> <span class="dt">Number</span> <span class="co">-- List of four PSI pressures</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  ,<span class="ot"> tireTemperatures   ::</span> <span class="dt">Array</span> <span class="dt">Number</span> <span class="co">-- List of four °C temperatures</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  , <span class="op">...</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+<p>Having so much data on many different things like speed, pedal positions,
+steering wheel, etc. means that steps 1-3 would need to be performed on all
+these attributes for each diagram.
+Interestingly, applying some knowledge of the actual domain the data comes from
+helps out:
+The interesting data is in the corners when the car gets slower and faster
+quickly.
+The long straights where the driver just drives full-throttle and does only
+slight corrections with the steering wheel can be thinned out.
+This means that the derivative of step 1 can be the derivative of the <code>position</code>
+data, which shows low values when the car is <em>slow</em>, so we would <em>keep</em> those
+values on the diagram.
+An alternative is the derivative of the speed, which shows low values when the
+car’s speed isn’t changing a lot (like on the straights), so we would <em>drop</em>
+these values.</p>
+<p>Step 2 can be performed repeatedly:
+One would first sweep data carefully with a low threshold, and if the number of
+samples is not low enough, then just repeat with a higher threshold, until the
+size of the data is good enough for fast rendering.</p>
+<p>Step 3, interpolating data, can be done by simple
+<a href="https://en.wikipedia.org/wiki/Linear_interpolation">linear interpolation</a> between
+two neighbor data points, or by including even more data points using
+<a href="https://en.wikipedia.org/wiki/Polynomial_interpolation">polynomial interpolation</a>
+or <a href="https://en.wikipedia.org/wiki/Fourier_analysis">Fourier synthesis</a>.
+I chose to try the cheapest method - linear interpolation - first.
+It turned out to be good enough.</p>
+<h2 id="linear-interpolation">Linear Interpolation</h2>
+<div class="floating-image-right">
+<figure>
+<img src="../../../../images/linear-interpolation-wikipedia.svg" width="300" alt="Linear Interpolation between two points (Wikipedia)" />
+<figcaption aria-hidden="true">Linear Interpolation between two points (<a href="https://en.wikipedia.org/wiki/Linear_interpolation">Wikipedia</a>)</figcaption>
+</figure>
+</div>
+<p>Linear interpolation is adding two values after adapting their weight in the
+final result:
+If we need the middle between two data points, we would divide both of them
+by 2 and add them together.
+If we want the data at a 3/4 position between two points, we would take 1/4 of
+the first point and 3/4 of the second point, and so on.</p>
+<p>In PureScript, Haskell, ML, or any language that has
+<a href="https://en.wikipedia.org/wiki/Type_class">type classes</a>, we can declare a
+class <code>Lerp</code> (for <strong>L</strong>inear Int<strong>erp</strong>olation) and implement it for the
+<code>Number</code> type like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> <span class="dt">Lerp</span> a <span class="kw">where</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  lerp ::</span> <span class="dt">Number</span> <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> a</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpNumber ::</span> <span class="dt">Lerp</span> <span class="dt">Number</span> <span class="kw">where</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> a <span class="op">+</span> (b <span class="op">-</span> a) <span class="op">*</span> n</span></code></pre></div>
+<p>The <code>lerp</code> function accepts a parameter <code>n</code> which describes the relative
+position to interpolate to between the two points that are the other two
+parameters:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="kw">import</span> <span class="dt">Lerp</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.1</span> <span class="fl">0.0</span> <span class="fl">10.0</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fl">1.0</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> <span class="fl">0.0</span> <span class="fl">10.0</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fl">5.0</span></span></code></pre></div>
+<p>My input data is also represented by <code>Int</code> and <code>Boolean</code> points.
+Integers can be cast to floating point <code>Number</code>s, <code>lerp</code>ed on their domain, and
+then be brought back to <code>Int</code> by rounding.
+The same can be done for <code>Boolean</code> values, which is a bit of a tongue-in-cheek
+method, but on the given data domain this is fine for my purposes:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpInt ::</span> <span class="dt">Lerp</span> <span class="dt">Int</span> <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> <span class="fu">round</span> <span class="op">$</span> lerp n (toNumber a) (toNumber b)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpBoolean ::</span> <span class="dt">Lerp</span> <span class="dt">Boolean</span> <span class="kw">where</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> from <span class="op">$</span> lerp n (to a) (to b)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    to <span class="ot">=</span> <span class="kw">if</span> _ <span class="kw">then</span> <span class="fl">1.0</span> <span class="kw">else</span> <span class="fl">0.0</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    from x <span class="ot">=</span> <span class="fu">round</span> x <span class="op">&gt;</span> <span class="dv">0</span></span></code></pre></div>
+<p>For integers, this works as expected.
+For booleans, we accept that due to <a href="https://en.wikipedia.org/wiki/Quantization_(signal_processing)">quantization</a>, <code>0.1 * true</code> equals <code>false</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> <span class="dv">0</span> <span class="dv">10</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dv">5</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.55</span> <span class="dv">0</span> <span class="dv">10</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dv">6</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.1</span> true false</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>true</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.9</span> true false</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>false</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> true false</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>true</span></code></pre></div>
+<p>Lerping arrays of values that are in the type class already is not much work:
+One type class instance can be implemented in terms of the other, which is where
+nice type systems create a lot of joy:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpArray ::</span> <span class="dt">Lerp</span> a <span class="ot">=&gt;</span> <span class="dt">Lerp</span> (<span class="dt">Array</span> a) <span class="kw">where</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  lerp n a b <span class="ot">=</span> <span class="fu">zipWith</span> (lerp n) a b</span></code></pre></div>
+<p>Now everything is ready to <code>lerp</code> whole records of data, but wait:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">lerpRecord ::</span> <span class="dt">Number</span> <span class="ot">-&gt;</span> <span class="dt">TelemetrySample</span> <span class="ot">-&gt;</span> <span class="dt">TelemetrySample</span> <span class="ot">-&gt;</span> <span class="dt">TelemetrySample</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>lerpRecord n l r <span class="ot">=</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  { speed <span class="ot">=</span> lerp n l<span class="op">.</span>speed r<span class="op">.</span>speed</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  , gasPedal <span class="ot">=</span> lerp n l<span class="op">.</span>gasPedal r<span class="op">.</span>gasPedal</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  , brakePedal <span class="ot">=</span> lerp n l<span class="op">.</span>brakePedal r<span class="op">.</span>brakePedal</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  , steeringWheelAngle <span class="ot">=</span> lerp n l<span class="op">.</span>steeringWheelAngle r<span class="op">.</span>steeringWheelAngle</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  , <span class="op">...</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  }</span></code></pre></div>
+<p>With a rising number of attributes in the record type, this gets very
+repetitive, error-prone, and ugly very fast!
+As soon as the record is nested, we would need another function for each of
+them.
+I wanted to be able to call the function <code>lerp</code> on records of data, assuming
+that all record member types have instances of the <code>Lerp</code> type class.
+At this point this would bring me:</p>
+<ul>
+<li>Eliminated repetition</li>
+<li>Eliminated potential for typos</li>
+<li>Learn how to implement such a mapping for generic records</li>
+</ul>
+<p>On the one hand, according to the famous
+<a href="https://xkcd.com/1205/">XKCD comic “Is it Worth the Time?”</a>,
+I really should not do it, because the repetition is still not getting out of
+hand.
+On the other hand, I like metaprogramming and learning the programming
+languages that I use regularly <em>thoroughly</em>, so I decided to invest an afternoon
+into learning how to do it.</p>
+<figure>
+<img src="../../../../images/xkcd-is-it-worth-the-time.png" alt="Famous XKCD comic about time investments in the automation of tasks" />
+<figcaption aria-hidden="true">Famous <a href="https://xkcd.com/1205/">XKCD comic</a> about time investments in the automation of tasks</figcaption>
+</figure>
+<h2 id="mapping-functions-over-records-of-data">Mapping Functions over Records of Data</h2>
+<p>What we are aiming at is running the <code>lerp</code> function over records of values:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> r1 <span class="ot">=</span> { a<span class="op">:</span> <span class="dv">1</span>, b<span class="op">:</span> <span class="fl">1.0</span>, c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">10.0</span> } }          </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> r2 <span class="ot">=</span> { a<span class="op">:</span> <span class="dv">10</span>, b<span class="op">:</span> <span class="fl">2.0</span>, c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">20.0</span> } }</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> lerp <span class="fl">0.5</span> r1 r2</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>{ a<span class="op">:</span> <span class="dv">6</span>, b<span class="op">:</span> <span class="fl">1.5</span>, c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">15.0</span> } }</span></code></pre></div>
+<p>The journey of getting there had striking similarities to the other little
+adventures I blogged about, namely <a href="../../../../2022/03/20/unique-heterogeneous-typelists/">mapping over heterogeneous type lists in
+Haskell</a>, or <a href="https://blog.galowicz.de/2016/06/16/cpp_template_compile_time_brainfuck_interpreter/">implementing a
+compile-time Brainfuck interpreter in C++ template language</a>.
+In many ways, generic data handling is similar in many programming languages.</p>
+<p>In PureScript, <a href="https://github.com/purescript/documentation/blob/master/language/Records.md">records</a>
+are a data type that can be transformed into a <a href="https://pursuit.purescript.org/builtins/docs/Prim.RowList"><code>RowList</code></a> at compile time.
+A <code>RowList</code> is a <a href="https://en.wikipedia.org/wiki/Cons">cons-style</a> list
+of items that point recursively to the next item until the last item points to
+a special <code>Nil</code> terminator item.
+In the <code>RowList</code> case, every item practically conveys the key and the value of
+each record member.</p>
+<p>This means that we need to implement a type class that decomposes a record into
+a heterogeneous list of items that then recursively get mapped over our <code>lerp</code>
+function:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">LerpRecord</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">rl ::</span> <span class="dt">RL.RowList</span> <span class="dt">Type</span>)              <span class="co">-- 1.) Class Parameters</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">r ::</span> <span class="dt">Row</span> <span class="dt">Type</span>)                      <span class="co">-- </span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">from ::</span> <span class="dt">Row</span> <span class="dt">Type</span>)                   <span class="co">--</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    (<span class="ot">to ::</span> <span class="dt">Row</span> <span class="dt">Type</span>)                     <span class="co">--</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> rl <span class="ot">-&gt;</span> r from to                      <span class="co">-- 2.) Functional dependency</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  lerpRecordImpl                         <span class="co">-- 3.) Interface </span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="ot">    ::</span> <span class="dt">Number</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Proxy</span> rl</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="ot">-&gt;</span> <span class="dt">Builder</span> { <span class="op">|</span> from } { <span class="op">|</span> to }</span></code></pre></div>
+<p>This looks very complicated, so let’s go through it step by step:
+Beginning with line 3.) we see the signature of the function that we create.
+This function accepts a proxy of a <code>RowList</code> and the two same-typed records that
+we are going to lerp.
+It returns a function that constructs a record with lerped fields and will be
+later consumed by the <a href="https://pursuit.purescript.org/packages/purescript-record/3.0.0/docs/Record.Builder#v:build"><code>build</code></a> function of the <code>purescript-record</code> library.
+We get to the builder pattern after the next code excerpt.</p>
+<p>The first four lines that are commented with 2.) are the type class parameters,
+and thanks to the
+<a href="https://github.com/purescript/documentation/blob/master/language/Types.md#kind-system">kind system</a>
+in PureScript, they are constrained to what we intend this class for.
+The <a href="https://github.com/purescript/documentation/blob/master/language/Type-Classes.md#functional-dependencies">functional dependency</a>
+in 2.) says that all types can be deduced from the
+<code>rl</code> type, so the compiler can catch us filling in the wrong types.</p>
+<p>Using this class, we can now create a function <code>lerpRecord</code> that has the same
+interface as our basic <code>lerp</code> function, but for records:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>lerpRecord</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  ::</span> <span class="kw">forall</span> t r</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>   <span class="op">.</span> <span class="dt">RL.RowToList</span> r t</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=&gt;</span> <span class="dt">LerpRecord</span> t r () r</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=&gt;</span> <span class="dt">Number</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="ot">-&gt;</span> <span class="dt">Record</span> r</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>lerpRecord n a b <span class="ot">=</span> Builder.build builder {}</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">where</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  rowList <span class="ot">=</span> <span class="dt">Proxy</span><span class="ot"> ::</span> _ t</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  builder <span class="ot">=</span> lerpRecordImpl n rowList a b</span></code></pre></div>
+<p>Here we can see that the <code>lerpRecordImpl</code> function makes us a <code>builder</code> function
+from both input records <code>a</code> and <code>b</code>, which we then use to return the lerped
+record to the end user.
+The <code>Proxy</code> constructor helps us putting the type-level information of <code>t</code> into
+the variable <code>rowList</code>, so we can feed it into the function <code>lerpRecordImpl</code>.
+In the <code>LerpRecord t r () r</code> line, we say that we need a builder function that
+gets us from an empty record “<code>()</code>” to the final record type <code>r</code>.
+While <code>lerpRecordImpl</code> could create many other build functions, we select <em>this
+one</em>.</p>
+<p>Now, we can use the type class <code>LerpRecord</code> and the function <code>lerpRecord</code> to
+make all lerpable records an instance of the earlier type class <code>Lerp</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpRecordInstance ::</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  ( <span class="dt">RL.RowToList</span> a t</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">LerpRecord</span> t a () a</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  ) <span class="ot">=&gt;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Lerp</span> (<span class="dt">Record</span> a) <span class="kw">where</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  lerp <span class="ot">=</span> lerpRecord</span></code></pre></div>
+<p>The type constraints are the minimal guidance that the compiler needs to select
+the right type class instance for us when we call <code>lerp</code> on a record.</p>
+<p>We “only” need to implement <code>lerpRecordImpl</code> now.
+The abort case on the end of the <code>RowList</code> is simple:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpRecordNil ::</span> <span class="dt">LerpRecord</span> <span class="dt">RL.Nil</span> trashA () () <span class="kw">where</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  lerpRecordImpl _ _ _ _ <span class="ot">=</span> identity</span></code></pre></div>
+<p>When the recursion is called on the list tail, we return the <code>identity</code>
+function.
+Every build step is meant to transform from a smaller RowList to a bigger one,
+by appending another item.
+The <code>Nil</code> step just does nothing.
+The other recursion steps are performed in one other implementation of the
+<code>lerpRecordImpl</code> function, which is the most complicated but last piece of
+today’s puzzle:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span><span class="ot"> lerpRecordCons ::</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  ( <span class="dt">LerpRecord</span> t r from to'           <span class="co">-- Constraints, 1</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">IsSymbol</span> k                        <span class="co">-- 2</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Row.Cons</span> k a trashA r             <span class="co">-- 3</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Row.Cons</span> k a to' to               <span class="co">-- 4</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Row.Lacks</span> k to'                   <span class="co">-- 5</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  , <span class="dt">Lerp</span> a</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="ot">=&gt;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">LerpRecord</span> (<span class="dt">RL.Cons</span> k a t) r from to <span class="kw">where</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  lerpRecordImpl n _ a b <span class="ot">=</span> current <span class="op">&lt;&lt;&lt;</span> next</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">where</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    current <span class="ot">=</span> Builder.insert key lerpedValue</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    next <span class="ot">=</span> lerpRecordImpl n <span class="fu">tail</span> a b</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    lerpedValue <span class="ot">=</span> lerp n (R.get key a) (R.get key b)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    key  <span class="ot">=</span> <span class="dt">Proxy</span><span class="ot"> ::</span> _ k</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tail</span> <span class="ot">=</span> <span class="dt">Proxy</span><span class="ot"> ::</span> _ t</span></code></pre></div>
+<div class="floating-image-right">
+<figure>
+<img src="../../../../images/recursion-koch-flake.webp" width="300" alt="Recursion is Beautiful" />
+<figcaption aria-hidden="true">Recursion is Beautiful</figcaption>
+</figure>
+</div>
+<p>Whenever <code>lerpRecordImpl</code> is called with some parameters, the compiler
+“searches” for the right implementation.
+The section commented with “Constraints” gives the compiler the following
+constraints when asking “is this the right implementation for this call?”:</p>
+<ol type="1">
+<li>Given parameters match for the next recursion step, where <code>to'</code> is the <code>to</code>
+version of the next deeper recursive call.</li>
+<li>The key element of a <code>RowList</code> item is a “symbol”. The <code>R.get</code> function that
+we use later needs that.</li>
+<li>A <code>Cons</code> part of a <code>RowList</code> can be constructed from our key type <code>k</code>, the
+value type <code>a</code> of one item and the record <code>r</code>.
+<code>trashA</code> means that we don’t care what the tail is, as this constraint
+is only for verifying that our <code>Cons</code> head contains what we need.</li>
+<li>Prepending the key-value pair to the <code>to'</code> type leads to the current <code>to</code>
+type in the builder chain that describes the recursion level we are currently
+looking at.</li>
+<li>The <code>to'</code> type in the builder chain does not contain the key <code>k</code> already.</li>
+<li>The <code>a</code> type in the current <code>Cons</code> head has an instance of type class <code>Lerp</code>.</li>
+</ol>
+<p>The compiler will only select this function if all the constraints match.
+It essentially creates two functions and returns their concatenation:</p>
+<ul>
+<li><code>current</code> is a builder function that inserts the lerped values for the current
+record key at the current recursion level.</li>
+<li><code>next</code> is the function that contains the same concatenation of the next
+recursion level.</li>
+</ul>
+<p>What remains magic is the handling with the <code>Proxy</code> types:
+We need them to get at the key value and the tail of the row list which gets
+shorter with every recursive call.
+The <code>Proxy</code> type constructor accepts type-level information and gives us nice
+variables from that.
+This way we can feed the <code>key</code> variable to the <code>R.get</code> function from the
+<code>RowList</code> library to obtain the current record item for lerping, and use <code>tail</code>
+as a parameter to <code>lerpRecordImpl</code> for the next recursion call.</p>
+<p>The unit test for the final lerp of a nested record structure proves that it
+works:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>it <span class="st">&quot;correctly lerps nested records&quot;</span> <span class="kw">do</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> a <span class="ot">=</span> { a<span class="op">:</span> <span class="fl">0.0</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>          , b<span class="op">:</span> <span class="dv">0</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>          , c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">0.0</span> , e<span class="op">:</span> false }</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>      b <span class="ot">=</span> { a<span class="op">:</span> <span class="fl">10.0</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>          , b<span class="op">:</span> <span class="dv">10</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>          , c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">10.0</span> , e<span class="op">:</span> true }</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>      c <span class="ot">=</span> { a<span class="op">:</span> <span class="fl">7.0</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>          , b<span class="op">:</span> <span class="dv">7</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>          , c<span class="op">:</span> { d<span class="op">:</span> <span class="fl">7.0</span> , e<span class="op">:</span> true }</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  lerp <span class="fl">0.7</span> a b <span class="ot">`shouldEqual`</span> c</span></code></pre></div>
+<h2 id="summary">Summary</h2>
+<p>We ended up with more code than the “manual” record lerp function, but this
+little quest was great for learning how to do it.
+Two type classes later we got a function that works even on nested records.</p>
+<p>Interestingly, such type-level programs look similar in all the languages that
+provide sufficiently mighty type systems, so this is nothing that one learns
+for one language and then never needs again.</p>
+<p>While I was learning how to do this, other PureScript users from the
+<a href="https://purescript.org/chat">PureScript Discord Server</a> pointed me to the
+<a href="https://github.com/natefaubion/purescript-heterogeneous/"><code>purescript-heterogeneous</code></a>
+library:
+This library provides functionality for mapping over heterogeneous lists.
+Essentially, a <code>RowList</code> is a heterogeneous list, so by using this library it
+should be possible to provide the same functionality with less code (by
+transforming a record to a <code>RowList</code>, then use such libraries on that, and
+convert it back to a record).
+But this would be material for another blog article.</p>
+<p>The full working code together with build instructions is on GitHub:
+<a href="https://github.com/tfc/purescript-ziprecord" class="uri">https://github.com/tfc/purescript-ziprecord</a></p></div>
+<div id="disqus_thread"></div>
+<script>var disqus_developer = 1;
+var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2023/01/30/purescript-interpolation-of-records/';
+this.page.identifier = 'nicecpp/2023/01/30/purescript-interpolation-of-records/';};
+(function() {var d = document, s = d.createElement('script');
+s.src = '//nicecpp.disqus.com/embed.js';
+s.setAttribute('data-timestamp', +new Date());
+(d.head || d.body).appendChild(s);})();</script>
+</div>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
+<script>var popup;
+window.addEventListener('load', function(){window.cookieconsent.initialise({//set revokeBtn if you don't want to see a tiny pullup bar overlapping your website
+//if revokeBtn is set, make sure to include a link to cookie settings in your footer
+//you can open your banner again with: popup.open();
+//revokeBtn: "<div class='cc-revoke'></div>",
+type: "opt-in",
+theme: "edgeless",
+content: {header: 'Cookies used on the website!',
+message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
+href: '/datenschutz.html',},
+palette: {popup: {background: "#202020",
+text: "#fff"
+},button: {background: "#268bd2",
+text: "#fff"
+}},
+onInitialise: function(status) {if(status == cookieconsent.status.allow) setCookies();},
+onStatusChange: function(status) {if (this.hasConsented()) setCookies();
+else deleteCookies(this.options.cookie.name)},
+law: { regionalLaw: false, },
+location: true,
+function (p) { popup = p; }});})
+//it is absolutely crucial to define gtag in the global scope
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WZ3FX4G3XS', {'anonymize_ip': true});
+function setCookies() {var s = document.createElement('script');
+s.type = "text/javascript"
+s.async = "true";
+s.src = "https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS";
+var x = document.getElementsByTagName('script')[0];
+x.parentNode.insertBefore(s, x);};
+function deleteCookies(cookieconsent_name) {var keep = [cookieconsent_name, "DYNSRV"];
+document.cookie.split(';').forEach(function(c) {c = c.split('=')[0].trim();
+if (!~keep.indexOf(c))document.cookie = c + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';});};</script>
+</body>
+</head>
+</html>
