@@ -1295,7 +1295,7 @@ code and glued it onto my vacuum bot at home.
 Then, I wrote an OpenCV script that “normalizes” the image in a way that the
 ArUco code gets translated to the middle of the output image:</p>
 <figure>
-<iframe width="1000" height="400" src="https://www.youtube.com/embed/d6SpXS115fg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
+<iframe width="1000" height="400" src="https://www.youtube-nocookie.com/embed/d6SpXS115fg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
 </iframe>
 <figcaption>
 Left side: The original video.
@@ -1310,7 +1310,7 @@ the next demo, which was more relevant for actual screen recording.
 The script turned out to be robust in such extreme examples.
 Our use case would be “boring” in contrast.</p>
 <figure>
-<iframe width="1000" height="280" src="https://www.youtube.com/embed/pCcIABQVBUU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
+<iframe width="1000" height="280" src="https://www.youtube-nocookie.com/embed/pCcIABQVBUU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
 </iframe>
 <figcaption>
 Left side: The original video.
@@ -1364,7 +1364,7 @@ multiple ArUco codes.
 By defining how fast (i.e. how many pixels per frame) the ArUco codes move, we
 were able to determine if and how many frames were dropped during playback.</p>
 <figure>
-<iframe width="1000" height="575" src="https://www.youtube.com/embed/y2YUuynf9AE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
+<iframe width="1000" height="575" src="https://www.youtube-nocookie.com/embed/y2YUuynf9AE" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen>
 </iframe>
 <figcaption>
 The ArUco codes move at a predefined speed.
