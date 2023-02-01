@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
 <link rel="stylesheet" href="../../../../css/hyde.css">
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
 <link rel="shortcut icon" href="../../../../images/favicon.ico">
@@ -20,7 +19,7 @@
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About / CV</a>
 <a class="sidebar-nav-item" href="../../../../impressum.html">Impressum</a>
-<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Data Protection</a>
+<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Cookies</a>
 </nav>
 <p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
 </a>
@@ -202,14 +201,6 @@ The new symbol will then be visible in the binary as <code>onexit123</code>, if 
 <p>The first version is much more elegant, because the code just expresses <em>what</em> needs to happen, and not <em>how</em> the error handling code shall look like.</p>
 <p>I learned about an addition to the C++ standard which enables for such code at <a href="http://cppcon.org">CPPCON</a> in 2015.
 Andrei Alexandrescu presented this extremely useful idea (<a href="https://youtu.be/WjTrfoiB0MQ">This talk is available on Youtube</a>).</p></div>
-<div id="disqus_thread"></div>
-<script>var disqus_developer = 1;
-var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/02/21/on_exit_macro/';
-this.page.identifier = 'nicecpp/2016/02/21/on_exit_macro/';};
-(function() {var d = document, s = d.createElement('script');
-s.src = '//nicecpp.disqus.com/embed.js';
-s.setAttribute('data-timestamp', +new Date());
-(d.head || d.body).appendChild(s);})();</script>
 </div>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
@@ -220,9 +211,11 @@ window.addEventListener('load', function(){window.cookieconsent.initialise({//se
 //revokeBtn: "<div class='cc-revoke'></div>",
 type: "opt-in",
 theme: "edgeless",
-content: {header: 'Cookies used on the website!',
-message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
-href: '/datenschutz.html',},
+content: {message: 'Wir benutzen Cookies, um zu messen, welche Inhalte auf Interesse stoßen. Die Erlaubnis kann jederzeit rückgängig gemacht werden. / We use cookies to measure which content is of interest to you. You can revoke your approval at any time',
+href: '/datenschutz.html',
+allow: 'Cookies erlauben / Allow cookies',
+deny: 'Nur technisch notwendige Cookies / Only technically necessary cookies',
+link: 'Mehr dazu / Learn more',},
 palette: {popup: {background: "#202020",
 text: "#fff"
 },button: {background: "#268bd2",

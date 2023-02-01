@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="../css/poole.css">
 <link rel="stylesheet" href="../css/syntax.css">
 <link rel="stylesheet" href="../css/hyde.css">
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../images/apple-touch-icon-144-precomposed.png">
 <link rel="shortcut icon" href="../images/favicon.ico">
@@ -20,7 +19,7 @@
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../">Home</a>
 <a class="sidebar-nav-item" href="../about.html">About / CV</a>
 <a class="sidebar-nav-item" href="../impressum.html">Impressum</a>
-<a class="sidebar-nav-item" href="../datenschutz.html">Datenschutz / Data Protection</a>
+<a class="sidebar-nav-item" href="../datenschutz.html">Datenschutz / Cookies</a>
 </nav>
 <p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
 </a>
@@ -650,9 +649,11 @@ window.addEventListener('load', function(){window.cookieconsent.initialise({//se
 //revokeBtn: "<div class='cc-revoke'></div>",
 type: "opt-in",
 theme: "edgeless",
-content: {header: 'Cookies used on the website!',
-message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
-href: '/datenschutz.html',},
+content: {message: 'Wir benutzen Cookies, um zu messen, welche Inhalte auf Interesse stoßen. Die Erlaubnis kann jederzeit rückgängig gemacht werden. / We use cookies to measure which content is of interest to you. You can revoke your approval at any time',
+href: '/datenschutz.html',
+allow: 'Cookies erlauben / Allow cookies',
+deny: 'Nur technisch notwendige Cookies / Only technically necessary cookies',
+link: 'Mehr dazu / Learn more',},
 palette: {popup: {background: "#202020",
 text: "#fff"
 },button: {background: "#268bd2",

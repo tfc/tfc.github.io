@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
 <link rel="stylesheet" href="../../../../css/hyde.css">
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
 <link rel="shortcut icon" href="../../../../images/favicon.ico">
@@ -20,7 +19,7 @@
 <nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
 <a class="sidebar-nav-item" href="../../../../about.html">About / CV</a>
 <a class="sidebar-nav-item" href="../../../../impressum.html">Impressum</a>
-<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Data Protection</a>
+<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Cookies</a>
 </nav>
 <p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
 </a>
@@ -141,14 +140,6 @@ The comparison will then evaluate to <code>true</code>, and then <code>is_derefe
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">static_assert</span><span class="op">(</span>is_dereferenceable<span class="op">&lt;</span><span class="dt">int</span><span class="op">*&gt;::</span>value <span class="op">==</span> <span class="kw">true</span><span class="op">,</span>  <span class="st">&quot;&quot;</span><span class="op">);</span></span></code></pre></div>
 <p>That was (just as the simpler SFINAE type trait before) an awfully awkward way to answer the fundamential question “Is T dereferenceable?”, but it is perfectly simple to use in the end.</p>
 <p>Combined with the <code>enable_if</code> type trait for example (which i will explain in another blog post), this can be used to show/hide functions for specific types, based on their characteristics.</p></div>
-<div id="disqus_thread"></div>
-<script>var disqus_developer = 1;
-var disqus_config = function () {this.page.url = 'https://blog.galowicz.de/2016/02/19/how_do_sfinae_traits_work/';
-this.page.identifier = 'nicecpp/2016/02/19/how_do_sfinae_traits_work/';};
-(function() {var d = document, s = d.createElement('script');
-s.src = '//nicecpp.disqus.com/embed.js';
-s.setAttribute('data-timestamp', +new Date());
-(d.head || d.body).appendChild(s);})();</script>
 </div>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
@@ -159,9 +150,11 @@ window.addEventListener('load', function(){window.cookieconsent.initialise({//se
 //revokeBtn: "<div class='cc-revoke'></div>",
 type: "opt-in",
 theme: "edgeless",
-content: {header: 'Cookies used on the website!',
-message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
-href: '/datenschutz.html',},
+content: {message: 'Wir benutzen Cookies, um zu messen, welche Inhalte auf Interesse stoßen. Die Erlaubnis kann jederzeit rückgängig gemacht werden. / We use cookies to measure which content is of interest to you. You can revoke your approval at any time',
+href: '/datenschutz.html',
+allow: 'Cookies erlauben / Allow cookies',
+deny: 'Nur technisch notwendige Cookies / Only technically necessary cookies',
+link: 'Mehr dazu / Learn more',},
 palette: {popup: {background: "#202020",
 text: "#fff"
 },button: {background: "#268bd2",
