@@ -4,13 +4,6 @@ title: Impressum
 
 <!-- cSpell:disable -->
 
-Das Impressum ist auch gültig für Angebote auf:
-[Twitter](https://twitter.com/jgalowicz),
-[Mastodon](https://functional.cafe/@jgalowicz),
-[GitHub](https://github.com/tfc),
-[LinkedIn](https://www.linkedin.com/in/jgalowicz/),
-[Xing](https://www.xing.com/profile/Jacek_Galowicz/cv),
-
 ## ANGABEN GEMÄSS § 5 Telemediengesetz (TMG)
 
 | Jacek Galowicz
@@ -86,3 +79,12 @@ Sollten Sie trotzdem auf eine Urheberrechtsverletzung aufmerksam werden, bitten
 wir um einen entsprechenden Hinweis. 
 Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Inhalte umgehend 
 entfernen.
+
+### Hinweise zum Impressum
+
+Das Impressum ist auch gültig für meine Angebote auf:
+[Twitter](https://twitter.com/jgalowicz),
+[Mastodon](https://functional.cafe/@jgalowicz),
+[GitHub](https://github.com/tfc),
+[LinkedIn](https://www.linkedin.com/in/jgalowicz/),
+[Xing](https://www.xing.com/profile/Jacek_Galowicz/cv),
