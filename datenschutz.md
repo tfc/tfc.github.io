@@ -370,6 +370,26 @@ Weitere Informationen zum Datenschutz bei YouTube finden Sie in der
 Datenschutzerklärung des Anbieters unter: 
 <https://www.google.de/intl/de/policies/privacy/>
 
+### Terminvereinbarung mit Calendly
+
+Wir bieten Buttons zur unkomplizierten Terminvereinbarung ein.
+Wird auf diese geklickt, so werden sie auf die externe Webseite des Tools
+Calendly weitergeleitet.
+Die Nutzung von calendly erfolgt zur Verbesserung unserer Dienstleistung für 
+bestehende und neue Kunden. 
+Dies stellt ein berechtigtes Interesse im Sinne von Art. 6 Abs. 1 lit. f DSGVO 
+dar.
+
+Beim Vereinbaren von Terminen erhebt Calendly persönliche Daten wie Name, 
+E-Mail-Adresse und Telefonnummer, sowie das Datum und optional eine Beschreibung 
+Ihres Anliegens.
+Durch die externe Einbindung dieses Dienstes werden diese Daten nicht durch den
+Besuch unserer Internetseite gespeichert oder abgefragt.
+Dies geschieht nur, wenn Sie auf die entsprechenden Buttons klicken.
+
+Die Datenschutzerklärung von calendly finden Sie unter:
+<https://calendly.com/pages/privacy>
+
 ## Cookie-Richtlinie
 
 Als „Cookies“ werden kleine Dateien bezeichnet, die auf Rechnern der Nutzer 
