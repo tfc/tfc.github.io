@@ -133,11 +133,6 @@ Die im Rahmen von Google Analytics von Ihrem Browser übermittelte IP-Adresse wi
 
 Alternativ zum Browser-Add-On oder innerhalb von Browsern auf mobilen Geräten, klicken Sie bitte diesen Link, um die Erfassung durch Google Analytics innerhalb dieser Website zukünftig zu verhindern. Dabei wird ein Opt-Out-Cookie auf Ihrem Gerät abgelegt. Löschen Sie Ihre Cookies, müssen Sie diesen Link erneut klicken.
 
-### DISQUS-Kommentarfunktion
-
-Wir nutzen zudem das DISQUS-Kommentarsystem, das von der Firma DISQUS, Inc., 301 Howard St, Floor 3 San Francisco, California- 94105, USA, bereitgestellt wird. Die Datenschutzinformationen von DISQUS finden Sie unter [http://help.disqus.com/customer/portal/articles/466259-privacy-policy](http://help.disqus.com/customer/portal/articles/466259-privacy-policy).
-DISQUS erlaubt die Anmeldung entweder über ein eigenes DISQUS-Nutzer-Konto (“Account”) oder über bestehende Nutzer-Konten bei Facebook, Twitter und Google Plus. Sofern Sie sich mit Ihren Accounts der Social-Media-Angebote (siehe Informationen oben) bei der DISQUS-Funktion auf unseren Webseiten anmelden, werden auch diese Diensteanbieter Informationen zu Ihrer Nutzung der DISQUS-Funktionen erheben und verarbeiten. Bitte nehmen Sie dazu die Datenschutzinformationen der jeweiligen Anbieter (siehe oben) zur Kenntnis. Auch das Kommentieren als Gast ist möglich, allerdings stehen dann einige Funktionen nicht zur Verfügung.
-
 ### Einbindung von Diensten und Inhalten Dritter
 
 Wir setzen innerhalb unseres Onlineangebotes auf Grundlage unserer berechtigten Interessen (d.h. Interesse an der Analyse, Optimierung und wirtschaftlichem Betrieb unseres Onlineangebotes im Sinne des Art. 6 Abs. 1 lit. f. DSGVO) Inhalts- oder Serviceangebote von Drittanbietern ein, um deren Inhalte und Services, wie z.B. Videos oder Schriftarten einzubinden (nachfolgend einheitlich bezeichnet als “Inhalte”).
