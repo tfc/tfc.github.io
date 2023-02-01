@@ -87,4 +87,4 @@ Das Impressum ist auch gültig für meine Angebote auf:
 [Mastodon](https://functional.cafe/@jgalowicz),
 [GitHub](https://github.com/tfc),
 [LinkedIn](https://www.linkedin.com/in/jgalowicz/),
-[Xing](https://www.xing.com/profile/Jacek_Galowicz/cv),
+[Xing](https://www.xing.com/profile/Jacek_Galowicz/cv)

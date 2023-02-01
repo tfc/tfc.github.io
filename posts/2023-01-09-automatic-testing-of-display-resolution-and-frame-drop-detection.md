@@ -268,7 +268,7 @@ ArUco code gets translated to the middle of the output image:
   <iframe
     width="1000"
     height="400"
-    src="https://www.youtube.com/embed/d6SpXS115fg"
+    src="https://www.youtube-nocookie.com/embed/d6SpXS115fg"
     frameborder="0"
     allow="autoplay; encrypted-media"
     allowfullscreen
@@ -292,7 +292,7 @@ Our use case would be "boring" in contrast.
   <iframe
     width="1000"
     height="280"
-    src="https://www.youtube.com/embed/pCcIABQVBUU"
+    src="https://www.youtube-nocookie.com/embed/pCcIABQVBUU"
     frameborder="0"
     allow="autoplay; encrypted-media"
     allowfullscreen
@@ -358,7 +358,7 @@ were able to determine if and how many frames were dropped during playback.
   <iframe
     width="1000"
     height="575"
-    src="https://www.youtube.com/embed/y2YUuynf9AE"
+    src="https://www.youtube-nocookie.com/embed/y2YUuynf9AE"
     frameborder="0"
     allow="autoplay; encrypted-media"
     allowfullscreen
