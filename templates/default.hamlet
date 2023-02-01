@@ -56,9 +56,11 @@
          type: "opt-in",
          theme: "edgeless",
          content: {
-           header: 'Cookies used on the website!',
-           message: 'We use cookies and Google Analytics to make this website as interesting as possible for you. (You can revoke your approval at any time)',
+           message: 'Wir benutzen Cookies, um zu messen, welche Inhalte auf Interesse stoßen. Die Erlaubnis kann jederzeit rückgängig gemacht werden. / We use cookies to measure which content is of interest to you. You can revoke your approval at any time',
            href: '/datenschutz.html',
+           allow: 'Cookies erlauben / Allow cookies',
+           deny: 'Nur technisch notwendige Cookies / Only technically necessary cookies',
+           link: 'Mehr dazu / Learn more',
          },
          palette: {
              popup: {
