@@ -485,16 +485,10 @@ figure > figcaption {
 }
 
 .about-logos > p > img {
-  height: 100px;
+  height: 80px;
   margin: auto;
   padding: 10px;
   border-radius: 0;
-}
-
-@media (min-width: 1600px) {
-  .about-logos > p > img {
-    height: 150px;
-  }
 }
 
 .big-button {
