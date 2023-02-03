@@ -6,12 +6,17 @@ import           Data.List                      ( intersperse )
 import           Data.Monoid                    ( (<>) )
 import           Hakyll
 import           Hakyll.Web.Hamlet
+import           Hakyll.Web.Pandoc              ( defaultHakyllReaderOptions
+                                                , defaultHakyllWriterOptions
+                                                , pandocCompilerWith
+                                                )
 import           Text.Blaze.Html                ( (!)
                                                 , toHtml
                                                 , toValue
                                                 )
 import qualified Text.Blaze.Html5              as H
 import qualified Text.Blaze.Html5.Attributes   as A
+import qualified Text.Pandoc.Options           as PO
 
 main :: IO ()
 main = hakyll $ do
@@ -67,7 +72,9 @@ main = hakyll $ do
   match "posts/*" $ do
     route postRoute
     compile
-      $   pandocCompiler
+      $   pandocCompilerWith
+            defaultHakyllReaderOptions
+            defaultHakyllWriterOptions { PO.writerHTMLMathMethod = PO.MathJax "" }
       >>= saveSnapshot "post_content"
       >>= loadAndApplyTemplate "templates/post.hamlet"    (postCtx tags)
       >>= loadAndApplyTemplate "templates/default.hamlet" (postCtx tags)

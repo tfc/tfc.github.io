@@ -18,6 +18,7 @@ executable blog-generator
     , containers
     , hakyll
     , hakyll-shakespeare
+    , pandoc
     , shakespeare
     , text
 
