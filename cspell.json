@@ -28,6 +28,7 @@
       "nixpkgs",
       "pprintpp",
       "reimplementation",
+      "RWTH",
       "toolchain",
       "toolchains"
     ],
