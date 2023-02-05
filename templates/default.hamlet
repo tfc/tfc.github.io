@@ -62,7 +62,7 @@
           <a rel="me" href="https://functional.cafe/@jgalowicz">
             <i class="fa-brands fa-mastodon">
 
-    <div class="px-10 pt-24 pb-24 md:mr-64 lg:mr-80 2xl:pl-40 3xl:px-0 3xl:mx-auto 3xl:max-w-6xl">
+    <div class="px-10 pt-10 lg:pt-24 pb-24 md:mr-64 lg:mr-80 2xl:pl-40 3xl:px-0 3xl:mx-auto 3xl:max-w-6xl">
       \$body$
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script>

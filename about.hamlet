@@ -1,3 +1,158 @@
 <h1 class="mb-8 text-6xl font-extrabold">About Jacek Galowicz
 
-<p>lel
+<div class="flex flex-col gap-8">
+
+  <div class="flex flex-col lg:flex-row items-stretch place-items-center gap-5">
+    <img class="object-contain shadow-lg rounded m-auto" src="/images/about/jacek-galowicz-mini-portrait.jpg">
+    <article class="prose prose-xl">
+      I am a freelancer with professional interests in <b>software development</b>,
+      <b>software architecture</b>, <b>interface design</b>, and <b>continuous
+      integration & deployment</b> (CI/CD, DevOps).
+      Over the years I got into bigger and bigger <b>production projects</b> and
+      developed a lot of competence in how projects should be structurally built,
+      integrated, and tested to enable and maximize the developer's ownership of
+      the <b>overall quality</b> of the resulting product.
+
+
+  <h2 class="text-4xl font-bold text-center">Teaching & Publications
+
+  <div class="flex flex-col-reverse lg:flex-row items-stretch gap-5">
+    <div class="">
+      <article class="prose prose-xl">
+        <p>
+          I give talks and trainings on the topics of C++, <a href="https://nixos.org">Nix & NixOS</a>, Software Architecture, Build Systems, Automation of Builds, Integration, Tests, and Deployment of Software.
+        <p>
+          Every winter semester, I hold the <a href="https://www.fh-muenster.de/eti/studierende/module/qualitaetssichernde-software-entwicklungsprozesse.php">university lecture on software quality</a> for Master students in Computer Science and Electrical Engineering at the <a href="https://www.fh-muenster.de">FH Münster</a>.
+        <p>
+          Author of the Book <a href="https://amzn.to/3Wyqjyb">C++17 STL Cookbook</a>
+          and the editor of the Book <a href="https://www.cppindetail.com">C++17 in Detail</a>.
+        <p>
+          Co-Author of the scientific paper <a href="https://link.springer.com/chapter/10.1007/978-3-319-48989-6_5">Combining Mechanized Proofs and Model-Based Testing in the Formal Analysis of a Hypervisor</a>, FM 2016: Formal Methods and <a href="https://hal.archives-ouvertes.fr/file/index/docid/719037/filename/MARC6_Efficient-Implementation-of-the-bare-metal-hypervisor-MetalSVM-for-the-SCC.pdf">Efficient Implementation of the bare-metal Hypervisor MetalSVM for the SCC</a>), 6th Many-core
+          Applications Research Community (MARC) Symposium.
+        <p>
+          Author/Co-Author of Cyberus Technology Blog posts about Intel CPU vulnerabilities: <a href="https://cyberus-technology.de/posts/2018-01-03-meltdown.html">Meltdown</a>, <a href="https://cyberus-technology.de/posts/2018-05-22-intel-store-load-spectre-vulnerability.html">Spectre V4</a>, <a href="https://cyberus-technology.de/posts/2018-06-06-intel-lazyfp-vulnerability.html">Intel LazyFP Vulnerability</a>, <a href="https://cyberus-technology.de/posts/2018-08-14-l1-terminal-fault.html">L1
+          Terminal Fault Vulnerability</a>, <a href="https://cyberus-technology.de/posts/2019-05-14-zombieload.html">Zombieload</a>, <a href="https://cyberus-technology.de/posts/2019-11-12-taa.html">TSX Asynchronous Abort</a>.
+    <div class="grow flex flex-row lg:flex-col justify-evenly place-items-center">
+      <img class="w-32 rounded shadow-lg" src="/images/cpp17_stl_cookbook_cover.png">
+      <img class="w-32 rounded shadow-lg" src="/images/about/cpp17-in-detail.png">
+      <img class="w-32 alt="FH Münster Logo" src="/images/about/fh-muenster.svg" />
+
+
+  <h2 class="text-4xl font-bold text-center">Software Development & Architecture
+
+  <div class="flex flex-col lg:flex-row">
+    <div class="grow flex flex-row justify-evenly place-items-center gap-4 lg:grid lg:grid-cols-2">
+      <img class="object-contain w-14 lg:w-20" alt="Nix(OS) Logo" src="/images/about/nixos.svg" />
+      <img class="object-contain w-14 lg:w-20" alt="C++ Logo" src="/images/about/cpp.svg" />
+      <img class="object-contain w-14 lg:w-20" alt="Haskell Logo" src="/images/about/haskell.svg" />
+      <img class="object-contain w-14 lg:w-20" alt="Qt Framework Logo" src="/images/about/qt.svg" />
+      <img class="object-contain w-14 lg:w-20" alt="Purescript Logo" src="/images/about/purescript.svg" />
+      <img class="object-contain w-14 lg:w-20" alt="Python Logo" src="/images/about/python.svg" />
+      <img class="object-contain w-14 lg:w-20" alt="React.js Logo" src="/images/about/react.svg" />
+      <img class="object-contain w-14 lg:w-20" alt="postgreSQL Logo" src="/images/about/postgresql.svg" />
+    <div class="p-4 lg:px-8">
+      <article class="prose prose-xl">
+        <p>
+          Most of my experience concentrates on embedded (x86-64 and ARM) and
+          backend development on Linux operating systems with C++ and Haskell.
+          I use the strong type systems of languages to define error states out of
+          existence as much as possible.
+        <p>
+          In frontend development, I have most experience with the
+          <a href="https://www.qt.io/product/framework">Qt Framework</a> on Linux
+          and Windows, embedded and non-embedded systems.
+          I have also built rich, complex web- and desktop applications against
+          REST APIs with <a href="https://www.electronjs.org/">Electron.js</a> and
+          <a href="https://reactjs.org/">React</a>, typically implemented with the
+          type safety of <a href="https://www.purescript.org/">Purescript</a>.
+        <p>
+          I am the maintainer of the <a href="https://www.python.org">Python</a>
+          <a href="https://nixos.org/">NixOS Integration Test Driver</a> portion
+          of the <a href="https://github.com/nixos/nixpkgs">nixos/nixpkgs Project
+          on GitHub</a>
+
+
+  <h2 class="text-4xl font-bold text-center">Work Background
+
+  <div class="flex flex-col gap-12">
+    <div class="flex flex-col-reverse xl:flex-row gap-5 justify-evenly">
+      <article class="prose m-auto xl:m-0">
+        <h3>Since 2018: Visiting Lecturer, FH Münster
+        <p>
+          I hold the lecture “Quality-Assuring Software Engineering Methods“ for master
+          students every winter semester, which is about unit & integration testing,
+          spec-driven testing, fuzzing, reproducibility, development processes in teams,
+          bad established practices in the industry, etc.
+      <div class="flex-none m-auto basis-1/4">
+        <img class="object-contain h-32 m-auto" src="/images/about/fh-muenster.svg">
+
+
+    <div class="flex flex-col-reverse xl:flex-row gap-5 justify-evenly">
+      <article class="prose m-auto xl:m-0">
+        <h3>Since 2017: Co-Founder, Cyberus Technology GmbH
+        <ul>
+          <li>Automation/Integration of software modules into system images (C++, CMake, Meson, Gitlab, Docker, Nix)
+          <li>Design of Hardware-In-the-Loop (HIL) test infrastructure that enabled high-throughput and regression-free SW development processes of our hypervisor team (Haskell, Python, REST Interfaces, NixOS, Raspberry Pi, USB OTG)
+          <li>Implementation of low-level libraries for embedded systems (C++, Template Metaprogramming)
+      <div class="flex-none m-auto basis-1/4">
+        <img class="object-contain h-32 m-auto" src="/images/about/cyberus-technology.svg">
+
+
+    <div class="flex flex-col-reverse xl:flex-row gap-5 justify-evenly">
+      <article class="prose m-auto xl:m-0">
+        <h3>2014 - 2016: Sr. Software Engineer, FireEye, Inc.
+        <ul>
+          <li>Design, implementation, and test of components of a secure, microkernel based virtualization platform. (C++14, C, Assembler, ACPI, Microkernel OSes, Intel VT, PCI, Interrupt Routing, Suspend & Resume, C++ Template Metaprogramming, STL, Qt)
+          <li>Design and implementation of automated hardware test infrastructure.
+      <div class="flex-none m-auto basis-1/4">
+        <img class="object-contain h-32 m-auto" src="/images/about/fireeye.svg">
+
+
+    <div class="flex flex-col-reverse xl:flex-row gap-5 justify-evenly">
+      <article class="prose m-auto xl:m-0">
+        <h3>2012 - 2013: Student Intern/Master Thesis Worker, Intel Corporation
+        <ul>
+          <li>Implementing a live migration feature for a virtual machine monitor based on an innovative microkernel operating system. (<a href="https://hypervisor.org">NOVA Microhypervisor</a>, Microkernel Operating Systems, lwIP TCP/IP Stack, Intel VT-Extensions, Live Migration)
+          <li>Extension of the live migration feature for the master thesis (ACPI, PCI hot plugging, preserving TCP connections over migrations, Network trunking)
+      <div class="flex-none m-auto basis-1/4">
+        <img class="object-contain h-32 m-auto" src="/images/about/intel.svg">
+
+    <div class="flex flex-col-reverse xl:flex-row gap-5 justify-evenly">
+      <article class="prose m-auto xl:m-0">
+        <h3>2009 - 2012: Student Assistant, RWTH Aachen University
+        <ul>
+          <li>Low-Level Kernel programming (Kernel Functionality, Hypervisor, Documentation)
+          <li>Development of Benchmarks and GUI-frontends (C/C++, OpenMP, MPI, Qt)
+          <li>Giving tutorials in Basics of Computer Science 1 and 4 (C, General Algorithms and Data Structures, x86 Assembly, Virtual Memory, Processes/Threads, Shared Memory, Synchronization, etc.)
+          <li>Supervising lab courses (C++, Object Oriented Programming)
+      <div class="flex-none m-auto basis-1/4">
+        <img class="object-contain h-32 m-auto" src="/images/about/rwth-aachen.svg">
+
+
+    <div class="flex flex-col-reverse xl:flex-row gap-5 justify-evenly">
+      <article class="prose m-auto xl:m-0">
+        <h3>2004 - 2009: Freelancer at Academy GmbH & Co. KG
+        <p>
+          Framework design for web based medical decision support systems, GUI
+          frontends (Qt, JavaScript), Applications for handhelds (Visual Basic)
+      <div class="flex-none m-auto basis-1/4">
+        <img class="object-contain h-32 m-auto" src="/images/about/academy.png">
+
+  <h2 class="text-4xl font-bold text-center">Education
+
+  <div class="flex flex-col gap-12">
+    <div class="flex flex-col-reverse xl:flex-row gap-5 justify-evenly">
+      <article class="prose m-auto xl:m-0">
+        <h3>2008 - 2013: B.Sc. & M.Sc. Electrical Engineering, RWTH Aachen University
+        <ul>
+          <li>
+            Master thesis:
+            <i>Live Migration of Virtual Machines between Heterogeneous Host Systems</i>
+            (<a href="/images/about/master_thesis.pdf">PDF</a>)
+          <li>
+            Bachelor thesis:
+            <i>Design and Implementation of a Virtualization Layer for the Operating System Kernel "MetalSVM"</i>
+            (<a href="/images/about/bachelor_thesis.pdf">PDF</a>)
+      <div class="flex-none m-auto basis-1/4">
+        <img class="object-contain h-32 m-auto" src="/images/about/rwth-aachen.svg">
+
