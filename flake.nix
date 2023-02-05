@@ -10,15 +10,14 @@
   outputs =
     { self
     , flake-parts
-    , nixpkgs
     , pre-commit-hooks
+    , ...
     }:
     flake-parts.lib.mkFlake { inherit self; } {
       systems = [ "x86_64-linux" ];
 
-      perSystem = { config, system, ... }:
+      perSystem = { config, pkgs, system, ... }:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
           haskellSrc = pkgs.lib.sourceByRegex ./. [
             "^LICENSE$"
             "^Setup.hs$"
@@ -32,18 +31,42 @@
             "^css.*"
             "^images.*"
             "^posts.*"
+            "^src.*" # must include haskell src for tailwindcli
+            "^tailwind.*"
             "^templates.*"
+            "^.*\.hamlet"
             "^.*\.md"
           ];
+
+          tailwindcss =
+            let
+              twBall = builtins.fetchurl {
+                url = "https://github.com/tailwindlabs/tailwindcss/releases/download/v3.2.4/tailwindcss-linux-x64";
+                sha256 = "15hj95qdx7z3gdmhb3826h98296rk18j2yi0y0w55l8brdbyflnd";
+              };
+            in
+            pkgs.runCommand "tailwindcss" { } ''
+              mkdir -p $out/bin/
+              cp ${twBall} $out/bin/tailwindcss
+              chmod 755 $out/bin/tailwindcss
+            '';
 
           release = pkgs.stdenv.mkDerivation {
             name = "blog.galowicz.de-content";
             src = blogSrc;
-            buildInputs = [ blog-generator ];
+            nativeBuildInputs = [
+              blog-generator
+              tailwindcss
+            ];
             LANG = "en_US.UTF-8";
             LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
             buildPhase = ''
               blog-generator clean
+
+              patchShebangs tailwind.sh
+              ./tailwind.sh
+              ls -lsa
+
               blog-generator build
             '';
             installPhase = ''
@@ -66,6 +89,8 @@
               hlint
               nixpkgs-fmt
               nodePackages.markdownlint-cli
+              tailwindcss
+              nodejs # only needed for updating tailwind
             ];
 
             # `hoogle server --local`

@@ -3,32 +3,9 @@
   <head>
     <link href="http://gmpg.org/xfn/11" rel="profile">
     <link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog"/>
-    <link rel="stylesheet" href="/css/syntax.css">
-    <link rel="stylesheet" href="/css/extra.css">
+    <link rel="stylesheet" href="/css/style.css">
     <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script>
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/images/apple-touch-icon-144-precomposed.png">
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            screens: {
-              '3xl': '1800px',
-            },
-            backgroundImage: {
-              'darkpaper': "linear-gradient(to right bottom, rgba(0, 32, 66, 0.5), rgba(0, 22, 44, 0.9)), url('/images/roughpaper.svg')"
-            },
-            typography: {
-              DEFAULT: {
-                css: {
-                  'blockquote p:first-of-type::before': { content: '' },
-                  'blockquote p:last-of-type::after': { content: '' }
-                },
-              },
-            },
-          }
-        }
-      }
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
