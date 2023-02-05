@@ -41,7 +41,7 @@ M_N B &= \begin{cases}
          \end{cases} \\
 M_N D &= \begin{cases}
          D'  & \text{if }N < 1 \\ 
-         D   & \text{if } N = 1 \\
+         D   & \text{if } N = 1 \qquad \\
          D'' & \text{if }N > 1
          \end{cases}
 \end{align}
@@ -97,7 +97,7 @@ M X &= X_\lambda
 $$
 
 Libraries for Linear Algebra (e.g.
-[`numpy`](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html),
+[numpy](https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html),
 [MATLAB](https://www.mathworks.com/help/symbolic/linsolve.html),
 and [GNU Octave](https://octave.sourceforge.io/octave/function/linsolve.html))
 have functions for solving linear systems of equations.
