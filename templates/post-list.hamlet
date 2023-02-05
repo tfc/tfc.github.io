@@ -1,43 +1,38 @@
 \$if(tagcloud)$
-<div .tagcloud>
+<div class="pb-10 text-xl">
   Tags: $tagcloud$
 
-<hr />
 \$endif$
 
-<div .posts>
+<div class="">
   \$for(posts)$
-    <div>
-      <h2>
+    <div class="py-8 text-lg flex flex-col gap-4">
+      <h2 class="font-bold text-3xl text-sky-600">
         <a href="$url$">$title$
-      <span .post-tags>
+      <span class="text-xl">
         \$if(date)$
-        <strong>
-          <small>
-            \$date$,
+        \$date$,
         \$endif$
         \$if(tags)$
-        <strong>
-          <small>
-            Tags: $tags$
+        Tags: $tags$
         \$endif$
       \$teaser$
-      <p>
-        <a .btn .btn-sm .btn-primary href="$url$" role="button">
+      <p class="text-xl text-sky-600 text-bold">
+        <a href="$url$">
           <i .fa-solid .fa-circle-arrow-right>
-          Read more 
+          Read more
     \$sep$
-    <hr>
+    <hr class="w-80 h-1 mx-auto my-4 bg-gray-100 border-0 rounded md:my-5 dark:bg-gray-100">
   \$endfor$
 
-<div .pagination>
+<div class="w-full mt-8 border border-gray-100 rounded flex flex-row text-2xl text-extrabold text-center">
   \$if(previousPageNum)$
-    <a .pagination-item .newer href="$previousPageUrl$">Newer
+    <a class="basis-1/2 p-6 hover:bg-gray-300 text-sky-600" href="$previousPageUrl$">Newer
   \$else$
-    <span .pagination-item .newer>Newer
+    <span class="basis-1/2 p-6 text-gray-300">Newer
   \$endif$
   \$if(nextPageNum)$
-    <a .pagination-item .older href="$nextPageUrl$">Older
+    <a class="basis-1/2 p-6 hover:bg-gray-300 text-sky-600" href="$nextPageUrl$">Older
   \$else$
-    <span .pagination-item .older>Older
+    <span class="basis-1/2 p-6 text-gray-300">Older
   \$endif$

@@ -3,11 +3,24 @@
   <head>
     <link href="http://gmpg.org/xfn/11" rel="profile">
     <link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog"/>
-    <link rel="stylesheet" href="/css/poole.css">
     <link rel="stylesheet" href="/css/syntax.css">
-    <link rel="stylesheet" href="/css/hyde.css">
+    <link rel="stylesheet" href="/css/extra.css">
     <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script>
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/images/apple-touch-icon-144-precomposed.png">
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            screens: {
+              '3xl': '1800px',
+            },
+            backgroundImage: {
+             'hero-pattern': "linear-gradient(to right bottom, rgba(0, 32, 66, 0.5), rgba(0, 22, 44, 0.9)), url('/images/roughpaper.svg')",
+            },
+          }
+        }
+      }
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
@@ -18,19 +31,18 @@
     <title>
       Jacek's Blog &middot; $title$
 
-  <body class="layout-reverse">
-    <div class="sidebar">
-      <div class="container sidebar-sticky">
-        <div class="sidebar-about">
-          <h1>
-            <a href="/">Jacek's Blog
-          <p class="lead">Software Engineering Consultant
-        <nav class="sidebar-nav">
-          <a class="sidebar-nav-item active" href="/">Home
-          <a class="sidebar-nav-item" href="/about.html">About / CV
-          <a class="sidebar-nav-item" href="/impressum.html">Impressum
-          <a class="sidebar-nav-item" href="/datenschutz.html">Datenschutz / Cookies
-        <p>
+  <body class="">
+    <div class="">
+      <div class="flex flex-col gap-4 md:gap-8 text-center text-xl justify-end p-5 bg-hero-pattern text-white md:fixed md:right-0 md:top-0 md:bottom-0 md:w-64 lg:w-80 md:text-left">
+        <a href="/">
+          <h1 class="text-4xl font-black">Jacek's Blog
+        <p class="text-2xl font-bold">Software Engineering Consultant
+        <div class="flex flex-col gap-2">
+          <a class="" href="/">Home
+          <a class="" href="/about.html">About / CV
+          <a class="" href="/impressum.html">Impressum
+          <a class="" href="/datenschutz.html">Datenschutz / Cookies
+        <p class="text-3xl">
           <a href="https://linkedin.com/in/jgalowicz">
             <i class="fa-brands fa-linkedin">
           <a href="https://www.xing.com/profile/Jacek_Galowicz">
@@ -42,8 +54,7 @@
           <a rel="me" href="https://functional.cafe/@jgalowicz">
             <i class="fa-brands fa-mastodon">
 
-    <div class="content container">
-      <h1>$title$
+    <div class="px-10 pt-24 pb-24 md:mr-64 lg:mr-80 2xl:pl-40 3xl:px-0 3xl:mx-auto 3xl:max-w-6xl">
       \$body$
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script>
@@ -51,10 +62,6 @@
       var popup;
       window.addEventListener('load', function(){
         window.cookieconsent.initialise({
-         //set revokeBtn if you don't want to see a tiny pullup bar overlapping your website
-         //if revokeBtn is set, make sure to include a link to cookie settings in your footer
-         //you can open your banner again with: popup.open();
-         //revokeBtn: "<div class='cc-revoke'></div>",
          type: "opt-in",
          theme: "edgeless",
          content: {

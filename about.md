@@ -26,18 +26,18 @@ integrated, and tested to enable and maximize the developer's ownership of the
 
 ---
 
-<div class="about-logos">
-  <img alt="Nix(OS) Logo" src="/images/about/nixos.svg" />
-  <img alt="C++ Logo" src="/images/about/cpp.svg" />
-  <img alt="Haskell Logo" src="/images/about/haskell.svg" />
-  <img alt="Purescript Logo" src="/images/about/purescript.svg" />
-  <img alt="Python Logo" src="/images/about/python.svg" />
-  <img alt="React.js Logo" src="/images/about/react.svg" />
-  <img alt="postgreSQL Logo" src="/images/about/postgresql.svg" />
-  <img alt="Qt Framework Logo" src="/images/about/qt.svg" />
-  <img alt="FH Münster Logo" src="/images/about/fh-muenster.svg" />
-  <img alt="C++17 STL Cookbook" src="/images/cpp17_stl_cookbook_cover.png" />
-  <img alt="C++17 STL Cookbook" src="/images/about/cpp17-in-detail.png" />
+<div class="grid grid-cols-4">
+<img class="w-20" alt="Nix(OS) Logo" src="/images/about/nixos.svg" />
+<img class="w-20" alt="C++ Logo" src="/images/about/cpp.svg" />
+<img class="w-20" alt="Haskell Logo" src="/images/about/haskell.svg" />
+<img class="w-20" alt="Purescript Logo" src="/images/about/purescript.svg" />
+<img class="w-20" alt="Python Logo" src="/images/about/python.svg" />
+<img class="w-20" alt="React.js Logo" src="/images/about/react.svg" />
+<img class="w-20" alt="postgreSQL Logo" src="/images/about/postgresql.svg" />
+<img class="w-20" alt="Qt Framework Logo" src="/images/about/qt.svg" />
+<img class="w-20" alt="FH Münster Logo" src="/images/about/fh-muenster.svg" />
+<img class="w-20" alt="C++17 STL Cookbook" src="/images/cpp17_stl_cookbook_cover.png" />
+<img class="w-20" alt="C++17 in Detail" src="/images/about/cpp17-in-detail.png" />
 </div>
 
 ---

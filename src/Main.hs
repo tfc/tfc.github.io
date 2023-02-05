@@ -10,10 +10,13 @@ import           Hakyll.Web.Pandoc              ( defaultHakyllReaderOptions
                                                 , defaultHakyllWriterOptions
                                                 , pandocCompilerWith
                                                 )
+import           Hakyll.Web.Tags                ( tagCloudFieldWith )
 import           Text.Blaze.Html                ( (!)
                                                 , toHtml
                                                 , toValue
                                                 )
+import           Text.Blaze.Html.Renderer.String
+                                                ( renderHtml )
 import qualified Text.Blaze.Html5              as H
 import qualified Text.Blaze.Html5.Attributes   as A
 import qualified Text.Pandoc.Options           as PO
@@ -24,10 +27,18 @@ main = hakyll $ do
   match "css/*" $ route idRoute >> compile compressCssCompiler
   match "templates/*.hamlet" $ compile hamlTemplateCompiler
 
-  forM ["about.md", "impressum.md", "datenschutz.md"] $ \page -> match page $ do
+  forM ["impressum.md", "datenschutz.md"] $ \page -> match page $ do
     route $ setExtension "html"
     compile
       $   pandocCompiler
+      >>= loadAndApplyTemplate "templates/articlepage.hamlet" defaultContext
+      >>= loadAndApplyTemplate "templates/default.hamlet"     defaultContext
+      >>= relativizeUrls
+
+  forM ["about.hamlet"] $ \page -> match page $ do
+    route $ setExtension "html"
+    compile
+      $   hamlCompiler
       >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
       >>= relativizeUrls
 
@@ -47,7 +58,7 @@ main = hakyll $ do
                 else ""
               )
             <> listField "posts" (teaserCtx tags) (return posts)
-            <> tagCloudField "tagcloud" 100.0 100.0 tags
+            <> styledTagCloud "tagcloud" tags
             <> paginateContext indexPages pageNum
             <> defaultContext
       makeItem ""
@@ -116,8 +127,26 @@ styledTagsField = tagsFieldWith getTags
       $ H.a
       ! A.title (H.stringValue ("All pages tagged '" ++ tag ++ "'."))
       ! A.href (toValue $ toUrl filePath)
-      ! A.class_ "tag-link"
+      ! A.class_ "bg-sky-600 rounded text-white px-1 font-medium"
       $ toHtml tag
+
+styledTagCloud :: String -> Tags -> Context a
+styledTagCloud s = tagCloudFieldWith s
+                                     renderLink
+                                     (mconcat . intersperse " ")
+                                     100.0
+                                     100.0
+ where
+  renderLink
+    :: Double -> Double -> String -> String -> Int -> Int -> Int -> String
+  renderLink minSize maxSize tag url count countMin countMax =
+    renderHtml
+      $ H.a
+      ! A.title (H.stringValue ("All pages tagged '" <> tag <> "'."))
+      ! A.href (toValue url)
+      ! A.class_ "bg-sky-600 rounded text-white px-1 font-medium"
+      $ H.toHtml tag
+
 
 teaserCtx :: Tags -> Context String
 teaserCtx tags = teaserField "teaser" "post_content" <> postCtx tags

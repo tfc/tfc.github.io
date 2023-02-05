@@ -1,8 +1,9 @@
-<div .post>
-  <span .post-date>$date$
-  <span .post-tags>
-    \$if(tags)$
-    Tags: $tags$
-    \$endif$
+<h1 class="text-6xl font-extrabold mb-6">$title$
+<div class="mb-4">
+  \$date$
+  \$if(tags)$
+  , Tags: $tags$
+  \$endif$
 
+<article class="prose prose-stone prose-2xl">
   \$body$

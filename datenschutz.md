@@ -418,7 +418,7 @@ Onlineangebotes genutzt werden können.
 
 Beim Besuch dieser Internetseite können folgende Cookies gesetzt werden:
 
-"`cookieconsent_status`"
+`cookieconsent_status`
 
 : Sofern auf Ihrem System noch keine Cookies durch diese Seite gespeichert 
   wurden, wird Ihnen das Cookie-Banner am unteren Rand der Seite angezeigt.
@@ -432,7 +432,7 @@ Beim Besuch dieser Internetseite können folgende Cookies gesetzt werden:
   wird aber ohne Ihr weiteres Zutun nach 12 Monaten automatisch gelöscht.
 
 
-"`_ga_WZ3FX4G3XS`" und "`_ga`"
+`_ga_WZ3FX4G3XS` und `_ga`
 
 : Diese beiden Cookies werden nur dann gesetzt, wenn Sie der Speicherung von
   Cookies für die Marktforschung zugestimmt haben.

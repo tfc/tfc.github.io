@@ -2,10 +2,26 @@
 a.sourceLine { display: inline-block; line-height: 1.25; }
 a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
 a.sourceLine:empty { height: 1.2em; }
+
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
+code.sourceCode {
+  white-space: pre;
+  position: relative;
+}
+div.sourceCode {
+  margin: 1em 0;
+  border-radius: 10px;
+  box-shadow: 10px 10px 5px #aaaaaa;
+  color: #cfcfc2;
+}
+pre.sourceCode {
+  font-family: monospace;
+  line-height: 1;
+  margin: 0;
+  background:
+    radial-gradient(circle at 20% 0, rgba(0,20,40,0.85), rgba(0,0,0,0.9)),
+    url(/images/noise.svg) !important;
+}
 @media screen {
 div.sourceCode { overflow: auto; }
 }
@@ -23,12 +39,9 @@ pre.numberSource a.sourceLine::before
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
     padding: 0 4px; width: 4em;
-    background-color: #232629;
     color: #7a7c7d;
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #7a7c7d;  padding-left: 4px; }
-div.sourceCode
-  { color: #cfcfc2; background-color: #232629; }
 @media screen {
 a.sourceLine::before { text-decoration: underline; }
 }
