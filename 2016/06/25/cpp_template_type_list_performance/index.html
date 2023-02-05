@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="../../../../css/hyde.css">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script></script>
 <link rel="shortcut icon" href="../../../../images/favicon.ico">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -68,7 +71,7 @@ However, using it to compare the performance of different algorithms can result 
 <figcaption aria-hidden="true">Metashell: Compile time benchmark measuring creation time of integer sequence nested vs. variadic type lists</figcaption>
 </figure>
 <p>The graphs both have fitted polygonal function overlays.
-The runtime of generating lists, both nested and variadic types, is obviously within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>.
+The runtime of generating lists, both nested and variadic types, is obviously within <span class="math inline">\(\mathcal{O}(n^2)\)</span>.
 This is usually something which would be considered having <em>linear</em> runtime, because the lists grow linearly.</p>
 <p>These numbers turn out to be completely different when measured on real compilers like Clang and GCC:</p>
 <h2 id="compilers">Compilers</h2>
@@ -132,8 +135,8 @@ I don’t know.</p>
 <p>Apart from that, the two different implementations of list filter operations, and manual filtered list creation have the same performance characteristics like before, when compared to each other.</p>
 <p>Interestingly, clang seems to be slower for small type lists, because the time it takes to launch and return to shell is larger.
 For large type lists (which means they contain about 500 and more items), clang takes over and compiles faster.</p>
-<p>The most important observation here is, that the runtime of these algorithms on nested type lists seems to be within <span class="math inline">𝒪(<em>n</em>)</span>.
-Creating variadic type lists alone is already <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>.</p>
+<p>The most important observation here is, that the runtime of these algorithms on nested type lists seems to be within <span class="math inline">\(\mathcal{O}(n)\)</span>.
+Creating variadic type lists alone is already <span class="math inline">\(\mathcal{O}(n^2)\)</span>.</p>
 <h1 id="the-implementations">The Implementations</h1>
 <p>This section shows the implementations of <em>what</em> i actually measured.
 There’s not much explanation how this works, because i wrote other articles covering that:</p>

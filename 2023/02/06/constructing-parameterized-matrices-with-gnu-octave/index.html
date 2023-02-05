@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog" />
+<link rel="stylesheet" href="../../../../css/poole.css">
+<link rel="stylesheet" href="../../../../css/syntax.css">
+<link rel="stylesheet" href="../../../../css/hyde.css">
+<script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script></script>
+<link rel="shortcut icon" href="../../../../images/favicon.ico">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Jacek's Blog &middot; Constructing Parameterized Matrices with GNU Octave</title>
+</head>
+<body class="layout-reverse"><div class="sidebar"><div class="container sidebar-sticky"><div class="sidebar-about"><h1><a href="../../../../">Jacek's Blog</a>
+</h1>
+<p class="lead">Software Engineering Consultant</p>
+</div>
+<nav class="sidebar-nav"><a class="sidebar-nav-item active" href="../../../../">Home</a>
+<a class="sidebar-nav-item" href="../../../../about.html">About / CV</a>
+<a class="sidebar-nav-item" href="../../../../impressum.html">Impressum</a>
+<a class="sidebar-nav-item" href="../../../../datenschutz.html">Datenschutz / Cookies</a>
+</nav>
+<p><a href="https://linkedin.com/in/jgalowicz"><i class="fa-brands fa-linkedin"></i>
+</a>
+<a href="https://www.xing.com/profile/Jacek_Galowicz"><i class="fa-brands fa-square-xing"></i>
+</a>
+<a href="https://github.com/tfc"><i class="fa-brands fa-square-github"></i>
+</a>
+<a href="https://twitter.com/jgalowicz"><i class="fa-brands fa-square-twitter"></i>
+</a>
+<a rel="me" href="https://functional.cafe/@jgalowicz"><i class="fa-brands fa-mastodon"></i>
+</a>
+</p>
+</div>
+</div>
+<div class="content container"><h1>Constructing Parameterized Matrices with GNU Octave</h1>
+<div class="post"><span class="post-date">February  6, 2023</span>
+<span class="post-tags">
+Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html" class="tag-link">c++</a>
+</span>
+<!-- cSpell:words diagonal undistort -->
+<!-- cSpell:ignore pmatrix numpy mathrm syms passthru -->
+<!--more-->
+<p>In a C++ project where I use the <a href="https://opencv.org/">OpenCV</a> library to
+undistort pictures, I needed a function that creates shearing matrices for
+specific shearing factors.
+The following illustration shows the needed transformation:</p>
+<figure>
+<img src="../../../../images/shear.png" alt="Example projection: The B’/B’’ and D’/D’’ points are the projections for values of N smaller/larger 1.0" />
+<figcaption aria-hidden="true">Example projection: The B’/B’’ and D’/D’’ points are the projections for values of N smaller/larger 1.0</figcaption>
+</figure>
+<p>Given a picture that is <code>W</code> pixels wide and <code>H</code> pixels high, all points on the
+main diagonal line shall remain untouched by the transformation.
+For a shearing factor <code>N &lt; 1.0</code>, all other points should be pulled towards the
+main diagonal line, along the direction of the other diagonal line (which goes
+from point B to D).
+The same applies for a factor <code>N &gt; 1.0</code> but in this case, the points are pushed
+away from the main diagonal line instead of being pulled towards it.</p>
+<h2 id="defining-the-equations">Defining the Equations</h2>
+<p>So we are looking for a Matrix <span class="math inline">\(M_N\)</span> for which the following qualitative example
+projections hold:</p>
+<p><span class="math display">\[
+\forall N \in \Reals \qquad
+\begin{align}
+M_N A &amp;= A \\
+M_N C &amp;= C \\
+M_N B &amp;= \begin{cases}
+         B'  &amp; \text{if }N &lt; 1 \\ 
+         B   &amp; \text{if } N = 1 \\
+         B'' &amp; \text{if }N &gt; 1
+         \end{cases} \\
+M_N D &amp;= \begin{cases}
+         D'  &amp; \text{if }N &lt; 1 \\ 
+         D   &amp; \text{if } N = 1 \qquad \\
+         D'' &amp; \text{if }N &gt; 1
+         \end{cases}
+\end{align}
+\]</span></p>
+<p>I’m not good at memorizing standard matrices, but most geometric transformations
+can be calculated using
+<a href="https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors#:~:text=In%20linear%20algebra%2C%20an%20eigenvector,which%20the%20eigenvector%20is%20scaled.">eigenvalues and eigenvectors</a>:
+From the image and the example projections, we can derive the following generic
+eigenvalue- and eigenvector-based equations, where <span class="math inline">\(x_1\)</span> is the main diagonal
+and <span class="math inline">\(x_2\)</span> is the other diagonal:</p>
+<p><span class="math display">\[
+x_1 = \frac{C - A}{|C - A|} 
+    = \frac{1}{\sqrt{W^2 + H^2}} \begin{pmatrix}
+                                 W \\ 
+                                 H
+                                 \end{pmatrix}
+, \quad 
+\lambda_1 = 1
+\]</span></p>
+<p><span class="math display">\[
+x_2 = \frac{B - D}{|B - D|} 
+    = \frac{1}{\sqrt{W^2 + H^2}} \begin{pmatrix}
+                                 W \\ 
+                                 -H
+                                 \end{pmatrix}
+, \quad 
+\lambda_2 = N
+\]</span></p>
+<p><span class="math display">\[
+M x_1 = \lambda_1 x_1 = x_1
+, \quad 
+M x_2 = \lambda_2 x_2 = N x_2 
+\]</span></p>
+<p>The idea is now to create a system of equations that we could solve on paper
+or automatically using the computer:
+From two multiplications of the matrix with a vector each, we can form one
+equation where we multiply the matrix <span class="math inline">\(M\)</span> with another matrix that is composed
+of the two input vectors, which then equals another matrix that is composed of
+the two output vectors.:</p>
+<p><span class="math display">\[
+\begin{align}
+M \begin{pmatrix} x_1 &amp; x_2 \end{pmatrix} 
+&amp;= 
+\begin{pmatrix} \lambda_1 x_1 &amp; \lambda_2 x_2 \end{pmatrix} \\
+M X &amp;= X_\lambda
+\end{align}
+\]</span></p>
+<p>Libraries for Linear Algebra (e.g.
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html">numpy</a>,
+<a href="https://www.mathworks.com/help/symbolic/linsolve.html">MATLAB</a>,
+and <a href="https://octave.sourceforge.io/octave/function/linsolve.html">GNU Octave</a>)
+have functions for solving linear systems of equations.
+They all work with a matrix equation like <span class="math inline">\(AX = B\)</span>:
+Calling <span class="math inline">\(\text{solve}(A, B)\)</span> returns the solution of <span class="math inline">\(X\)</span>.
+At this point, we can’t just run <span class="math inline">\(\text{solve}(X, X_\lambda)\)</span> because <span class="math inline">\(M\)</span> and
+<span class="math inline">\(X\)</span> first need to be swapped to fit the input format.</p>
+<p>Using known <a href="https://en.wikipedia.org/wiki/Transpose">transposition properties</a>,
+we can quickly bring our system of equations to the right form by transposing
+the matrices:</p>
+<p><span class="math display">\[
+\begin{align}
+( M X )^\intercal &amp;= X_\lambda^\intercal \\
+X^\intercal M^\intercal &amp;= X_\lambda^\intercal \\
+M^\intercal &amp;= \mathrm{solve}(X^\intercal, X_\lambda^\intercal) \\
+M &amp;= \mathrm{solve}(X^\intercal, X_\lambda^\intercal)^\intercal
+\end{align}
+\]</span></p>
+<p>…and <em>now</em> we can finally solve the system automatically.</p>
+<h2 id="solving-the-equations">Solving the Equations</h2>
+<div class="floating-image-right">
+<figure>
+<img src="../../../../images/gnu-octave-example-mesh.svg" width="300" alt="GNU Octave is great" />
+<figcaption aria-hidden="true">GNU Octave is great</figcaption>
+</figure>
+</div>
+<p>Back in my university days, I used the proprietary
+<a href="https://www.mathworks.com/products/matlab.html">MATLAB</a> suite to do such tasks
+with just very few lines of code, which students got for free.
+I am not a student at a university any longer, so when choosing software, I
+generally first have a look if there is free software before choosing anything
+proprietary.
+In hindsight, I also find it a great pity that my university
+(<a href="https://www.rwth-aachen.de/">RWTH Aachen</a> in Germany)
+played a part in luring its students into a comfortable dependency on very
+expensive proprietary tools (apart from that it is a super awesome university).
+The free solutions available at the same time would not have been less suitable
+for educational purposes.</p>
+<p>Luckily, <a href="https://octave.org/">GNU Octave</a> exists and it can do many many things
+just like MATLAB.
+What I also like about GNU Octave:</p>
+<ul>
+<li>It’s a much smaller package (with a package manager and a
+<a href="https://gnu-octave.github.io/packages/">package ecosystem</a>, so you can choose
+what you need)</li>
+<li>You can run it without being connected to an annoying license server</li>
+<li>It runs in the shell so you don’t have to launch a big IDE for everything
+(Maybe that has changed in the last 10 years, but I doubt it)</li>
+</ul>
+<p>So let’s write a very short script that calculates our parametrized Matrix <span class="math inline">\(M\)</span>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode octave"><code class="sourceCode octave"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filename: octave-script.m</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg</span> <span class="bu">load</span> symbolic</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>syms W H N</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>x1 <span class="op">=</span> [W<span class="op">;</span> H]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>x2 <span class="op">=</span> [W<span class="op">;-</span>H]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> <span class="fu">transpose</span>(<span class="fu">transpose</span>([x1<span class="op">,</span>x2]) <span class="op">\</span> <span class="fu">transpose</span>([x1<span class="op">,</span>N <span class="op">*</span> x2]))</span></code></pre></div>
+<p>In my later program, I wanted not only <code>N</code> to be an input parameter, but also
+the image dimensions <code>W</code> and <code>H</code>, so we have three symbols in this program.
+I also left out the division by the length of the main vectors <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span>,
+because they would cancel out in the resulting system of equations anyway
+(try it out to see yourself).</p>
+<p>I typically don’t have special tools like this installed on my system, because
+<a href="https://nixos.org">NixOS</a> makes it so easy to install project-specific tools in
+project-specific shells.
+In the nixpkgs ecosystem, <code>octave</code> is a package that can be preloaded with the
+user’s package selection from the octave ecosystem.
+The program at hand only needs the
+<a href="https://gnu-octave.github.io/packages/symbolic/"><code>symbolic</code></a> package.
+I just added the <code>myOctave</code> symbol from the following code to the nix flake of
+my C++ project.</p>
+<p>It is also possible to run a shell with just octave, without a project around
+it, by running this script through <code>nix-shell</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="va">pkgs</span> <span class="op">=</span> <span class="bu">import</span> &lt;nixpkgs&gt; <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">myOctave</span> <span class="op">=</span> pkgs.octave.passthru.withPackages <span class="op">(</span><span class="va">p</span><span class="op">:</span> <span class="kw">with</span> p<span class="op">;</span> <span class="op">[</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>      symbolic</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">]);</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">in</span> pkgs.mkShell <span class="op">{</span> <span class="va">nativeBuildInputs</span> <span class="op">=</span> <span class="op">[</span> myOctave <span class="op">];</span> <span class="op">}</span></span></code></pre></div>
+<p>Let’s see it in action:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode octave"><code class="sourceCode octave"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>$ nix<span class="op">-</span>shell octave<span class="op">-</span>shell.nix</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>[nix<span class="op">-</span>shell<span class="op">:~</span>]$ octave octave<span class="op">-</span>script.m</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> (sym <span class="fl">2</span>×<span class="fl">2</span> matrix)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  ⎡  N   <span class="fl">1</span>    W⋅(<span class="fl">1</span> <span class="op">-</span> N)⎤</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  ⎢  ─ <span class="op">+</span> ─    ─────────⎥</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  ⎢  <span class="fl">2</span>   <span class="fl">2</span>       <span class="fl">2</span>⋅H   ⎥</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  ⎢                    ⎥</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  ⎢H⋅(<span class="fl">1</span> <span class="op">-</span> N)    N   <span class="fl">1</span>  ⎥</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  ⎢─────────    ─ <span class="op">+</span> ─  ⎥</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  ⎣   <span class="fl">2</span>⋅W       <span class="fl">2</span>   <span class="fl">2</span>  ⎦</span></code></pre></div>
+<p>Voilà, that’s the matrix that we needed!</p>
+<p>It’s very rewarding to see how the matrix collapses to an identity matrix if
+we define <span class="math inline">\(N = 0\)</span>.</p>
+<h2 id="using-the-matrix-in-c">Using the Matrix in C++</h2>
+<p>We can now take this solution and simply implement it 1:1 in our target
+language, which is C++ in this case.
+The matrix type that is used in OpenCV is
+<a href="https://docs.opencv.org/4.x/d6/d6d/tutorial_mat_the_basic_image_container.html">the <code>cv::Mat</code> type</a>,
+which can be constructed like this:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>cv<span class="op">::</span>Mat shearingMatrix<span class="op">(</span><span class="at">const</span> cv<span class="op">::</span>Size <span class="op">&amp;</span>s<span class="op">,</span> <span class="dt">double</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">const</span> <span class="dt">float</span> w <span class="op">=</span> s<span class="op">.</span>width<span class="op">,</span> h <span class="op">=</span> s<span class="op">.</span>height<span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> cv<span class="op">::</span>Mat_<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;(</span><span class="dv">3</span><span class="op">,</span> <span class="dv">3</span><span class="op">)</span> <span class="op">&lt;&lt;</span> </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    n <span class="op">/</span> <span class="fl">2.0</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">,</span>           <span class="op">(</span><span class="fl">1.0</span> <span class="op">-</span> n<span class="op">)</span> <span class="op">/</span> <span class="fl">2.0</span> <span class="op">*</span> w <span class="op">/</span> h<span class="op">,</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span><span class="fl">1.0</span> <span class="op">-</span> n<span class="op">)</span> <span class="op">/</span> <span class="fl">2.0</span> <span class="op">*</span> h <span class="op">/</span> w<span class="op">,</span> n <span class="op">/</span> <span class="fl">2.0</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">,</span>           <span class="dv">0</span><span class="op">,</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span><span class="op">,</span>                       <span class="dv">0</span><span class="op">,</span>                       <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="summary">Summary</h2>
+<p>GNU Octave is fun to use once it’s installed.
+I only use it in such rare cases that I don’t install it regularly on my
+systems.
+It was however very easy to integrate into the project-specific shell.
+This way everyone who takes part in the development of this repository can also
+execute the Octave scripts that have been used to derive some of the C++ code.
+If any upfront requirement changes that led to the design of specific code,
+it’s easy to change even the most complicated snippets.</p></div>
+</div>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
+<script>var popup;
+window.addEventListener('load', function(){window.cookieconsent.initialise({//set revokeBtn if you don't want to see a tiny pullup bar overlapping your website
+//if revokeBtn is set, make sure to include a link to cookie settings in your footer
+//you can open your banner again with: popup.open();
+//revokeBtn: "<div class='cc-revoke'></div>",
+type: "opt-in",
+theme: "edgeless",
+content: {message: 'Wir benutzen Cookies, um zu messen, welche Inhalte auf Interesse stoßen. Die Erlaubnis kann jederzeit rückgängig gemacht werden. / We use cookies to measure which content is of interest to you. You can revoke your approval at any time',
+href: '/datenschutz.html#cookie-richtlinie',
+allow: 'Cookies erlauben / Allow cookies',
+deny: 'Nur technisch notwendige Cookies / Only technically necessary cookies',
+link: 'Mehr dazu / Learn more',},
+palette: {popup: {background: "#202020",
+text: "#fff"
+},button: {background: "#268bd2",
+text: "#fff"
+}},
+onInitialise: function(status) {if(status == cookieconsent.status.allow) setCookies();},
+onStatusChange: function(status) {if (this.hasConsented()) setCookies();
+else deleteCookies(this.options.cookie.name)},
+law: { regionalLaw: false, },
+location: true,
+function (p) { popup = p; }});})
+//it is absolutely crucial to define gtag in the global scope
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-WZ3FX4G3XS', {'anonymize_ip': true});
+function setCookies() {var s = document.createElement('script');
+s.type = "text/javascript"
+s.async = "true";
+s.src = "https://www.googletagmanager.com/gtag/js?id=G-WZ3FX4G3XS";
+var x = document.getElementsByTagName('script')[0];
+x.parentNode.insertBefore(s, x);};
+function deleteCookies(cookieconsent_name) {var keep = [cookieconsent_name, "DYNSRV"];
+document.cookie.split(';').forEach(function(c) {c = c.split('=')[0].trim();
+if (!~keep.indexOf(c))document.cookie = c + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';});};</script>
+</body>
+</html>

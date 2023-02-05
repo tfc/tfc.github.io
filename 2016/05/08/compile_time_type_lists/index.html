@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="../../../../css/hyde.css">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script></script>
 <link rel="shortcut icon" href="../../../../images/favicon.ico">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -98,7 +101,7 @@ Using <a href="http://metashell.org/">metashell</a>’s <code>evaluate -profile<
 <img src="../../../../images/compile_time_type_list_creation_benchmark_metashell.png" alt="Metashell: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists" />
 <figcaption aria-hidden="true">Metashell: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists</figcaption>
 </figure>
-<p>Both variants seem to be within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>, and variadic type lists prove to be significantly faster in metashell.</p>
+<p>Both variants seem to be within <span class="math inline">\(\mathcal{O}(n^2)\)</span>, and variadic type lists prove to be significantly faster in metashell.</p>
 <h4 id="gccclang">GCC/Clang</h4>
 <p>The compile times of real compilers are of course more interesting, when writing some serious meta programming code for productive use.
 Interestingly, the numbers here are <strong>completely different</strong> than the numbers from the measurements in metashell.</p>
@@ -106,7 +109,7 @@ Interestingly, the numbers here are <strong>completely different</strong> than t
 <img src="../../../../images/compile_time_type_list_creation_benchmark_compilers.png" alt="GCC/Clang: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists" />
 <figcaption aria-hidden="true">GCC/Clang: Compile time benchmark measuring creation time of integer sequence recursive vs. variadic type lists</figcaption>
 </figure>
-<p>Again, both variants seem to be within <span class="math inline">𝒪(<em>n</em><sup>2</sup>)</span>.
+<p>Again, both variants seem to be within <span class="math inline">\(\mathcal{O}(n^2)\)</span>.
 But this time, nested type lists clearly win the race.</p>
 <p>In fact, nested type lists are so much faster in this benchmarks, that it seems that they are <strong>the</strong> list implementation of choice.</p>
 <p>The graphs of the nested type list runs in GCC/Clang appear really small and similar in the diagram, and it’s hard to compare them from this picture.

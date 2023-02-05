@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="../../../../css/hyde.css">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script></script>
 <link rel="shortcut icon" href="../../../../images/favicon.ico">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -230,8 +233,8 @@ This way it is possible to tamper with the indentation, precision, etc. whatever
 The closing brace is ignored already because the closing brace search function is not called.</p>
 <p>However, there are actually 2 backslashes needed because <code>\</code> alone does not result in an actual “" string part.
 The backslash must be masked itself, so only <code>\\{</code> will result in the <code>autoformat_t</code> function seeing a <code>\{</code>.</p>
-<p><strong>Example</strong>: <code>pprintf("var in braces: \\{ {} }", 123);</code> results in <code>printf("var in braces: { %d }", 123);</code>
-#### Catching Brace Mismatches</p>
+<p><strong>Example</strong>: <code>pprintf("var in braces: \\{ {} }", 123);</code> results in <code>printf("var in braces: { %d }", 123);</code></p>
+<h4 id="catching-brace-mismatches">Catching Brace Mismatches</h4>
 <p>The meta-program refuses to compile if…</p>
 <ul>
 <li>it does not find a closing brace for an opening one.</li>

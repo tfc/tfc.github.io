@@ -7,8 +7,219 @@
         <description><![CDATA[This blog is about programming]]></description>
         <atom:link href="https://blog.galowicz.de/feed.xml" rel="self"
                    type="application/rss+xml" />
-        <lastBuildDate>Mon, 30 Jan 2023 00:00:00 UT</lastBuildDate>
+        <lastBuildDate>Mon, 06 Feb 2023 00:00:00 UT</lastBuildDate>
         <item>
+    <title>Constructing Parameterized Matrices with GNU Octave</title>
+    <link>https://blog.galowicz.de/2023/02/06/constructing-parameterized-matrices-with-gnu-octave</link>
+    <description><![CDATA[<!-- cSpell:words diagonal undistort -->
+<!-- cSpell:ignore pmatrix numpy mathrm syms passthru -->
+<!--more-->
+<p>In a C++ project where I use the <a href="https://opencv.org/">OpenCV</a> library to
+undistort pictures, I needed a function that creates shearing matrices for
+specific shearing factors.
+The following illustration shows the needed transformation:</p>
+<figure>
+<img src="/images/shear.png" alt="Example projection: The B’/B’’ and D’/D’’ points are the projections for values of N smaller/larger 1.0" />
+<figcaption aria-hidden="true">Example projection: The B’/B’’ and D’/D’’ points are the projections for values of N smaller/larger 1.0</figcaption>
+</figure>
+<p>Given a picture that is <code>W</code> pixels wide and <code>H</code> pixels high, all points on the
+main diagonal line shall remain untouched by the transformation.
+For a shearing factor <code>N &lt; 1.0</code>, all other points should be pulled towards the
+main diagonal line, along the direction of the other diagonal line (which goes
+from point B to D).
+The same applies for a factor <code>N &gt; 1.0</code> but in this case, the points are pushed
+away from the main diagonal line instead of being pulled towards it.</p>
+<h2 id="defining-the-equations">Defining the Equations</h2>
+<p>So we are looking for a Matrix <span class="math inline">\(M_N\)</span> for which the following qualitative example
+projections hold:</p>
+<p><span class="math display">\[
+\forall N \in \Reals \qquad
+\begin{align}
+M_N A &amp;= A \\
+M_N C &amp;= C \\
+M_N B &amp;= \begin{cases}
+         B&#39;  &amp; \text{if }N &lt; 1 \\ 
+         B   &amp; \text{if } N = 1 \\
+         B&#39;&#39; &amp; \text{if }N &gt; 1
+         \end{cases} \\
+M_N D &amp;= \begin{cases}
+         D&#39;  &amp; \text{if }N &lt; 1 \\ 
+         D   &amp; \text{if } N = 1 \qquad \\
+         D&#39;&#39; &amp; \text{if }N &gt; 1
+         \end{cases}
+\end{align}
+\]</span></p>
+<p>I’m not good at memorizing standard matrices, but most geometric transformations
+can be calculated using
+<a href="https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors#:~:text=In%20linear%20algebra%2C%20an%20eigenvector,which%20the%20eigenvector%20is%20scaled.">eigenvalues and eigenvectors</a>:
+From the image and the example projections, we can derive the following generic
+eigenvalue- and eigenvector-based equations, where <span class="math inline">\(x_1\)</span> is the main diagonal
+and <span class="math inline">\(x_2\)</span> is the other diagonal:</p>
+<p><span class="math display">\[
+x_1 = \frac{C - A}{|C - A|} 
+    = \frac{1}{\sqrt{W^2 + H^2}} \begin{pmatrix}
+                                 W \\ 
+                                 H
+                                 \end{pmatrix}
+, \quad 
+\lambda_1 = 1
+\]</span></p>
+<p><span class="math display">\[
+x_2 = \frac{B - D}{|B - D|} 
+    = \frac{1}{\sqrt{W^2 + H^2}} \begin{pmatrix}
+                                 W \\ 
+                                 -H
+                                 \end{pmatrix}
+, \quad 
+\lambda_2 = N
+\]</span></p>
+<p><span class="math display">\[
+M x_1 = \lambda_1 x_1 = x_1
+, \quad 
+M x_2 = \lambda_2 x_2 = N x_2 
+\]</span></p>
+<p>The idea is now to create a system of equations that we could solve on paper
+or automatically using the computer:
+From two multiplications of the matrix with a vector each, we can form one
+equation where we multiply the matrix <span class="math inline">\(M\)</span> with another matrix that is composed
+of the two input vectors, which then equals another matrix that is composed of
+the two output vectors.:</p>
+<p><span class="math display">\[
+\begin{align}
+M \begin{pmatrix} x_1 &amp; x_2 \end{pmatrix} 
+&amp;= 
+\begin{pmatrix} \lambda_1 x_1 &amp; \lambda_2 x_2 \end{pmatrix} \\
+M X &amp;= X_\lambda
+\end{align}
+\]</span></p>
+<p>Libraries for Linear Algebra (e.g.
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.solve.html">numpy</a>,
+<a href="https://www.mathworks.com/help/symbolic/linsolve.html">MATLAB</a>,
+and <a href="https://octave.sourceforge.io/octave/function/linsolve.html">GNU Octave</a>)
+have functions for solving linear systems of equations.
+They all work with a matrix equation like <span class="math inline">\(AX = B\)</span>:
+Calling <span class="math inline">\(\text{solve}(A, B)\)</span> returns the solution of <span class="math inline">\(X\)</span>.
+At this point, we can’t just run <span class="math inline">\(\text{solve}(X, X_\lambda)\)</span> because <span class="math inline">\(M\)</span> and
+<span class="math inline">\(X\)</span> first need to be swapped to fit the input format.</p>
+<p>Using known <a href="https://en.wikipedia.org/wiki/Transpose">transposition properties</a>,
+we can quickly bring our system of equations to the right form by transposing
+the matrices:</p>
+<p><span class="math display">\[
+\begin{align}
+( M X )^\intercal &amp;= X_\lambda^\intercal \\
+X^\intercal M^\intercal &amp;= X_\lambda^\intercal \\
+M^\intercal &amp;= \mathrm{solve}(X^\intercal, X_\lambda^\intercal) \\
+M &amp;= \mathrm{solve}(X^\intercal, X_\lambda^\intercal)^\intercal
+\end{align}
+\]</span></p>
+<p>…and <em>now</em> we can finally solve the system automatically.</p>
+<h2 id="solving-the-equations">Solving the Equations</h2>
+<div class="floating-image-right">
+<figure>
+<img src="/images/gnu-octave-example-mesh.svg" width="300" alt="GNU Octave is great" />
+<figcaption aria-hidden="true">GNU Octave is great</figcaption>
+</figure>
+</div>
+<p>Back in my university days, I used the proprietary
+<a href="https://www.mathworks.com/products/matlab.html">MATLAB</a> suite to do such tasks
+with just very few lines of code, which students got for free.
+I am not a student at a university any longer, so when choosing software, I
+generally first have a look if there is free software before choosing anything
+proprietary.
+In hindsight, I also find it a great pity that my university
+(<a href="https://www.rwth-aachen.de/">RWTH Aachen</a> in Germany)
+played a part in luring its students into a comfortable dependency on very
+expensive proprietary tools (apart from that it is a super awesome university).
+The free solutions available at the same time would not have been less suitable
+for educational purposes.</p>
+<p>Luckily, <a href="https://octave.org/">GNU Octave</a> exists and it can do many many things
+just like MATLAB.
+What I also like about GNU Octave:</p>
+<ul>
+<li>It’s a much smaller package (with a package manager and a
+<a href="https://gnu-octave.github.io/packages/">package ecosystem</a>, so you can choose
+what you need)</li>
+<li>You can run it without being connected to an annoying license server</li>
+<li>It runs in the shell so you don’t have to launch a big IDE for everything
+(Maybe that has changed in the last 10 years, but I doubt it)</li>
+</ul>
+<p>So let’s write a very short script that calculates our parametrized Matrix <span class="math inline">\(M\)</span>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode octave"><code class="sourceCode octave"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filename: octave-script.m</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pkg</span> <span class="bu">load</span> symbolic</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>syms W H N</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>x1 <span class="op">=</span> [W<span class="op">;</span> H]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>x2 <span class="op">=</span> [W<span class="op">;-</span>H]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> <span class="fu">transpose</span>(<span class="fu">transpose</span>([x1<span class="op">,</span>x2]) <span class="op">\</span> <span class="fu">transpose</span>([x1<span class="op">,</span>N <span class="op">*</span> x2]))</span></code></pre></div>
+<p>In my later program, I wanted not only <code>N</code> to be an input parameter, but also
+the image dimensions <code>W</code> and <code>H</code>, so we have three symbols in this program.
+I also left out the division by the length of the main vectors <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span>,
+because they would cancel out in the resulting system of equations anyway
+(try it out to see yourself).</p>
+<p>I typically don’t have special tools like this installed on my system, because
+<a href="https://nixos.org">NixOS</a> makes it so easy to install project-specific tools in
+project-specific shells.
+In the nixpkgs ecosystem, <code>octave</code> is a package that can be preloaded with the
+user’s package selection from the octave ecosystem.
+The program at hand only needs the
+<a href="https://gnu-octave.github.io/packages/symbolic/"><code>symbolic</code></a> package.
+I just added the <code>myOctave</code> symbol from the following code to the nix flake of
+my C++ project.</p>
+<p>It is also possible to run a shell with just octave, without a project around
+it, by running this script through <code>nix-shell</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> <span class="va">pkgs</span> <span class="op">=</span> <span class="bu">import</span> &lt;nixpkgs&gt; <span class="op">{</span> <span class="op">};</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">myOctave</span> <span class="op">=</span> pkgs.octave.passthru.withPackages <span class="op">(</span><span class="va">p</span><span class="op">:</span> <span class="kw">with</span> p<span class="op">;</span> <span class="op">[</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>      symbolic</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">]);</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">in</span> pkgs.mkShell <span class="op">{</span> <span class="va">nativeBuildInputs</span> <span class="op">=</span> <span class="op">[</span> myOctave <span class="op">];</span> <span class="op">}</span></span></code></pre></div>
+<p>Let’s see it in action:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode octave"><code class="sourceCode octave"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>$ nix<span class="op">-</span>shell octave<span class="op">-</span>shell.nix</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>[nix<span class="op">-</span>shell<span class="op">:~</span>]$ octave octave<span class="op">-</span>script.m</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> (sym <span class="fl">2</span>×<span class="fl">2</span> matrix)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  ⎡  N   <span class="fl">1</span>    W⋅(<span class="fl">1</span> <span class="op">-</span> N)⎤</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  ⎢  ─ <span class="op">+</span> ─    ─────────⎥</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  ⎢  <span class="fl">2</span>   <span class="fl">2</span>       <span class="fl">2</span>⋅H   ⎥</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  ⎢                    ⎥</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  ⎢H⋅(<span class="fl">1</span> <span class="op">-</span> N)    N   <span class="fl">1</span>  ⎥</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  ⎢─────────    ─ <span class="op">+</span> ─  ⎥</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  ⎣   <span class="fl">2</span>⋅W       <span class="fl">2</span>   <span class="fl">2</span>  ⎦</span></code></pre></div>
+<p>Voilà, that’s the matrix that we needed!</p>
+<p>It’s very rewarding to see how the matrix collapses to an identity matrix if
+we define <span class="math inline">\(N = 0\)</span>.</p>
+<h2 id="using-the-matrix-in-c">Using the Matrix in C++</h2>
+<p>We can now take this solution and simply implement it 1:1 in our target
+language, which is C++ in this case.
+The matrix type that is used in OpenCV is
+<a href="https://docs.opencv.org/4.x/d6/d6d/tutorial_mat_the_basic_image_container.html">the <code>cv::Mat</code> type</a>,
+which can be constructed like this:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>cv<span class="op">::</span>Mat shearingMatrix<span class="op">(</span><span class="at">const</span> cv<span class="op">::</span>Size <span class="op">&amp;</span>s<span class="op">,</span> <span class="dt">double</span> n<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">const</span> <span class="dt">float</span> w <span class="op">=</span> s<span class="op">.</span>width<span class="op">,</span> h <span class="op">=</span> s<span class="op">.</span>height<span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> cv<span class="op">::</span>Mat_<span class="op">&lt;</span><span class="dt">float</span><span class="op">&gt;(</span><span class="dv">3</span><span class="op">,</span> <span class="dv">3</span><span class="op">)</span> <span class="op">&lt;&lt;</span> </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    n <span class="op">/</span> <span class="fl">2.0</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">,</span>           <span class="op">(</span><span class="fl">1.0</span> <span class="op">-</span> n<span class="op">)</span> <span class="op">/</span> <span class="fl">2.0</span> <span class="op">*</span> w <span class="op">/</span> h<span class="op">,</span> <span class="dv">0</span><span class="op">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">(</span><span class="fl">1.0</span> <span class="op">-</span> n<span class="op">)</span> <span class="op">/</span> <span class="fl">2.0</span> <span class="op">*</span> h <span class="op">/</span> w<span class="op">,</span> n <span class="op">/</span> <span class="fl">2.0</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">,</span>           <span class="dv">0</span><span class="op">,</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span><span class="op">,</span>                       <span class="dv">0</span><span class="op">,</span>                       <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="summary">Summary</h2>
+<p>GNU Octave is fun to use once it’s installed.
+I only use it in such rare cases that I don’t install it regularly on my
+systems.
+It was however very easy to integrate into the project-specific shell.
+This way everyone who takes part in the development of this repository can also
+execute the Octave scripts that have been used to derive some of the C++ code.
+If any upfront requirement changes that led to the design of specific code,
+it’s easy to change even the most complicated snippets.</p>]]></description>
+    <pubDate>Mon, 06 Feb 2023 00:00:00 UT</pubDate>
+    <guid>https://blog.galowicz.de/2023/02/06/constructing-parameterized-matrices-with-gnu-octave</guid>
+    <dc:creator>Jacek Galowicz</dc:creator>
+</item>
+<item>
     <title>Interpolation of Records of Values in Purescript</title>
     <link>https://blog.galowicz.de/2023/01/30/purescript-interpolation-of-records</link>
     <description><![CDATA[<!-- cSpell:words lerp lerping lerped XKCD metaprogramming PureScript -->
@@ -3871,160 +4082,6 @@ arguing with tactical programmers.</p>
 <p>Read it - as early as possible - in your developer career.</p>]]></description>
     <pubDate>Mon, 05 Dec 2022 00:00:00 UT</pubDate>
     <guid>https://blog.galowicz.de/2022/12/05/book-review-a-philosophy-of-software-design</guid>
-    <dc:creator>Jacek Galowicz</dc:creator>
-</item>
-<item>
-    <title>NixOS Community Oceansprint late 2022 Report</title>
-    <link>https://blog.galowicz.de/2022/11/26/nix-community-oceansprint3-report</link>
-    <description><![CDATA[<!--
-  cSpell:words Domen Kozar Neyts Zupan Raito Bezarius Niklas Sturm Noogle
-  cSpell:words Florian Friesdorf Lanzarote Kirschbauer strandings kiosko
-  cSpell:words Stecklina lanzaboote Hauer
--->
-<p>This is my trip report from the late 2022 Oceansprint hackathon on Lanzarote.
-For more information please also have a look on the website:
-<a href="https://oceansprint.org">https://oceansprint.org</a></p>
-<!--more-->
-<h1 id="oceansprint">Oceansprint</h1>
-<p><a href="https://oceansprint.org">Oceansprint</a> is a regular hackathon event in the
-NixOS community (i wrote a bit about the community and event location
-<a href="/2021/12/12/nix-community-oceansprint-report">in the last article</a>)
-that is planned to happen twice a year.
-From 21.11. to 25.11.2022 it happened for the third time.
-This time we were roughly ~20 participants.</p>
-<p>After i was at the first oceansprint, skipped the second, and participated in
-the third one again, i have experienced quite an increment in the overall
-event’s quality and the group activities.
-Big kudos to Neyts Zupan, Domen Kozar and Florian Friesdorf for the great
-organization!</p>
-<figure>
-<img src="/images/2021-12-oceansprint-location.jpg" alt="The Oceansprint location" />
-<figcaption aria-hidden="true">The Oceansprint location</figcaption>
-</figure>
-<h1 id="socializing">Socializing</h1>
-<p>During the hacking sessions over the day, we all typically sat in groups based
-on who worked together on something.
-At breakfast and lunch there was typically some random regrouping involved,
-and over the day there were also many sporadic discussions at the coffee
-machine.
-This, combined with the fact that 99% of the time everyone was disciplined in
-speaking english, it was very nice to catch some interesting insights in
-random topics when walking by.</p>
-<figure>
-<img src="/images/2022-oceansprint3-buffet.jpg" alt="The catering Original Tweet" />
-<figcaption aria-hidden="true">The catering <a href="https://twitter.com/nzupan/status/1594653961419644932">Original Tweet</a></figcaption>
-</figure>
-<p>Events that really lifted the interaction to a more fun level away from just
-work-related discussions were the big grill party and the catamaran sailing
-event (there was also wind surfing and hiking), as well as the regular
-strandings at the cocktail bar “el kiosko”.
-We even went into the sauna together that Domen has on his balcony.
-This way it was possible to get to talk to <em>everyone</em> in more detail over the
-week without any hassle and simply having a great time.</p>
-<h1 id="sprint-projects">Sprint Projects</h1>
-<p>I will only describe the topics where i either participated or that i followed
-more closely out of personal interest.
-There were many more projects, and i am pretty sure they are covered by other
-blog articles.</p>
-<h2 id="secure-boot-on-nixos">Secure Boot on NixOS</h2>
-<p><a href="https://twitter.com/blitzclone">Julian Stecklina</a> (works at <a href="https://cyberus-technology.de/">Cyberus
-Technology</a>), Niklas Sturm (works at
-<a href="https://www.secunet.com/">Secunet</a>), and
-<a href="https://twitter.com/Ra1t0_Bezar1us">Raito Bezarius</a> worked together to support
-Secure Boot on NixOS.
-They were very successful this week: We have seen laptops booting with activated
-Secureboot and the Gnome Device Security dialogue displaying a green
-Secureboot entry:</p>
-<figure>
-<img src="/images/2022-oceansprint3-secureboot.png" alt="Activated Secureboot on NixOS Original Tweet" />
-<figcaption aria-hidden="true">Activated Secureboot on NixOS <a href="https://twitter.com/blitzclone/status/1596108176914493440">Original Tweet</a></figcaption>
-</figure>
-<p>There is already a pull request on github that introduces this work for at least
-developer setups.
-For secure and easy production use, some work on key management etc. is still
-left to be done.
-See the code and more details on github:
-<a href="https://github.com/blitz/lanzaboote">github.com/blitz/lanzaboote</a></p>
-<p>Multiple aspects of this make this project remarkable:</p>
-<ul>
-<li>Niklas and Julian did not know Raito before. The collaboration was a
-spontaneous result of talking about their project plans on the first evening.</li>
-<li>On every ocean sprint so far, we sent different Cyberus co-workers, and this
-is the first sprint with Secunet co-workers. So far, every co-worker who
-returned learned about new ways how to use nix and NixOS productively for both
-personal profit and also company goals.</li>
-<li>Both companies Cyberus Technology and Secunet are working with or evaluating
-NixOS internally. Getting Secureboot working in NixOS is an important mile
-stone.</li>
-<li>This is a great example of how the sponsorship money of both companies, which
-initially was a donation to support events of this kind, also turned out to be
-an investment with immediate return.</li>
-</ul>
-<h2 id="dream2nix-enhancements">Dream2nix enhancements</h2>
-<p><a href="https://github.com/hsjobeki">Johannes Kirschbauer</a> and
-<a href="https://github.com/davhau">David Hauer</a> worked together on improving the
-<a href="https://nix-community.github.io/dream2nix/">dream2nix</a> project.</p>
-<p>From my perspective this is another remarkable collaboration between open source
-maintainers and companies, as Johannes aims to push nix for frontend/UI projects
-at secunet.
-The Oceansprint has been the perfect chance to talk to David about how to get
-the most value out of this for all parties over a beer in person.</p>
-<h2 id="noogle">Noogle</h2>
-<p>Another thing that Johannes and David came up with, is Noogle:
-A search machine for nix and nixpkgs library functions.</p>
-<figure>
-<img src="/images/2022-oceansprint3-noogle.jpg" alt="Noogle Alpha Original Tweet" />
-<figcaption aria-hidden="true">Noogle Alpha <a href="https://twitter.com/domenkozar/status/1596168388195545088">Original Tweet</a></figcaption>
-</figure>
-<p>All Haskellers immediately cheered for this as this is like
-<a href="https://hoogle.haskell.org/">hoogle</a>, a great tool for finding the right
-function in all available packages.</p>
-<h1 id="sponsors">Sponsors</h1>
-<p>The sponsors are a very important topic, as such events would not be possible
-without them.</p>
-<figure>
-<img src="/images/2022-oceansprint3-shirt.jpg" alt="The sponsored Oceansprint Shirt Original Tweet" />
-<figcaption aria-hidden="true">The sponsored Oceansprint Shirt <a href="https://twitter.com/domenkozar/status/1595004457653309440">Original Tweet</a></figcaption>
-</figure>
-<p>As one of the founders of Cyberus, i was interested in the company growing
-into the Nix(OS) open source community, hence it was natural to become a sponsor
-of this event.
-In addition to that, i put some effort into convincing secunet to sponsor the
-oceansprint, too, as we do work together with this awesome technology and they
-are also interested having their colleagues to grow into the community.</p>
-<p>After having spoken with the organizers <a href="https://twitter.com/nzupan">Neyts</a> and
-<a href="https://twitter.com/domenkozar">Domen</a> at the
-<a href="https://2022.nixcon.org/">NixCon 2022 in Paris</a> about the topic of sponsoring,
-i learned that they found it easier to motivate small businesses to participate
-in sponsoring than the very big ones.</p>
-<p>It seems like the pressure to be able to explain the value proposition of a
-sponsoring is bigger for large company management.
-So far i personally see the following reasons why companies should
-sponsor/invest in conferences and hackathons like this:</p>
-<ul>
-<li>Sponsoring is a good way to reserve seats for your employees at such events.
-While attending, they will extend their network and as soon as some open
-source library or tool has a problem that needs to be fixed, discussing how
-to fix it quickly will be just a phone call with the maintainer away.
-I experienced the profit of such short communication channels at work very
-often already.</li>
-<li>The exposure to long-year community members helps a lot understanding the
-used technology better. Especially less experienced colleagues come back with
-a lot of enlightenment, which is why we try to send different colleagues every
-time.</li>
-<li>Having your own employees hack together on things with people that are not on
-your payroll is a very efficient way to get work done for all participating
-sides.</li>
-<li>Events like this in the sun with great social activities are a great way to
-support the efforts of your most motivated co-workers. The overall motivation
-at such events is infectious.</li>
-<li>Most big companies use lots and lots of open source technology.
-Often, employees do not get enough time due to project constraints, or are
-legally not allowed to share code back.
-Sponsoring such events is a great way to give back.</li>
-</ul>]]></description>
-    <pubDate>Sat, 26 Nov 2022 00:00:00 UT</pubDate>
-    <guid>https://blog.galowicz.de/2022/11/26/nix-community-oceansprint3-report</guid>
     <dc:creator>Jacek Galowicz</dc:creator>
 </item>
 

@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="../../../../css/hyde.css">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script></script>
 <link rel="shortcut icon" href="../../../../images/favicon.ico">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -66,7 +69,7 @@ Capabilities are a <a href="https://en.wikipedia.org/wiki/Capability-based_secur
 <p>Example:
 A memory range that is 4 memory pages large and begins at address <code>0x123000</code> is described by <code>(0x123, 2)</code>.
 We get from <code>0x123000</code> to <code>0x123</code>, because pages are 4096 bytes (0x1000 in hex) large. That means that we need to divide a virtual address pointer value by <code>0x1000</code> and get a virtual page number.
-From 4 pages we get to the order value <code>2</code>, because <span class="math inline">4 = 2<sup>2</sup></span>, so the order is 2.</p>
+From 4 pages we get to the order value <code>2</code>, because <span class="math inline">\(4 = 2^2\)</span>, so the order is 2.</p>
 <p>Ok, that is simple. It stops being simple as soon as one describes real-life memory ranges.
 Such a <code>(base, order)</code> tuple is also called a <em>capability range descriptor</em>, and must follow the following rules:</p>
 <ol type="1">
@@ -75,9 +78,9 @@ Such a <code>(base, order)</code> tuple is also called a <em>capability range de
 </ol>
 <p>That means if we want to describe the memory range <code>[0x100, 0x107)</code> (the notation <code>[a, b)</code> means that the range goes from <code>a</code> to <code>b</code>, but does not contain <code>b</code>. Like it is the case for begin/end iterator pairs) following those rules, we would break it into multiple capability range descriptors:</p>
 <ul>
-<li><code>(0x100, 2)</code>, <span class="math inline">2<sup>2</sup> = 4</span> pages</li>
-<li><code>(0x104, 1)</code>, <span class="math inline">2<sup>1</sup> = 2</span> pages</li>
-<li><code>(0x106, 0)</code>, <span class="math inline">2<sup>0</sup> = 1</span> pages</li>
+<li><code>(0x100, 2)</code>, <span class="math inline">\(2^2 = 4\)</span> pages</li>
+<li><code>(0x104, 1)</code>, <span class="math inline">\(2^1 = 2\)</span> pages</li>
+<li><code>(0x106, 0)</code>, <span class="math inline">\(2^0 = 1\)</span> pages</li>
 </ul>
 <p>Let’s get towards actual code:
 Mapping such an example range to another process’s address space would then look like the following code, which maps its own range <code>[0x100, 0x107)</code> to <code>[0x200, 0x207)</code> in the namespace of the other process using a structure <code>map_helper</code>:</p>
@@ -98,7 +101,7 @@ An operating system kernel with a reduced amount of complicated logic is a good 
 </blockquote>
 <p>Ok, that is nearly everything about expressing memory mappings with the logic of capability range descriptors.
 There is one last quirk.</p>
-<p>Imagine we want to map the range <code>[0x0, 0x10)</code>, which can be expressed as <code>(0x0, 4)</code> (<code>0x10 = 16</code>, and <span class="math inline">16 = 2<sup>4</sup></span>), to the range <code>[0x1, 0x11)</code> in the other process’s address space.
+<p>Imagine we want to map the range <code>[0x0, 0x10)</code>, which can be expressed as <code>(0x0, 4)</code> (<code>0x10 = 16</code>, and <span class="math inline">\(16 = 2^4\)</span>), to the range <code>[0x1, 0x11)</code> in the other process’s address space.
 That should be easy since they only have an offset of 1 page to each other.
 What is visible at address <code>0x1000</code> in the first process, will be visible at address <code>0x2000</code> in the other.
 Actually, it is not that easy, because the capability range descriptor <code>(0x0, 4)</code> can not simply be described as <code>(0x1, 4)</code> in the other process’s address space.

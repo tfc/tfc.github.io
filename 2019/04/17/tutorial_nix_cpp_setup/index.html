@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="../../../../css/hyde.css">
 <script src="https://kit.fontawesome.com/796c2aa0a7.js" crossorigin="anonymous"></script></script>
 <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../../../../images/apple-touch-icon-144-precomposed.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script></script>
 <link rel="shortcut icon" href="../../../../images/favicon.ico">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -240,7 +243,7 @@ that results in a <em>set</em> of derivations that nix can materialize using tho
 <li>lib <code>poco</code> 1.9.0 &amp; 1.9.1</li>
 <li>lib <code>boost</code> 1.6.6 - 1.6.9</li>
 </ul>
-<p>…which results in <span class="math inline">(2+2) * 2 * 4 = 32</span> different binaries.</p>
+<p>…which results in <span class="math inline">\((2 + 2) * 2 * 4 = 32\)</span> different binaries.</p>
 <p>Quick spoiler: The result of the nix expression that we are going to write
 will allow us to build and execute these 32 binaries with a single <code>nix-build release.nix</code> command.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> for path in <span class="va">$(</span><span class="ex">nix-build</span> release.nix<span class="va">)</span><span class="kw">;</span> <span class="cf">do</span> <span class="dt">\</span></span>
@@ -466,8 +469,8 @@ arguments.
 It does then finally return a derivation.
 A derivation can be materialized into a package with the binary by <code>nix</code>.</p>
 <p>This means that we can regard <code>derivation.nix</code> like a mathematical function<br />
-<span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em>(<em>c</em><em>o</em><em>m</em><em>p</em><em>i</em><em>l</em><em>e</em><em>r</em>,<em>b</em><em>o</em><em>o</em><em>s</em><em>t</em>,<em>p</em><em>o</em><em>c</em><em>o</em>) → <em>d</em><em>e</em><em>r</em><em>i</em><em>v</em><em>a</em><em>t</em><em>i</em><em>o</em><em>n</em></span>.</p>
-<p>The next step is then to use that function <span class="math inline"><em>d</em><em>e</em><em>r</em><em>i</em><em>v</em></span> and feed it with the cartesian
+<span class="math inline">\(deriv (compiler, boost, poco) \rightarrow derivation\)</span>.</p>
+<p>The next step is then to use that function <span class="math inline">\(deriv\)</span> and feed it with the cartesian
 product of all 32 input combinations.
 The file <code>release.nix</code> does just that:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode numberSource numberLines nix"><code class="sourceCode nix"><span id="cb9-1"><a href="#cb9-1"></a><span class="op">{</span></span>
