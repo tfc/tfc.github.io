@@ -37,9 +37,10 @@ main = hakyll $ do
 
   forM ["about.hamlet"] $ \page -> match page $ do
     route $ setExtension "html"
+    let ctx = constField "title" "About Jacek Galowicz" <> defaultContext
     compile
       $   hamlCompiler
-      >>= loadAndApplyTemplate "templates/default.hamlet" defaultContext
+      >>= loadAndApplyTemplate "templates/default.hamlet" ctx
       >>= relativizeUrls
 
   tags       <- buildTags "posts/*" (fromCapture "tags/*.html")
