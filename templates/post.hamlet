@@ -5,5 +5,5 @@
   , Tags: $tags$
   \$endif$
 
-<article class="prose prose-stone prose-2xl">
+<article class="prose prose-stone prose-2xl hover:prose-a:text-sky-600">
   \$body$
