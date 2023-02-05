@@ -321,6 +321,7 @@ However, there are actually 2 backslashes needed because `\` alone does not resu
 The backslash must be masked itself, so only `\\{` will result in the `autoformat_t` function seeing a `\{`.
 
 **Example**: `pprintf("var in braces: \\{ {} }", 123);` results in `printf("var in braces: { %d }", 123);`
+
 #### Catching Brace Mismatches
 
 The meta-program refuses to compile if...
