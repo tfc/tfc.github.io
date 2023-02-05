@@ -16,7 +16,7 @@
               '3xl': '1800px',
             },
             backgroundImage: {
-             'hero-pattern': "linear-gradient(to right bottom, rgba(0, 32, 66, 0.5), rgba(0, 22, 44, 0.9)), url('/images/roughpaper.svg')",
+              'darkpaper': "linear-gradient(to right bottom, rgba(0, 32, 66, 0.5), rgba(0, 22, 44, 0.9)), url('/images/roughpaper.svg')"
             },
             typography: {
               DEFAULT: {
@@ -41,7 +41,7 @@
 
   <body class="">
     <div class="">
-      <div class="flex flex-col gap-4 md:gap-8 text-center text-xl justify-end p-5 bg-hero-pattern text-white md:fixed md:right-0 md:top-0 md:bottom-0 md:w-64 lg:w-80 md:text-left">
+      <div class="flex flex-col gap-4 md:gap-8 text-center text-xl justify-end p-5 bg-darkpaper text-white md:fixed md:right-0 md:top-0 md:bottom-0 md:w-64 lg:w-80 md:text-left">
         <a href="/">
           <h1 class="text-4xl font-black">Jacek's Blog
         <p class="text-2xl font-bold">Software Engineering Consultant
