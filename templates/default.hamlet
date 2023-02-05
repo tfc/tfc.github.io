@@ -18,6 +18,14 @@
             backgroundImage: {
              'hero-pattern': "linear-gradient(to right bottom, rgba(0, 32, 66, 0.5), rgba(0, 22, 44, 0.9)), url('/images/roughpaper.svg')",
             },
+            typography: {
+              DEFAULT: {
+                css: {
+                  'blockquote p:first-of-type::before': { content: '' },
+                  'blockquote p:last-of-type::after': { content: '' }
+                },
+              },
+            },
           }
         }
       }
