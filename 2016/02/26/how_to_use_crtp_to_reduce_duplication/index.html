@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<html lang="en-us"><head><meta http-equiv="refresh" content="3; URL=https://galowicz.de/2016/02/26/how_to_use_crtp_to_reduce_duplication">
+<link href="http://gmpg.org/xfn/11" rel="profile">
 <link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog" />
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
@@ -37,7 +38,9 @@
 </p>
 </div>
 </div>
-<div class="content container"><h1>How to Use the CRTP to Reduce Duplication</h1>
+<div class="content container"><h1>This is the old domain blog.galowicz.de. You are being redirected to <a href="https://galowicz.de/2016/02/26/how_to_use_crtp_to_reduce_duplication">galowicz.de/2016/02/26/how_to_use_crtp_to_reduce_duplication</a></h1>
+<hr>
+<h1>How to Use the CRTP to Reduce Duplication</h1>
 <div class="post"><span class="post-date">February 26, 2016</span>
 <span class="post-tags">
 Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html" class="tag-link">c++</a>
@@ -236,6 +239,9 @@ The only operators which need to be implemented to exhaust the full support of <
 <p>Regarding testing: Assuming there is enough confidence in <code>comparison_impl</code> to not contain any typos, only these three operators need to be unit tested individually - the other operators which are derived from those, are then automatically also correct.</p>
 <p>I put <a href="https://gist.github.com/tfc/d1d576eb75a1526331e9">the compiling example implementation of <code>comparison_impl</code> into a GitHub Gist</a>.</p></div>
 </div>
+<script>var url = new URL('https://galowicz.de/');
+url.pathname = window.location.pathname;
+window.location.replace(url.href);</script>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
 <script>var popup;

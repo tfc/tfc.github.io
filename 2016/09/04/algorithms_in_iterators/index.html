@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en-us"><head><link href="http://gmpg.org/xfn/11" rel="profile">
+<html lang="en-us"><head><meta http-equiv="refresh" content="3; URL=https://galowicz.de/2016/09/04/algorithms_in_iterators">
+<link href="http://gmpg.org/xfn/11" rel="profile">
 <link type="application/atom+xml" rel="alternate" href="https://blog.galowicz.de/feed.xml" title="Jacek's Software Engineering Blog" />
 <link rel="stylesheet" href="../../../../css/poole.css">
 <link rel="stylesheet" href="../../../../css/syntax.css">
@@ -37,7 +38,9 @@
 </p>
 </div>
 </div>
-<div class="content container"><h1>Wrapping Algorithms into Iterators</h1>
+<div class="content container"><h1>This is the old domain blog.galowicz.de. You are being redirected to <a href="https://galowicz.de/2016/09/04/algorithms_in_iterators">galowicz.de/2016/09/04/algorithms_in_iterators</a></h1>
+<hr>
+<h1>Wrapping Algorithms into Iterators</h1>
 <div class="post"><span class="post-date">September  4, 2016</span>
 <span class="post-tags">
 Tags: <a title="All pages tagged 'c++'." href="../../../../tags/c%2B%2B.html" class="tag-link">c++</a>
@@ -223,6 +226,9 @@ It is an algorithm implementation in the sense, that the <em>increment</em> step
 Interestingly, this way one can instantiate some kind of <em>iterable</em> object, which defines a range, which involves a lot of computation - but that computation is not executed until someone actually asks for the result (And the code which asks for the result does not even need to know what kind of algorithm it is implicitly executing, as this is all hidden behind a simple iterator interface).
 This kind of programming style goes towards <a href="https://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a>, which is a powerful and elegant principle known from purely functional programming languages.</p></div>
 </div>
+<script>var url = new URL('https://galowicz.de/');
+url.pathname = window.location.pathname;
+window.location.replace(url.href);</script>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" data-cfasync="false"></script></script>
 <script>var popup;
